@@ -35,10 +35,10 @@ namespace m1
         std::vector<std::string> m_meshNames;
 
         const glm::vec3 m_initialPosition;
-        const bool m_sequentialMovement;
 
         float m_speed;
         bool m_movementKeyBeingPressed = false;
+        int m_multipleDirectionsCount = 0;
         glm::vec3 m_velocity;
         glm::vec3 m_totalMovement;
     };
