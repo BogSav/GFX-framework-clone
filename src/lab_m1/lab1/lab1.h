@@ -28,6 +28,18 @@ namespace m1
         void OnWindowResize(int width, int height) override;
 
         // TODO(student): Class variables go here
+    private:
+        std::vector<char> m_clearColor;
 
+        int m_currentMeshIdx;
+        std::vector<std::string> m_meshNames;
+
+        const glm::vec3 m_initialPosition;
+        const bool m_sequentialMovement;
+
+        float m_speed;
+        bool m_movementKeyBeingPressed = false;
+        glm::vec3 m_velocity;
+        glm::vec3 m_totalMovement;
     };
 }   // namespace m1
