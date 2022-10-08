@@ -15,8 +15,7 @@ using namespace m1;
 
 Lab1::Lab1()
     :
-    m_initialPosition(0, 0, 0),
-    m_sequentialMovement(true)
+    m_initialPosition(0, 0, 0)
 {
     // TODO(student): Never forget to initialize class variables!
     m_clearColor = { 0, 0, 0, 1 };
@@ -92,8 +91,7 @@ void Lab1::Update(float deltaTimeSeconds)
     // signature of this function to see the meaning of its parameters.
     // You can draw the same mesh any number of times.
 
-    if((m_sequentialMovement && m_movementKeyBeingPressed) || !m_sequentialMovement)
-        m_totalMovement += (m_velocity * deltaTimeSeconds);
+    m_totalMovement += (m_velocity * deltaTimeSeconds);
 
     RenderMesh(meshes[m_meshNames[m_currentMeshIdx]], m_totalMovement);
 }
@@ -121,6 +119,12 @@ void Lab1::OnInputUpdate(float deltaTime, int mods)
 
 }
 
+inline void Normalize(glm::vec3& v)
+{
+    float sum = std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+    v /= sum;
+}
+
 
 void Lab1::OnKeyPress(int key, int mods)
 {
@@ -139,22 +143,22 @@ void Lab1::OnKeyPress(int key, int mods)
     switch (key)
     {
     case GLFW_KEY_W:
-        m_velocity = (glm::vec3(0, 0, -1) * m_speed);
+        m_velocity += (glm::vec3(0, 0, -1) * m_speed);
         break;
     case GLFW_KEY_A:
-        m_velocity = (glm::vec3(-1, 0, 0) * m_speed);
+        m_velocity += (glm::vec3(-1, 0, 0) * m_speed);
         break;
     case GLFW_KEY_S:
-        m_velocity = (glm::vec3(0, 0, 1) * m_speed);
+        m_velocity += (glm::vec3(0, 0, 1) * m_speed);
         break;
     case GLFW_KEY_D:
-        m_velocity = (glm::vec3(1, 0, 0) * m_speed);
+        m_velocity += (glm::vec3(1, 0, 0) * m_speed);
         break;
     case GLFW_KEY_Q:
-        m_velocity = (glm::vec3(0, 1, 0) * m_speed);
+        m_velocity += (glm::vec3(0, 1, 0) * m_speed);
         break;
     case GLFW_KEY_E:
-        m_velocity = (glm::vec3(0, -1, 0) * m_speed);
+        m_velocity += (glm::vec3(0, -1, 0) * m_speed);
         break;
     }
 
@@ -167,6 +171,7 @@ void Lab1::OnKeyPress(int key, int mods)
     case GLFW_KEY_Q:
     case GLFW_KEY_E:
         m_movementKeyBeingPressed = true;
+        m_multipleDirectionsCount++;
         break;
     }
 
@@ -189,7 +194,36 @@ void Lab1::OnKeyPress(int key, int mods)
 void Lab1::OnKeyRelease(int key, int mods)
 {
     // Add key release event
-    m_movementKeyBeingPressed = false;
+    switch (key)
+    {
+    case GLFW_KEY_W:
+        m_velocity -= (glm::vec3(0, 0, -1) * m_speed);
+        break;
+    case GLFW_KEY_A:
+        m_velocity -= (glm::vec3(-1, 0, 0) * m_speed);
+        break;
+    case GLFW_KEY_S:
+        m_velocity -= (glm::vec3(0, 0, 1) * m_speed);
+        break;
+    case GLFW_KEY_D:
+        m_velocity -= (glm::vec3(1, 0, 0) * m_speed);
+        break;
+    case GLFW_KEY_Q:
+        m_velocity -= (glm::vec3(0, 1, 0) * m_speed);
+        break;
+    case GLFW_KEY_E:
+        m_velocity -= (glm::vec3(0, -1, 0) * m_speed);
+        break;
+    }
+
+    if (m_movementKeyBeingPressed == true)
+    {
+        m_multipleDirectionsCount--;
+        if (m_multipleDirectionsCount == 0)
+        {
+            m_movementKeyBeingPressed = false;
+        }
+    }
 }
 
 
