@@ -29,9 +29,9 @@ namespace m1
 
         // TODO(student): Class variables go here
     private:
-        std::vector<char> m_clearColor;
+        std::vector<float> m_clearColor;
 
-        int m_currentMeshIdx;
+        size_t m_currentMeshIdx;
         std::vector<std::string> m_meshNames;
 
         const glm::vec3 m_initialPosition;
@@ -41,5 +41,12 @@ namespace m1
         int m_multipleDirectionsCount = 0;
         glm::vec3 m_velocity;
         glm::vec3 m_totalMovement;
+
+        float m_initialHeight;
+        float m_jumpHeight;
+        float m_jumpSpeed;
+        float m_gravitationalDeceleration;
+        bool m_jumpUp = false;
+        bool m_jumpDown = false;
     };
 }   // namespace m1

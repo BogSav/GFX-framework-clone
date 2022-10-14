@@ -23,6 +23,9 @@ Lab1::Lab1()
     m_totalMovement = m_initialPosition;
     m_speed = 2.f;
     m_currentMeshIdx = 0;
+    m_jumpSpeed = 4.f;
+    m_gravitationalDeceleration = 7.f;
+    m_jumpHeight = 0.5f;
 }
 
 
@@ -53,6 +56,12 @@ void Lab1::Init()
         meshes[mesh->GetMeshID()] = mesh;
     }
 
+    {
+        Mesh* mesh = new Mesh("archer");
+        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "characters//archer"), "archer.fbx");
+        meshes[mesh->GetMeshID()] = mesh;
+    }
+
     // TODO(student): Load some more meshes. The value of RESOURCE_PATH::MODELS
     // is actually a path on disk, go there and you will find more meshes.
     m_meshNames.reserve(meshes.size());
@@ -67,7 +76,6 @@ void Lab1::Init()
 void Lab1::FrameStart()
 {
 }
-
 
 void Lab1::Update(float deltaTimeSeconds)
 {
@@ -94,7 +102,34 @@ void Lab1::Update(float deltaTimeSeconds)
     m_totalMovement += (m_velocity * deltaTimeSeconds);
 
     RenderMesh(meshes[m_meshNames[m_currentMeshIdx]], m_totalMovement);
+    RenderMesh(meshes["sphere"], glm::vec3( -2, 1, -5));
+
+    if (m_jumpUp == true)
+    {
+        if (m_totalMovement[1] < (m_jumpHeight + m_initialHeight))
+        {
+            m_totalMovement += glm::vec3(0, 1, 0) * m_jumpSpeed * deltaTimeSeconds;
+        }
+        else
+        {
+            m_jumpUp = false;
+            m_jumpDown = true;
+        }
+    }
+    if (m_jumpDown == true)
+    {
+        if (m_totalMovement[1] > m_initialHeight)
+        {
+            m_totalMovement -= glm::vec3(0, 1, 0) * m_gravitationalDeceleration * deltaTimeSeconds;
+        }
+        else
+        {
+            m_jumpDown = false;
+        }
+    }
+
 }
+
 
 
 void Lab1::FrameEnd()
@@ -119,22 +154,16 @@ void Lab1::OnInputUpdate(float deltaTime, int mods)
 
 }
 
-inline void Normalize(glm::vec3& v)
-{
-    float sum = std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-    v /= sum;
-}
-
 
 void Lab1::OnKeyPress(int key, int mods)
 {
     // Add key press event
     if (key == GLFW_KEY_F) {
         // TODO(student): Change the values of the color components.
-        m_clearColor[0] = 200;
-        m_clearColor[1] = 0;
-        m_clearColor[2] = 75;
-        m_clearColor[3] = 0.2;
+        m_clearColor[0] = 0.4f;
+        m_clearColor[1] = 0.f;
+        m_clearColor[2] = 0.2f;
+        m_clearColor[3] = 1.f;
     }
 
     // TODO(student): Add a key press event that will let you cycle
@@ -187,6 +216,15 @@ void Lab1::OnKeyPress(int key, int mods)
         if (m_currentMeshIdx == m_meshNames.size())
             m_currentMeshIdx = 0;
         break;
+    }
+
+    if (key == GLFW_KEY_SPACE)
+    {
+        if (m_jumpUp == false && m_jumpDown == false)
+        {
+            m_initialHeight = m_totalMovement[1];
+            m_jumpUp = true;
+        }
     }
 }
 
