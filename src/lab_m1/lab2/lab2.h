@@ -33,6 +33,6 @@ namespace m1
 
      protected:
         GLenum cullFace;
-        GLenum polygonMode;
+        GLenum polygonMode; 
     };
 }   // namespace m1
