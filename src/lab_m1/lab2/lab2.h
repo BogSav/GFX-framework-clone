@@ -34,5 +34,7 @@ namespace m1
      protected:
         GLenum cullFace;
         GLenum polygonMode; 
+
+        int m_stepSize = 16;
     };
 }   // namespace m1
