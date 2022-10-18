@@ -2,6 +2,8 @@
 
 #include <vector>
 #include <iostream>
+#include <math.h>
+#include <numbers>
 
 #include "core/engine.h"
 #include "utils/gl_utils.h"
@@ -151,6 +153,34 @@ void Lab2::Init()
 
         CreateMesh("square", vertices, indices);
     }
+
+    {
+        vector<VertexFormat> vertices;
+        vector<unsigned int> indices;
+
+        vertices.emplace_back(glm::vec3(0, 0, 0));
+        vertices.emplace_back(glm::vec3(1, 0, 0));
+
+        int trnr = 0;
+        for (float step = std::numbers::pi / m_stepSize, i = 0;
+            trnr < m_stepSize * 4 - 1; 
+            i += step, trnr++)
+        {
+            vertices.emplace_back(glm::vec3(sinf(i), cosf(i), 0));
+
+            indices.push_back(trnr + 1);
+            indices.push_back(0);
+            indices.push_back(trnr + 2);
+        }
+
+        trnr = m_stepSize * 4 - 1;
+
+        indices.push_back(1);
+        indices.push_back(0);
+        indices.push_back(trnr + 1);
+
+        CreateMesh("disk", vertices, indices);
+    }
 }
 
 
@@ -258,6 +288,8 @@ void Lab2::Update(float deltaTimeSeconds)
     
     // TODO(student): Draw the square
     RenderMesh(meshes["square"], shaders["VertexColor"], glm::vec3(2.5f, 1.f, 0), glm::vec3(0.25f));
+
+    RenderMesh(meshes["disk"], shaders["VertexColor"], glm::vec3(2.f, 1.f, 0), glm::vec3(0.25f));
 
     // TODO(student): Disable face culling
     glDisable(GL_CULL_FACE);
