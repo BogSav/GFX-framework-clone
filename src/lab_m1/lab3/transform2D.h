@@ -21,10 +21,12 @@ namespace transform2D
     inline glm::mat3 Scale(float scaleX, float scaleY)
     {
         // TODO(student): Implement the scaling matrix
-        return glm::mat3(
+        return glm::transpose(
+            glm::mat3(
                 scaleX, 0, 0,
                 0, scaleY, 0,
-                0, 0, 1);
+                0, 0, 1)
+        );
     }
 
     // Rotate matrix
