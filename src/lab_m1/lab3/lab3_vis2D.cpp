@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <iostream>
+#include <Windows.h>
 
 #include "lab_m1/lab3/transform2D.h"
 #include "lab_m1/lab3/object2D.h"
@@ -38,6 +39,11 @@ void Lab3_Vis2D::Init()
     logicSpace.y = 0;       // logic y
     logicSpace.width = 4;   // logic width
     logicSpace.height = 4;  // logic height
+
+    m_logicSpaceTranslationDirection = { 0, 0 };
+    m_logicSpaceTranslationSpeed = 1;
+    m_logicSpaceZoomSpeed = 1;
+    m_logicSpaceZoomDirection = 0;
 
     glm::vec3 corner = glm::vec3(0.001, 0.001, 0);
     length = 0.99f;
@@ -112,6 +118,14 @@ void Lab3_Vis2D::Update(float deltaTimeSeconds)
 {
     glm::ivec2 resolution = window->GetResolution();
 
+    logicSpace.x += m_logicSpaceTranslationDirection[0] * m_logicSpaceTranslationSpeed * deltaTimeSeconds;
+    logicSpace.y += m_logicSpaceTranslationDirection[1] * m_logicSpaceTranslationSpeed * deltaTimeSeconds;
+
+    logicSpace.width += m_logicSpaceZoomDirection * m_logicSpaceZoomSpeed * deltaTimeSeconds;
+    logicSpace.height += m_logicSpaceZoomDirection * m_logicSpaceZoomSpeed * deltaTimeSeconds;
+    logicSpace.x -= m_logicSpaceZoomDirection * m_logicSpaceZoomSpeed / 2 * deltaTimeSeconds;
+    logicSpace.y -= m_logicSpaceZoomDirection * m_logicSpaceZoomSpeed / 2 * deltaTimeSeconds;
+
     // Sets the screen area where to draw - the left half of the window
     viewSpace = ViewportSpace(0, 0, resolution.x / 2, resolution.y);
     SetViewportArea(viewSpace, glm::vec3(0), true);
@@ -167,7 +181,7 @@ void Lab3_Vis2D::DrawScene(glm::mat3 visMatrix)
 void Lab3_Vis2D::OnInputUpdate(float deltaTime, int mods)
 {
     // TODO(student): Move the logic window with W, A, S, D (up, left, down, right)
-
+    
     // TODO(student): Zoom in and zoom out logic window with Z and X
 
 }
@@ -175,11 +189,56 @@ void Lab3_Vis2D::OnInputUpdate(float deltaTime, int mods)
 
 void Lab3_Vis2D::OnKeyPress(int key, int mods)
 {
+    switch (key)
+    {
+    case GLFW_KEY_A:
+        m_logicSpaceTranslationDirection[0] += 1;
+        break;
+    case GLFW_KEY_D:
+        m_logicSpaceTranslationDirection[0] -= 1;
+        break;
+    case GLFW_KEY_W:
+        m_logicSpaceTranslationDirection[1] -= 1;
+        break;
+    case GLFW_KEY_S:
+        m_logicSpaceTranslationDirection[1] += 1;
+        break;
+    case GLFW_KEY_Z:
+        m_logicSpaceZoomDirection = -1;
+        break;
+    case GLFW_KEY_X:
+        m_logicSpaceZoomDirection = 1;
+        break;
+    default:
+        break;
+    }
 }
 
 
 void Lab3_Vis2D::OnKeyRelease(int key, int mods)
 {
+    switch (key)
+    {
+    case GLFW_KEY_A:
+        m_logicSpaceTranslationDirection[0] -= 1;
+        break;
+    case GLFW_KEY_D:
+        m_logicSpaceTranslationDirection[0] += 1;
+        break;
+    case GLFW_KEY_W:
+        m_logicSpaceTranslationDirection[1] += 1;
+        break;
+    case GLFW_KEY_S:
+        m_logicSpaceTranslationDirection[1] -= 1;
+        break;
+    case GLFW_KEY_Z:
+    case GLFW_KEY_X:
+        m_logicSpaceZoomDirection = 0;
+        break;
+    default:
+        break;
+    }
+
     // Add key release event
 }
 
