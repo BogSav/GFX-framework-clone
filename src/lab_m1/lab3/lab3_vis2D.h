@@ -64,5 +64,12 @@ namespace m1
         ViewportSpace viewSpace;
         LogicSpace logicSpace;
         glm::mat3 modelMatrix, visMatrix;
+
+        glm::vec2 m_logicSpaceTranslationDirection;
+        float m_logicSpaceTranslationSpeed;
+        bool m_translationKeyBeingPressed;
+
+        float m_logicSpaceZoomSpeed;
+        int m_logicSpaceZoomDirection;
     };
 }   // namespace m1
