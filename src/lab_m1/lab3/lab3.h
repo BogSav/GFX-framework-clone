@@ -35,6 +35,14 @@ namespace m1
         float angularStep;
 
         // TODO(student): If you need any other class variables, define them here.
-
+        float m_totalAngle;
+        glm::vec2 m_startPosition;
+        glm::vec2 m_endPosition;
+        bool m_growing;
+        float m_scalingSpeed;
+        float m_maxScale;
+        float m_minScale;
+        bool m_firstGoingBack = false;
+        bool m_secondGoingBack = false;
     };
 }   // namespace m1
