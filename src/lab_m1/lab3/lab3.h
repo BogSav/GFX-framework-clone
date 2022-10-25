@@ -44,5 +44,13 @@ namespace m1
         float m_minScale;
         bool m_firstGoingBack = false;
         bool m_secondGoingBack = false;
+
+        glm::vec2 m_testPosition;
+        float m_testAnimationSpeed;
+        float m_testRotationAngle;
+        bool m_testIsGoingUp;
+        float m_testHeight;
+        float m_testInitialHeight;
+        float m_testTrajectoryRotationAngle;
     };
 }   // namespace m1

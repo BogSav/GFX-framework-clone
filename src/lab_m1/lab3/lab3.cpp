@@ -60,6 +60,15 @@ void Lab3::Init()
     m_maxScale = 2;
     m_minScale = 0.9;
 
+
+    m_testPosition = { 150, 250 };
+    m_testAnimationSpeed = 200;
+    m_testRotationAngle = 0;
+    m_testIsGoingUp = true;
+    m_testHeight = 200;
+    m_testInitialHeight = m_testPosition[1];
+    m_testTrajectoryRotationAngle = std::numbers::pi;
+
     // Initialize angularStep
     angularStep = std::numbers::pi / 2;
     m_totalAngle = 0;
@@ -72,6 +81,9 @@ void Lab3::Init()
 
     Mesh* square3 = object2D::CreateSquare("square3", corner, squareSide, glm::vec3(0, 0, 1));
     AddMeshToList(square3);
+
+    Mesh* square4 = object2D::CreateSquare("test", corner, squareSide, glm::vec3(0, 0, 1));
+    AddMeshToList(square4);
 }
 
 
@@ -114,7 +126,7 @@ void Lab3::Update(float deltaTimeSeconds)
             m_growing = true;
     }
 
-    if (translateX < 700 && !m_firstGoingBack)
+    if (translateX < 650 && !m_firstGoingBack)
     {
         translateX += deltaTimeSeconds * 200;
     }
@@ -126,16 +138,16 @@ void Lab3::Update(float deltaTimeSeconds)
             m_firstGoingBack = false;
     }
 
-    if (translateY < 300 && !m_firstGoingBack)
+    if (translateY < 300 && !m_secondGoingBack)
     {
         translateY += deltaTimeSeconds * 90;
     }
     else
     {
-        m_firstGoingBack = true;
+        m_secondGoingBack = true;
         translateY -= deltaTimeSeconds * 80;
         if (translateX < 0)
-            m_firstGoingBack = false;
+            m_secondGoingBack = false;
     }
 
     // Square 1
@@ -162,6 +174,24 @@ void Lab3::Update(float deltaTimeSeconds)
     modelMatrix *= transform2D::Translate(-cx, -cy);
 
     RenderMesh2D(meshes["square3"], shaders["VertexColor"], modelMatrix);
+
+    m_testTrajectoryRotationAngle -= std::numbers::pi / 2 / 
+        (m_testHeight / m_testAnimationSpeed) * deltaTimeSeconds;
+
+    if (m_testTrajectoryRotationAngle < 0)
+        m_testTrajectoryRotationAngle = std::numbers::pi;
+    
+    m_testPosition[1] = std::sinf(m_testTrajectoryRotationAngle) * m_testHeight + m_testInitialHeight;
+    m_testPosition[0] += m_testAnimationSpeed * deltaTimeSeconds;
+
+    m_testRotationAngle += std::numbers::pi / 2 / 
+        (m_testHeight / m_testAnimationSpeed) * deltaTimeSeconds;
+
+    modelMatrix = glm::mat3(1);
+    modelMatrix *= transform2D::Translate(m_testPosition[0] + cx, m_testPosition[1] + cy);
+    modelMatrix *= transform2D::Rotate(-m_testRotationAngle);
+    modelMatrix *= transform2D::Translate(-cx, -cy);
+    RenderMesh2D(meshes["test"], shaders["VertexColor"], modelMatrix);
 }
 
 
