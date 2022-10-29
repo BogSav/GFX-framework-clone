@@ -14,10 +14,7 @@
 
 #if defined(WITH_LAB_EXTRA)
 #   include "lab_extra/lab_list.h"
-#endif
-
-
-#ifdef _WIN32
+#endif  2
     PREFER_DISCRETE_GPU_NVIDIA;
     PREFER_DISCRETE_GPU_AMD;
 #endif
