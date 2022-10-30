@@ -46,6 +46,22 @@ namespace m1
         float angularStepOX, angularStepOY, angularStepOZ;
         GLenum polygonMode;
         ViewportArea miniViewportArea;
+
+        glm::vec3 m_cube1MovingDirection;
+        float m_cube1Speed;
+
+        float m_cube2ScaleSpeed;
+        int m_cube2ScaleingDirection;
+
+        glm::vec3 m_cube3RotationDirection;
+        float m_cube3RotationSpeed;
+
+        glm::vec2 m_viewPortMovingDirection;
+        int m_viewPortScalingDirection;
+        float m_viewPortSpeed;
+        float m_viewPortX, m_viewPortY;
+        float m_viewPortScalingSpeed;
+        float m_viewPortWidth, m_viewPortHeight;
     };
 }   // namespace m1
 

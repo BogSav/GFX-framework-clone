@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <numbers>
 
 #include "lab_m1/lab4/transform3D.h"
 
@@ -49,9 +50,28 @@ void Lab4::Init()
     angularStepOY = 0;
     angularStepOZ = 0;
 
+    m_cube1MovingDirection = glm::vec3{ 0,0,0 };
+    m_cube1Speed = 5.;
+
+    m_cube2ScaleSpeed = 0.2;
+    m_cube2ScaleingDirection = 0;
+
+    m_cube3RotationDirection = glm::vec3{ 0,0,0 };
+    m_cube3RotationSpeed = std::numbers::pi / 3;
+
+    m_viewPortMovingDirection = glm::vec2{ 0,0 };
+    m_viewPortSpeed = 50;
+    m_viewPortScalingSpeed = 50;
+    m_viewPortScalingDirection = 0;
+
     // Sets the resolution of the small viewport
     glm::ivec2 resolution = window->GetResolution();
     miniViewportArea = ViewportArea(50, 50, resolution.x / 5.f, resolution.y / 5.f);
+
+    m_viewPortX = (float)miniViewportArea.x;
+    m_viewPortY = (float)miniViewportArea.y;
+    m_viewPortHeight = (float)miniViewportArea.height;
+    m_viewPortWidth = (float)miniViewportArea.width;
 }
 
 void Lab4::FrameStart()
@@ -84,8 +104,48 @@ void Lab4::RenderScene() {
     RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
 }
 
+void ClampAngle(float& angle)
+{
+    if (angle > std::numbers::pi * 2)
+        angle = 0;
+    if (angle < 0)
+        angle = std::numbers::pi * 2;
+}
+
 void Lab4::Update(float deltaTimeSeconds)
 {
+    translateX += m_cube1MovingDirection[0] * deltaTimeSeconds * m_cube1Speed;
+    translateY += m_cube1MovingDirection[1] * deltaTimeSeconds * m_cube1Speed;
+    translateZ += m_cube1MovingDirection[2] * deltaTimeSeconds * m_cube1Speed;
+
+    float scalingStep = m_cube2ScaleingDirection * deltaTimeSeconds * m_cube2ScaleSpeed;
+    scaleX += scalingStep;
+    scaleY += scalingStep;
+    scaleZ += scalingStep;
+
+    ClampAngle(angularStepOX);
+    ClampAngle(angularStepOY);
+    ClampAngle(angularStepOZ);
+    angularStepOX -= m_cube3RotationDirection[0] * deltaTimeSeconds * m_cube3RotationSpeed;
+    angularStepOY -= m_cube3RotationDirection[1] * deltaTimeSeconds * m_cube3RotationSpeed;
+    angularStepOZ -= m_cube3RotationDirection[2] * deltaTimeSeconds * m_cube3RotationSpeed;
+
+    m_viewPortX += m_viewPortMovingDirection[0] * deltaTimeSeconds * m_viewPortSpeed;
+    m_viewPortY += m_viewPortMovingDirection[1] * deltaTimeSeconds * m_viewPortSpeed;
+
+    m_viewPortWidth += m_viewPortScalingSpeed * deltaTimeSeconds * m_viewPortScalingDirection;
+    m_viewPortHeight += m_viewPortScalingSpeed * deltaTimeSeconds * m_viewPortScalingDirection;
+
+    int initWidth = miniViewportArea.width;
+    int initHeight = miniViewportArea.height;
+    m_viewPortX -= ((float)std::round(m_viewPortWidth) - initWidth) / 2.;
+    m_viewPortY -= ((float)std::round(m_viewPortHeight) - initHeight) / 2.;
+
+    miniViewportArea.x = int(std::round(m_viewPortX));
+    miniViewportArea.y = int(std::round(m_viewPortY));
+    miniViewportArea.width = int(std::round(m_viewPortWidth));
+    miniViewportArea.height = int(std::round(m_viewPortHeight));
+
     glLineWidth(3);
     glPointSize(5);
     glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
@@ -95,7 +155,7 @@ void Lab4::Update(float deltaTimeSeconds)
 
     glClear(GL_DEPTH_BUFFER_BIT);
     glViewport(miniViewportArea.x, miniViewportArea.y, miniViewportArea.width, miniViewportArea.height);
-
+    RenderScene();
     // TODO(student): render the scene again, in the new viewport
     DrawCoordinateSystem();
 }
@@ -113,7 +173,6 @@ void Lab4::FrameEnd()
 
 void Lab4::OnInputUpdate(float deltaTime, int mods)
 {
-    // TODO(student): Add transformation logic
 
 }
 
@@ -137,13 +196,170 @@ void Lab4::OnKeyPress(int key, int mods)
         }
     }
     
-    // TODO(student): Add viewport movement and scaling logic
+    switch (key)
+    {
+    case GLFW_KEY_W:
+        m_cube1MovingDirection += glm::vec3{0, 0, -1};
+        break;
+    case GLFW_KEY_S:
+        m_cube1MovingDirection += glm::vec3{ 0, 0, 1 };
+        break;
+    case GLFW_KEY_A:
+        m_cube1MovingDirection += glm::vec3{ -1, 0, 0 };
+        break;
+    case GLFW_KEY_D:
+        m_cube1MovingDirection += glm::vec3{ 1, 0, 0 };
+        break;
+    case GLFW_KEY_R:
+        m_cube1MovingDirection += glm::vec3{ 0, 1, 0 };
+        break;
+    case GLFW_KEY_F:
+        m_cube1MovingDirection += glm::vec3{ 0, -1, 0 };
+        break;
+    }
+    
+
+    switch (key)
+    {
+    case GLFW_KEY_1:
+        m_cube2ScaleingDirection -= 1;
+        break;
+    case GLFW_KEY_2:
+        m_cube2ScaleingDirection += 1;
+        break;
+    }
+
+    switch (key)
+    {
+    case GLFW_KEY_3:
+        m_cube3RotationDirection += glm::vec3{ 0, 0, -1 };
+        break;
+    case GLFW_KEY_4:
+        m_cube3RotationDirection += glm::vec3{ 0, 0, 1 };
+        break;
+    case GLFW_KEY_5:
+        m_cube3RotationDirection += glm::vec3{ -1, 0, 0 };
+        break;
+    case GLFW_KEY_6:
+        m_cube3RotationDirection += glm::vec3{ 1, 0, 0 };
+        break;
+    case GLFW_KEY_7:
+        m_cube3RotationDirection += glm::vec3{ 0, 1, 0 };
+        break;
+    case GLFW_KEY_8:
+        m_cube3RotationDirection += glm::vec3{ 0, -1, 0 };
+        break;
+    }
+
+    switch (key)
+    {
+    case GLFW_KEY_I:
+        m_viewPortMovingDirection += glm::vec2{ 0, 1 };
+        break;
+    case GLFW_KEY_K:
+        m_viewPortMovingDirection += glm::vec2{ 0, -1 };
+        break;
+    case GLFW_KEY_L:
+        m_viewPortMovingDirection += glm::vec2{ 1, 0 };
+        break;
+    case GLFW_KEY_J:
+        m_viewPortMovingDirection += glm::vec2{ -1, 0 };
+        break;
+    }
+
+    switch (key)
+    {
+    case GLFW_KEY_U:
+        m_viewPortScalingDirection += -1;
+        break;
+    case GLFW_KEY_O:
+        m_viewPortScalingDirection += 1;
+        break;
+    }
 }
 
 
 void Lab4::OnKeyRelease(int key, int mods)
 {
-    // Add key release event
+    switch (key)
+    {
+    case GLFW_KEY_W:
+        m_cube1MovingDirection -= glm::vec3{ 0, 0, -1 };
+        break;
+    case GLFW_KEY_S:
+        m_cube1MovingDirection -= glm::vec3{ 0, 0, 1 };
+        break;
+    case GLFW_KEY_A:
+        m_cube1MovingDirection -= glm::vec3{ -1, 0, 0 };
+        break;
+    case GLFW_KEY_D:
+        m_cube1MovingDirection -= glm::vec3{ 1, 0, 0 };
+        break;
+    case GLFW_KEY_R:
+        m_cube1MovingDirection -= glm::vec3{ 0, 1, 0 };
+        break;
+    case GLFW_KEY_F:
+        m_cube1MovingDirection -= glm::vec3{ 0, -1, 0 };
+        break;
+    }
+
+    switch (key)
+    {
+    case GLFW_KEY_1:
+        m_cube2ScaleingDirection += 1;
+        break;
+    case GLFW_KEY_2:
+        m_cube2ScaleingDirection -= 1;
+        break;
+    }
+
+    switch (key)
+    {
+    case GLFW_KEY_3:
+        m_cube3RotationDirection -= glm::vec3{ 0, 0, -1 };
+        break;
+    case GLFW_KEY_4:
+        m_cube3RotationDirection -= glm::vec3{ 0, 0, 1 };
+        break;
+    case GLFW_KEY_5:
+        m_cube3RotationDirection -= glm::vec3{ -1, 0, 0 };
+        break;
+    case GLFW_KEY_6:
+        m_cube3RotationDirection -= glm::vec3{ 1, 0, 0 };
+        break;
+    case GLFW_KEY_7:
+        m_cube3RotationDirection -= glm::vec3{ 0, 1, 0 };
+        break;
+    case GLFW_KEY_8:
+        m_cube3RotationDirection -= glm::vec3{ 0, -1, 0 };
+        break;
+    }
+
+    switch (key)
+    {
+    case GLFW_KEY_I:
+        m_viewPortMovingDirection -= glm::vec2{ 0, 1 };
+        break;
+    case GLFW_KEY_K:
+        m_viewPortMovingDirection -= glm::vec2{ 0, -1 };
+        break;
+    case GLFW_KEY_L:
+        m_viewPortMovingDirection -= glm::vec2{ 1, 0 };
+        break;
+    case GLFW_KEY_J:
+        m_viewPortMovingDirection -= glm::vec2{ -1, 0 };
+        break;
+    }
+
+    switch (key)
+    {
+    case GLFW_KEY_U:
+        m_viewPortScalingDirection -= -1;
+        break;
+    case GLFW_KEY_O:
+        m_viewPortScalingDirection -= 1;
+        break;
+    }
 }
 
 
