@@ -35,6 +35,12 @@ void Lab1::Init()
         meshes[mesh->GetMeshID()] = mesh;
     }
 
+    {
+        Mesh* mesh = new Mesh("ghost");
+        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "custom"), "Part1.fbx");
+        meshes[mesh->GetMeshID()] = mesh;
+    }
+
     // TODO(student): Load some more meshes. The value of RESOURCE_PATH::MODELS
     // is actually a path on disk, go there and you will find more meshes.
 
@@ -68,6 +74,8 @@ void Lab1::Update(float deltaTimeSeconds)
 
     // Render the object again but with different properties
     RenderMesh(meshes["box"], glm::vec3(-1, 0.5f, 0));
+
+    RenderMesh(meshes["ghost"], glm::vec3(1, 1, 0));
 
     // TODO(student): We need to render (a.k.a. draw) the mesh that
     // was previously loaded. We do this using `RenderMesh`. Check the

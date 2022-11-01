@@ -20,11 +20,10 @@ Mesh* object2D::CreateSquare(
         VertexFormat(corner, color),
         VertexFormat(corner + glm::vec3(length, 0, 0), color),
         VertexFormat(corner + glm::vec3(length, length, 0), color),
-        VertexFormat(corner + glm::vec3(0, length, 0), color)
     };
 
     Mesh* square = new Mesh(name);
-    std::vector<unsigned int> indices = { 0, 1, 2, 3 };
+    std::vector<unsigned int> indices = { 0, 1, 2 };
 
     if (!fill) {
         square->SetDrawMode(GL_LINE_LOOP);

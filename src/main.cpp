@@ -22,7 +22,7 @@
     PREFER_DISCRETE_GPU_AMD;
 #endif
 
-#include "tema1/Game.h"
+#include "tema1/Game.hpp"
 
 std::string GetParentDir(const std::string &filePath)
 {
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
     (void)Engine::Init(wp);
 
     // Create a new 3D world and start running it
-    World *world = new Game();
+    World* world = new Game();
 
     world->Init();
     world->Run();

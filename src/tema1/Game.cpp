@@ -1,20 +1,15 @@
-#include "tema1/Game.h"
-#include "lab_m1/lab3/object2D.h"
-#include "lab_m1/lab3/transform2D.h"
+#include "tema1/Game.hpp"
+
+#include "Triangle.hpp"
+#include "Rectangle.hpp"
+#include "Circle.hpp"
 
 #include <vector>
 #include <iostream>
 
-/*
- *  To find out more about `FrameStart`, `Update`, `FrameEnd`
- *  and the order in which they are called, see `world.cpp`.
- */
-
 
 Game::Game()
 {
-    // TODO(student): Never forget to initialize class variables!
-
 }
 
 
@@ -33,17 +28,29 @@ void Game::Init()
     camera->Update();
     GetCameraInput()->SetActive(false);
 
-    glm::vec3 corner = glm::vec3(0, 0, 0);
-    float squareSide = 100;
+    m_menu = new Menu();
+    m_menu->SetMenu(window, window->GetResolution());
 
-    Mesh* square1 = object2D::CreateSquare("square1", corner, squareSide, glm::vec3(1, 0, 0), true);
-    AddMeshToList(square1);
+    //obj = new Triangle("tri", { 0,0 }, { 1,0 }, { 0,1 }, glm::vec3(1, 0, 0), true);
+    //AddMeshToList(obj->GetMesh());
 
-    Mesh* square2 = object2D::CreateSquare("square2", corner, squareSide, glm::vec3(0, 1, 0));
-    AddMeshToList(square2);
+    //Object* obj2 = new Rectangle("dr", { 0,0 }, { 0, 1 }, { 2,1 }, {2, 0}, glm::vec3(1, 0, 0), true);
+    //AddMeshToList(obj2->GetMesh());
 
-    Mesh* square3 = object2D::CreateSquare("square3", corner, squareSide, glm::vec3(0, 0, 1));
-    AddMeshToList(square3);
+    /*obj = new Circle("cer", 7, glm::vec3{ 1, 0, 0 }, 2);*/
+    //ddMeshToList(obj3->GetMesh());
+
+    m_duck = new Duck({ 0,0 });
+
+    m_viewPortSpace.x = 0;
+    m_viewPortSpace.y = 0;
+    m_viewPortSpace.height = resolution.y;
+    m_viewPortSpace.width = resolution.x;
+
+    m_logicSpace.x = 0;
+    m_logicSpace.y = 0;
+    m_logicSpace.width = 20;
+    m_logicSpace.height = 20;
 }
 
 
@@ -57,25 +64,50 @@ void Game::FrameStart()
     glViewport(0, 0, resolution.x, resolution.y);
 }
 
+void Game::RenderScene(glm::mat3 visMatrix, float deltaTimeSeconds)
+{
+    m_position += m_direction * m_speed * deltaTimeSeconds;
+
+    glm::mat3 modelMatrix;
+
+    glm::mat3 trMatrix = glm::mat3(1);
+    trMatrix *= TranformUtils::Translate(m_position[0], m_position[1]);
+    trMatrix *= TranformUtils::Scale(5, 5);
+
+    modelMatrix = visMatrix * TranformUtils::Translate(m_position[0], m_position[1]);
+    modelMatrix *= TranformUtils::Scale(5, 5);
+    //modelMatrix *= TranformUtils::Rotate(-std::numbers::pi / 2);
+    //RenderMesh2D(meshes["tri"], shaders["VertexColor"], modelMatrix);
+    //obj->Render(shaders["VertexColor"], modelMatrix, GetSceneCamera());
+    m_duck->Render(shaders["VertexColor"], modelMatrix, GetSceneCamera());
+
+    if (m_inGame)
+    {
+        obj = new Rectangle("bbox", m_duck->GetBoundingBox(), Colors::RED);
+        m_inGame = false;
+    }
+
+    if(da)
+        obj->Render(shaders["VertexColor"], glm::mat3(1), GetSceneCamera());
+}
 
 void Game::Update(float deltaTimeSeconds)
 {
-    glm::mat3 modelMatrix;
+    glm::mat3 visMatrix;
+    visMatrix = glm::mat3(1);
+    visMatrix *= TranformUtils::VisualizationTransf2DUnif(m_logicSpace, m_viewPortSpace);
+    RenderScene(visMatrix, deltaTimeSeconds);
 
-    modelMatrix = glm::mat3(1);
-    modelMatrix *= transform2D::Translate(150, 250);
+    timmer += deltaTimeSeconds;
 
-    RenderMesh2D(meshes["square1"], shaders["VertexColor"], modelMatrix);
+    if (timmer > 5 && m_inGame == false && da == false)
+    {
+        m_inGame = true;
+        da = true;
+    }
 
-    modelMatrix = glm::mat3(1);
-    modelMatrix *= transform2D::Translate(400, 250);
-
-    RenderMesh2D(meshes["square2"], shaders["VertexColor"], modelMatrix);
-
-    modelMatrix = glm::mat3(1);
-    modelMatrix *= transform2D::Translate(650, 250);
-
-    RenderMesh2D(meshes["square3"], shaders["VertexColor"], modelMatrix);
+   /* if (!m_inGame)
+        m_menu->RenderMenu(deltaTimeSeconds);*/
 }
 
 
@@ -92,9 +124,21 @@ void Game::OnInputUpdate(float deltaTime, int mods)
 
 void Game::OnKeyPress(int key, int mods)
 {
+    switch (key)
+    {
+    case GLFW_KEY_W:
+        m_direction += glm::vec2{ 0, 1 };
+        break;
+    }
 }
 
 
 void Game::OnKeyRelease(int key, int mods)
 {
+    switch (key)
+    {
+    case GLFW_KEY_W:
+        m_direction -= glm::vec2{ 0, 1 };
+        break;
+    }
 }
