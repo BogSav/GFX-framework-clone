@@ -9,23 +9,27 @@
 class Object
 {
 public:
-	Object(const std::string& nume, const bool wireframe)
+	Object() = delete;
+	Object(const std::string& nume, const bool wireframe, float zIndex = 0.f)
 		:
 		m_nume(nume),
-		m_wireframe(wireframe)
+		m_wireframe(wireframe),
+		m_zIndex(zIndex)
 	{}
 	
-	Mesh* GetMesh() const
-	{
-		return m_mesh;
-	}
 	BoundingBox GetBoundingBox() const
 	{
 		return m_bbox;
 	}
 
-	virtual glm::vec2 GetUpperRightCorner() const = 0;
-	virtual glm::vec2 GetBottomLeftCorner() const = 0;
+	glm::vec2 GetUpperRightCorner() const
+	{
+		return m_bbox.GetUpperRightCorner();
+	}
+	glm::vec2 GetBottomLeftCorner() const
+	{
+		return m_bbox.GetBottomLeftCorner();
+	}
 
 	void Render(Shader* shader, const glm::mat3& modelMatrix, const gfxc::Camera* const camera) const
 	{
@@ -42,6 +46,15 @@ public:
 			mm[1][0], mm[1][1], mm[1][2], 0.f,
 			0.f, 0.f, mm[2][2], 0.f,
 			mm[2][0], mm[2][1], 0.f, 1.f);
+
+		model = model * glm::transpose(
+			glm::mat4(
+				1, 0, 0, 0,
+				0, 1, 0, 0,
+				0, 0, 1, m_zIndex,
+				0, 0, 0, 1
+			)
+		);
 
 		glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(model));
 		m_mesh->Render();
@@ -76,9 +89,10 @@ protected:
 protected:
 	BoundingBox m_bbox;
 	const std::string m_nume;
-	Mesh* m_mesh = nullptr;
+	std::unique_ptr<Mesh> m_mesh = nullptr;
 	std::vector<VertexFormat> m_vertices;
 	std::vector<unsigned int> m_indices;
 	const bool m_wireframe;
+	float m_zIndex;
 };
 

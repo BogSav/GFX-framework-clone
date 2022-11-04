@@ -6,19 +6,14 @@
 class Menu
 {
 public:
-    Menu()
+    Menu() = delete;
+    Menu(WindowObject* window, glm::ivec2 resolution)
         :
         kTextColor(NormalizedRGB(166, 172, 205))
     {
-        textRenderer = nullptr;
+        SetMenu(window, resolution);
     }
 public:
-	void SetMenu(WindowObject* window, glm::ivec2 resolution)
-	{
-		textRenderer = new gfxc::TextRenderer(window->props.selfDir, resolution.x, resolution.y);
-		textRenderer->Load(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::FONTS, "Hack-Bold.ttf"), 18);
-	}
-
 	void RenderMenu(float deltyTime)
 	{
         const float kTopY = 10.f;
@@ -36,6 +31,12 @@ public:
         textRenderer->RenderText("Current mode: " + polygonModeText, 5.0f, kTopY + kRowHeight * rowIndex++, 1.0f, kTextColor);
 	}
 private:
+    void SetMenu(WindowObject* window, glm::ivec2 resolution)
+    {
+        textRenderer = new gfxc::TextRenderer(window->props.selfDir, resolution.x, resolution.y);
+        textRenderer->Load(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::FONTS, "Hack-Bold.ttf"), 18);
+    }
+
 	gfxc::TextRenderer* textRenderer;
     const glm::vec3 kTextColor;
 };

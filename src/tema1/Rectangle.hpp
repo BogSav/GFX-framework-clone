@@ -28,7 +28,7 @@ public:
         m_indices.push_back(2);
         m_indices.push_back(3);
 
-        m_mesh = new Mesh(m_nume);
+        m_mesh = std::make_unique<Mesh>(m_nume);
 
         if (m_wireframe) {
             m_mesh->SetDrawMode(GL_LINE_LOOP);
@@ -59,13 +59,4 @@ public:
             color,
             wireframe)
     {}
-
-    glm::vec2 GetUpperRightCorner() const override
-    {
-        return m_bbox.GetUpperRightCorner();
-    }
-    glm::vec2 GetBottomLeftCorner() const override
-    {
-        return m_bbox.GetBottomLeftCorner();
-    }
 };
