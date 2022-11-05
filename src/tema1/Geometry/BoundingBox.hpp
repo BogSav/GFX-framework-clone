@@ -3,6 +3,8 @@
 #include "core/engine.h"
 #include "utils/gl_utils.h"
 
+#include "Utilities.hpp"
+
 class BoundingBox
 {
 public:
@@ -70,12 +72,31 @@ public:
 	{
 		BoundingBox aux;
 
-		glm::vec3 uprCorner = trMatrix * glm::vec3{ GetUpperRightCorner()[0],GetUpperRightCorner()[1],1 };
-		glm::vec3 bolCorner = trMatrix * glm::vec3{ GetBottomLeftCorner()[0],GetBottomLeftCorner()[1],1 };
+		glm::vec3 uprCorner = trMatrix * glm::vec3{ GetUpperRightCorner()[0], GetUpperRightCorner()[1], 1 };
+		glm::vec3 bolCorner = trMatrix * glm::vec3{ GetBottomLeftCorner()[0], GetBottomLeftCorner()[1], 1 };
 		aux.SetUpperRightCorner({ uprCorner[0], uprCorner[1] });
 		aux.SetBottomLeftCorner({ bolCorner[0], bolCorner[1] });
 
+		aux.RearrangeCorners();
+
 		return aux;
+	}
+
+	bool IsOutsideOfViewPort(TranformUtils::ViewportSpace vp)
+	{
+		return
+			(m_upperRightCorner[0] < vp.GetX() ||
+				m_upperRightCorner[1] < vp.GetY() ||
+				m_bottomLeftCorner[0] > vp.GetRightX() ||
+				m_bottomLeftCorner[1] > vp.GetUpperY());
+	}
+private:
+	void RearrangeCorners()
+	{
+		if (m_upperRightCorner[0] < m_bottomLeftCorner[0])
+			glm::swap(m_upperRightCorner[0], m_bottomLeftCorner[0]);
+		if (m_upperRightCorner[1] < m_bottomLeftCorner[1])
+			glm::swap(m_upperRightCorner[1], m_bottomLeftCorner[1]);
 	}
 
 private:

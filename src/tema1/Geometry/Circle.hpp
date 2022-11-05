@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Object.hpp"
+#include "GeometryObject.hpp"
 #include <numbers>
 
-class Circle : public Object
+class Circle : public GeometryObject
 {
 public:
     Circle(
@@ -15,7 +15,7 @@ public:
         const float zIndex = 0,
         const bool wireframe = false)
         :
-        Object(nume, wireframe, zIndex),
+        GeometryObject(nume, wireframe, zIndex),
         m_origin(origin),
         m_scale(scale),
         m_nrOfSteps(nrOfSteps)

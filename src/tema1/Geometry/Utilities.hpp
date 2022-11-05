@@ -116,6 +116,26 @@ namespace TranformUtils
         );
     }
 
+    inline glm::mat3 ReflectionMatrixOY(int direction)
+    {
+        return glm::transpose(
+            glm::mat3(
+                direction, 0, 0,
+                0, 1, 0,
+                0, 0, 1)
+        );
+    }
+
+    inline glm::mat3 ReflectionMatrixOX(int direction)
+    {
+        return glm::transpose(
+            glm::mat3(
+                1, 0, 0,
+                0, direction, 0,
+                0, 0, 1)
+        );
+    }
+
     inline glm::mat3 VisualizationTransf2D(const LogicSpace& logicSpace, const ViewportSpace& viewSpace)
     {
         float sx, sy, tx, ty;
@@ -217,5 +237,23 @@ namespace MySafeGeometry
     inline void MyClockwiseRotateVectorWithAngle(glm::vec3& v, float theta)
     {
         MyCounterClockwiseRotateVectorWithAngle(v, -theta);
+    }
+    inline glm::vec3 MyVectorMatrixProduct(glm::vec3 v, glm::mat3 mat)
+    {
+        return 
+        {
+            v[0] * mat[0][0] + v[1] * mat[1][0] + v[2] * mat[2][0],
+            v[1] * mat[0][1] + v[1] * mat[1][1] + v[2] * mat[2][1],
+            v[1] * mat[0][2] + v[1] * mat[1][2] + v[2] * mat[2][2],
+        };
+    }
+    inline glm::vec3 MyVectorMatrixProduct(glm::vec2 v, glm::mat3 mat)
+    {
+        return
+        {
+            v[0] * mat[0][0] + v[1] * mat[1][0],
+            v[1] * mat[0][1] + v[1] * mat[1][1],
+            0,
+        };
     }
 }
