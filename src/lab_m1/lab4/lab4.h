@@ -62,6 +62,13 @@ namespace m1
         float m_viewPortX, m_viewPortY;
         float m_viewPortScalingSpeed;
         float m_viewPortWidth, m_viewPortHeight;
+
+        float m_1rotationSpeed;
+        float m_2rotationSpeed;
+        float m_1orbitSize;
+        float m_2orbitSize;
+        float m_1angle;
+        float m_2angle;
     };
 }   // namespace m1
 

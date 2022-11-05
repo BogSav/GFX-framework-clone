@@ -64,6 +64,14 @@ void Lab4::Init()
     m_viewPortScalingSpeed = 50;
     m_viewPortScalingDirection = 0;
 
+    m_1angle = 0.f;
+    m_1orbitSize = 2.f;
+    m_1rotationSpeed = std::numbers::pi / 5;
+
+    m_2angle = 0.f;
+    m_2orbitSize = 0.6f;
+    m_2rotationSpeed = std::numbers::pi / 2;
+
     // Sets the resolution of the small viewport
     glm::ivec2 resolution = window->GetResolution();
     miniViewportArea = ViewportArea(50, 50, resolution.x / 5.f, resolution.y / 5.f);
@@ -87,20 +95,29 @@ void Lab4::FrameStart()
 
 void Lab4::RenderScene() {
     modelMatrix = glm::mat4(1);
-    modelMatrix *= transform3D::Translate(-2.5f, 0.5f, -1.5f);
     modelMatrix *= transform3D::Translate(translateX, translateY, translateZ);
     RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
 
-    modelMatrix = glm::mat4(1);
-    modelMatrix *= transform3D::Translate(0.0f, 0.5f, -1.5f);
-    modelMatrix *= transform3D::Scale(scaleX, scaleY, scaleZ);
-    RenderMesh(meshes["box"], shaders["Simple"], modelMatrix);
 
     modelMatrix = glm::mat4(1);
-    modelMatrix *= transform3D::Translate(2.5f, 0.5f, -1.5f);
-    modelMatrix *= transform3D::RotateOX(angularStepOX);
-    modelMatrix *= transform3D::RotateOY(angularStepOY);
-    modelMatrix *= transform3D::RotateOZ(angularStepOZ);
+    modelMatrix *= transform3D::Translate(translateX, translateY, translateZ);
+    modelMatrix *= transform3D::RotateOZ(m_1angle);
+    modelMatrix *= transform3D::Translate(m_1orbitSize, 0, 0);
+
+    modelMatrix *= transform3D::Scale(0.5, 0.5, 0.5);
+    RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
+
+
+    modelMatrix = glm::mat4(1);
+    modelMatrix *= transform3D::RotateOZ(m_1angle);
+    modelMatrix *= transform3D::Translate(m_1orbitSize, 0, 0);
+    modelMatrix *= transform3D::RotateOZ(-m_1angle);
+
+    modelMatrix *= transform3D::Translate(translateX, translateY, translateZ);
+    modelMatrix *= transform3D::RotateOX(m_2angle);
+    modelMatrix *= transform3D::Translate(0, 0, -m_2orbitSize);
+
+    modelMatrix *= transform3D::Scale(0.2, 0.2, 0.2);
     RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
 }
 
@@ -118,33 +135,39 @@ void Lab4::Update(float deltaTimeSeconds)
     translateY += m_cube1MovingDirection[1] * deltaTimeSeconds * m_cube1Speed;
     translateZ += m_cube1MovingDirection[2] * deltaTimeSeconds * m_cube1Speed;
 
-    float scalingStep = m_cube2ScaleingDirection * deltaTimeSeconds * m_cube2ScaleSpeed;
-    scaleX += scalingStep;
-    scaleY += scalingStep;
-    scaleZ += scalingStep;
+    m_1angle += m_1rotationSpeed * deltaTimeSeconds;
+    ClampAngle(m_1angle);
 
-    ClampAngle(angularStepOX);
-    ClampAngle(angularStepOY);
-    ClampAngle(angularStepOZ);
-    angularStepOX -= m_cube3RotationDirection[0] * deltaTimeSeconds * m_cube3RotationSpeed;
-    angularStepOY -= m_cube3RotationDirection[1] * deltaTimeSeconds * m_cube3RotationSpeed;
-    angularStepOZ -= m_cube3RotationDirection[2] * deltaTimeSeconds * m_cube3RotationSpeed;
+    m_2angle += m_2rotationSpeed * deltaTimeSeconds;
+    ClampAngle(m_2angle);
 
-    m_viewPortX += m_viewPortMovingDirection[0] * deltaTimeSeconds * m_viewPortSpeed;
-    m_viewPortY += m_viewPortMovingDirection[1] * deltaTimeSeconds * m_viewPortSpeed;
+    //float scalingStep = m_cube2ScaleingDirection * deltaTimeSeconds * m_cube2ScaleSpeed;
+    //scaleX += scalingStep;
+    //scaleY += scalingStep;
+    //scaleZ += scalingStep;
 
-    m_viewPortWidth += m_viewPortScalingSpeed * deltaTimeSeconds * m_viewPortScalingDirection;
-    m_viewPortHeight += m_viewPortScalingSpeed * deltaTimeSeconds * m_viewPortScalingDirection;
+    //ClampAngle(angularStepOX);
+    //ClampAngle(angularStepOY);
+    //ClampAngle(angularStepOZ);
+    //angularStepOX -= m_cube3RotationDirection[0] * deltaTimeSeconds * m_cube3RotationSpeed;
+    //angularStepOY -= m_cube3RotationDirection[1] * deltaTimeSeconds * m_cube3RotationSpeed;
+    //angularStepOZ -= m_cube3RotationDirection[2] * deltaTimeSeconds * m_cube3RotationSpeed;
 
-    int initWidth = miniViewportArea.width;
-    int initHeight = miniViewportArea.height;
-    m_viewPortX -= ((float)std::round(m_viewPortWidth) - initWidth) / 2.;
-    m_viewPortY -= ((float)std::round(m_viewPortHeight) - initHeight) / 2.;
+    //m_viewPortX += m_viewPortMovingDirection[0] * deltaTimeSeconds * m_viewPortSpeed;
+    //m_viewPortY += m_viewPortMovingDirection[1] * deltaTimeSeconds * m_viewPortSpeed;
 
-    miniViewportArea.x = int(std::round(m_viewPortX));
-    miniViewportArea.y = int(std::round(m_viewPortY));
-    miniViewportArea.width = int(std::round(m_viewPortWidth));
-    miniViewportArea.height = int(std::round(m_viewPortHeight));
+    //m_viewPortWidth += m_viewPortScalingSpeed * deltaTimeSeconds * m_viewPortScalingDirection;
+    //m_viewPortHeight += m_viewPortScalingSpeed * deltaTimeSeconds * m_viewPortScalingDirection;
+
+    //int initWidth = miniViewportArea.width;
+    //int initHeight = miniViewportArea.height;
+    //m_viewPortX -= ((float)std::round(m_viewPortWidth) - initWidth) / 2.;
+    //m_viewPortY -= ((float)std::round(m_viewPortHeight) - initHeight) / 2.;
+
+    //miniViewportArea.x = int(std::round(m_viewPortX));
+    //miniViewportArea.y = int(std::round(m_viewPortY));
+    //miniViewportArea.width = int(std::round(m_viewPortWidth));
+    //miniViewportArea.height = int(std::round(m_viewPortHeight));
 
     glLineWidth(3);
     glPointSize(5);
@@ -198,16 +221,16 @@ void Lab4::OnKeyPress(int key, int mods)
     
     switch (key)
     {
-    case GLFW_KEY_W:
+    case GLFW_KEY_I:
         m_cube1MovingDirection += glm::vec3{0, 0, -1};
         break;
-    case GLFW_KEY_S:
+    case GLFW_KEY_K:
         m_cube1MovingDirection += glm::vec3{ 0, 0, 1 };
         break;
-    case GLFW_KEY_A:
+    case GLFW_KEY_J:
         m_cube1MovingDirection += glm::vec3{ -1, 0, 0 };
         break;
-    case GLFW_KEY_D:
+    case GLFW_KEY_L:
         m_cube1MovingDirection += glm::vec3{ 1, 0, 0 };
         break;
     case GLFW_KEY_R:
@@ -283,16 +306,16 @@ void Lab4::OnKeyRelease(int key, int mods)
 {
     switch (key)
     {
-    case GLFW_KEY_W:
+    case GLFW_KEY_I:
         m_cube1MovingDirection -= glm::vec3{ 0, 0, -1 };
         break;
-    case GLFW_KEY_S:
+    case GLFW_KEY_K:
         m_cube1MovingDirection -= glm::vec3{ 0, 0, 1 };
         break;
-    case GLFW_KEY_A:
+    case GLFW_KEY_J:
         m_cube1MovingDirection -= glm::vec3{ -1, 0, 0 };
         break;
-    case GLFW_KEY_D:
+    case GLFW_KEY_L:
         m_cube1MovingDirection -= glm::vec3{ 1, 0, 0 };
         break;
     case GLFW_KEY_R:
