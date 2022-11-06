@@ -17,6 +17,28 @@ Duck::Duck(
 	  m_randomPositionRotationAngleGenerator(0.f, 2.f * std::numbers::pi_v<float>),
 	  m_randomReflexionChancesGenerator(0.f, 1.f)
 {
+	this->GenerateBodyComponents();
+	this->CalculateBoundingBox();
+
+	this->m_VLMatrix = TranformUtils::VisualizationTransf2DUnif(m_logicSpace, m_viewPort);
+
+	this->m_position[0] = m_randomStartPositionGenerator(m_randomEngine);
+	this->m_position[1] = 3 / 100 * logicSpace.GetHeight() + logicSpace.GetY();
+
+	float theta;
+	do
+	{
+		theta = m_randomStartAngleGenerator(m_randomEngine);
+		this->m_flyingDirection[0] = glm::cosf(theta);
+		this->m_flyingDirection[1] = glm::sinf(theta);
+	} while (MySafeGeometry::MyGetAngleBetween(this->m_flyingDirection, {0, 1, 0})
+			 < MySafeGeometry::MyDeg2Rad(40));
+
+	m_modelOrientation = theta > MySafeGeometry::MyDeg2Rad(90.f) ? -1 : 1;
+}
+
+void Duck::GenerateBodyComponents()
+{
 	m_components.emplace(
 		"left-leg",
 		new Rectangle(
@@ -60,23 +82,6 @@ Duck::Duck(
 	m_components.emplace(
 		"beak",
 		new Triangle("beak", {0.734, 0.735}, {0.706, 0.834}, {0.984, 0.873}, Colors::YELLOW));
-
-	this->CalculateBoundingBox();
-	m_VLMatrix = TranformUtils::VisualizationTransf2DUnif(m_logicSpace, m_viewPort);
-
-	m_position[0] = m_randomStartPositionGenerator(m_randomEngine);
-	m_position[1] = 3 / 100 * logicSpace.GetHeight() + logicSpace.GetY();
-
-	float theta;
-	do
-	{
-		theta = m_randomStartAngleGenerator(m_randomEngine);
-		m_flyingDirection[0] = glm::cosf(theta);
-		m_flyingDirection[1] = glm::sinf(theta);
-	} while (MySafeGeometry::MyGetAngleBetween(m_flyingDirection, {0, 1, 0})
-			 < MySafeGeometry::MyDeg2Rad(40));
-
-	m_modelOrientation = theta > MySafeGeometry::MyDeg2Rad(90.f) ? -1 : 1;
 }
 
 void Duck::Update(float deltaTime)
@@ -84,7 +89,9 @@ void Duck::Update(float deltaTime)
 	m_timeBeingASlave += deltaTime;
 
 	if (m_timeBeingASlave > m_props->slaveryTime)
+	{
 		SetFree();
+	}
 
 	this->UpdatePosition(deltaTime);
 	this->UpdateAnimation(deltaTime);
@@ -100,7 +107,12 @@ void Duck::UpdatePosition(float deltaTime)
 {
 	if (!m_isDead)
 	{
+		if (m_IsFree)
+			if (m_flyingDirection[1] < 0)
+				m_flyingDirection[1] *= -1;
+
 		m_position += m_flyingDirection * m_props->flyingSpeed * deltaTime;
+
 		if (m_props->duckDificulty >= 3
 			&& m_timeBeingASlave
 				> (m_props->timeBetweenRandomPositionChanges * m_currentPositionChange)
@@ -128,12 +140,12 @@ void Duck::UpdatePosition(float deltaTime)
 		}
 	}
 	glm::mat3 logicTransformMatrix = m_VLMatrix;
-	logicTransformMatrix *= TranformUtils::Translate(m_position[0] + 0.4, m_position[1] + 0.4);
+	logicTransformMatrix *= TranformUtils::Translate(m_position[0] + 0.4f, m_position[1] + 0.4f);
 	logicTransformMatrix *=
 		TranformUtils::Rotate(-m_modelOrientation * m_deadDramaticRotationAngle);
 	logicTransformMatrix *= TranformUtils::ReflectionMatrixOY(m_modelOrientation);
 	// logicTransformMatrix *= TranformUtils::ReflectionMatrixOX(m_nuVreauSaFaAsta);
-	logicTransformMatrix *= TranformUtils::Translate(-0.4, -0.4);
+	logicTransformMatrix *= TranformUtils::Translate(-0.4f, -0.4f);
 	m_modelMatrix = logicTransformMatrix;
 }
 

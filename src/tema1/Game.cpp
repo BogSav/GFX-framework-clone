@@ -126,7 +126,7 @@ void Game::Update(float deltaTimeSeconds)
 		m_shotAnimationTime += deltaTimeSeconds * m_shotAnimationActive;
 		if (m_shotAnimationActive == 1)
 		{
-			m_backGroundColor = Colors::getColorPlusAlpha(Colors::WHITE, 1.f);
+			m_backGroundColor = Colors::getColorPlusAlpha(Colors::LIGHT_GRAY, 1.f);
 			if (m_shotAnimationTime > m_shotAnimationDuration)
 			{
 				m_shotAnimationTime = 0;

@@ -75,6 +75,8 @@ public:
 private:
 	CollisionUtils::CollInfo GetCollisionInfo();
 
+	void GenerateBodyComponents();
+
 	void UpdateAnimation(float deltaTime);
 	void UpdatePosition(float deltaTime);
 

@@ -26,6 +26,8 @@ struct Colors
 	static constexpr glm::vec3 DARK_RED = {0.5, 0.21, 0.21};
 
 	static constexpr glm::vec3 GRAY = {0.32, 0.32, 0.32};
+	static constexpr glm::vec3 LIGHT_GRAY = {0.75, 0.75, 0.75};
+
 	static constexpr glm::vec3 LIGHT_GOLD = {0.93, 0.82, 0.56};
 	static constexpr glm::vec3 DARK_GOLD = {0.62, 0.4, 0.22};
 };
