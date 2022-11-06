@@ -5,24 +5,18 @@
 class ProgressHandler : public Object
 {
 public:
-	ProgressHandler(TranformUtils::LogicSpace logicSpace, TranformUtils::ViewportSpace viewPortSpace, float limit, Shader* shader, const gfxc::Camera* camera)
-		:
-		Object(logicSpace, viewPortSpace, shader, camera),
-		m_limit(limit)
+	ProgressHandler(
+		TranformUtils::LogicSpace logicSpace,
+		TranformUtils::ViewportSpace viewPortSpace,
+		float limit,
+		Shader* shader,
+		const gfxc::Camera* camera)
+		: Object(logicSpace, viewPortSpace, shader, camera), m_limit(limit)
 	{
-		m_handlerBox = std::make_unique<Rectangle>("box",
-			glm::vec2{ 0, 0 },
-			5.f,
-			1.f,
-			Colors::BLUE,
-			0.7f,
-			true);
-		m_handler = std::make_unique<Rectangle>("handler",
-			glm::vec2{ 0, 0 },
-			.1f,
-			1.f,
-			Colors::BLUE,
-			0.7f);
+		m_handlerBox =
+			std::make_unique<Rectangle>("box", glm::vec2{0, 0}, 5.f, 1.f, Colors::BLUE, 0.7f, true);
+		m_handler =
+			std::make_unique<Rectangle>("handler", glm::vec2{0, 0}, .1f, 1.f, Colors::BLUE, 0.7f);
 		m_currentProgress = 0;
 	}
 
@@ -45,10 +39,8 @@ public:
 		m_currentProgress = 0;
 	}
 
-	void SetProgress(float currentProgress)
-	{
-		m_currentProgress = currentProgress;
-	}
+	void SetProgress(float currentProgress) { m_currentProgress = currentProgress; }
+
 private:
 	std::unique_ptr<GeometryObject> m_handlerBox;
 	std::unique_ptr<GeometryObject> m_handler;

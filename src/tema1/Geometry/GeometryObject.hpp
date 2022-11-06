@@ -11,25 +11,14 @@ class GeometryObject
 public:
 	GeometryObject() = delete;
 	GeometryObject(const std::string& nume, bool wireframe, float zIndex = 0.f)
-		:
-		m_nume(nume),
-		m_wireframe(wireframe),
-		m_zIndex(zIndex)
-	{}
-	
-	BoundingBox GetBoundingBox() const
+		: m_nume(nume), m_wireframe(wireframe), m_zIndex(zIndex)
 	{
-		return m_bbox;
 	}
 
-	glm::vec2 GetUpperRightCorner() const
-	{
-		return m_bbox.GetUpperRightCorner();
-	}
-	glm::vec2 GetBottomLeftCorner() const
-	{
-		return m_bbox.GetBottomLeftCorner();
-	}
+	BoundingBox GetBoundingBox() const { return m_bbox; }
+
+	glm::vec2 GetUpperRightCorner() const { return m_bbox.GetUpperRightCorner(); }
+	glm::vec2 GetBottomLeftCorner() const { return m_bbox.GetBottomLeftCorner(); }
 
 	void Render(Shader* shader, const glm::mat3& modelMatrix, const gfxc::Camera* const camera) const
 	{
@@ -63,27 +52,35 @@ public:
 protected:
 	float getMaxY() const
 	{
-		return std::max_element(m_vertices.begin(), m_vertices.end(), [](const auto& a, const auto& b) {
-			return a.position[1] < b.position[1];
-			})->position[1];
+		return std::max_element(
+				   m_vertices.begin(),
+				   m_vertices.end(),
+				   [](const auto& a, const auto& b) { return a.position[1] < b.position[1]; })
+			->position[1];
 	}
 	float getMaxX() const
 	{
-		return std::max_element(m_vertices.begin(), m_vertices.end(), [](const auto& a, const auto& b) {
-			return a.position[0] < b.position[0];
-			})->position[0];
+		return std::max_element(
+				   m_vertices.begin(),
+				   m_vertices.end(),
+				   [](const auto& a, const auto& b) { return a.position[0] < b.position[0]; })
+			->position[0];
 	}
 	float getMinY() const
 	{
-		return std::min_element(m_vertices.begin(), m_vertices.end(), [](const auto& a, const auto& b) {
-			return a.position[1] < b.position[1];
-			})->position[1];
+		return std::min_element(
+				   m_vertices.begin(),
+				   m_vertices.end(),
+				   [](const auto& a, const auto& b) { return a.position[1] < b.position[1]; })
+			->position[1];
 	}
 	float getMinX() const
 	{
-		return std::min_element(m_vertices.begin(), m_vertices.end(), [](const auto& a, const auto& b) {
-			return a.position[0] < b.position[0];
-			})->position[0];
+		return std::min_element(
+				   m_vertices.begin(),
+				   m_vertices.end(),
+				   [](const auto& a, const auto& b) { return a.position[0] < b.position[0]; })
+			->position[0];
 	}
 
 protected:

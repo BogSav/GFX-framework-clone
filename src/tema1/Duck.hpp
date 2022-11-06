@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Object.hpp"
 #include "Hearts.hpp"
+#include "Object.hpp"
 
 #include <random>
 
@@ -42,9 +42,15 @@ public:
 			return props;
 		}
 	};
+
 public:
 	Duck() = delete;
-	Duck(TranformUtils::LogicSpace, TranformUtils::ViewportSpace, Shader*, const gfxc::Camera*, DuckProperties* );
+	Duck(
+		TranformUtils::LogicSpace,
+		TranformUtils::ViewportSpace,
+		Shader*,
+		const gfxc::Camera*,
+		DuckProperties*);
 
 	void Update(float deltaTime);
 
@@ -65,6 +71,7 @@ public:
 	void SetTimeServed() { m_timeBeingASlave = m_props->slaveryTime; };
 	float GetTimeBeingASlave() { return m_timeBeingASlave; };
 	float GetSlaveryTime() { return m_props->slaveryTime; };
+
 private:
 	CollisionUtils::CollInfo GetCollisionInfo();
 
@@ -76,6 +83,7 @@ private:
 	void CalculateBoundingBox();
 
 	void OrientModel();
+
 private:
 	std::unordered_map<std::string, std::unique_ptr<GeometryObject>> m_components;
 
@@ -85,15 +93,15 @@ private:
 	std::uniform_real_distribution<float> m_randomStartAngleGenerator;
 	std::uniform_real_distribution<float> m_randomPositionRotationAngleGenerator;
 	std::uniform_real_distribution<float> m_randomReflexionChancesGenerator;
-	
+
 	BoundingBox m_bbox;
 
 	glm::mat3 m_VLMatrix = glm::mat3(1);
 	glm::mat3 m_rightWingModelMatrix = glm::mat3(1);
 	glm::mat3 m_leftWingModelMatrix = glm::mat3(1);
 
-	glm::vec3 m_position = { 0,0,0 };
-	glm::vec3 m_flyingDirection = { 0, 0, 0 };
+	glm::vec3 m_position = {0, 0, 0};
+	glm::vec3 m_flyingDirection = {0, 0, 0};
 
 	float m_leftWingRotationAngle = 0.f;
 	int m_leftWingRotationDirection = 1;
