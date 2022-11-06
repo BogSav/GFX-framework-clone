@@ -4,7 +4,7 @@
 
 #include "Object.hpp"
 #include "Geometry/Utilities.hpp"
-#include "Menu.hpp"
+#include "TextObjects.hpp"
 #include "Duck.hpp"
 #include "Crosshair.hpp"
 #include "Field.hpp"
@@ -39,6 +39,10 @@ private:
     TranformUtils::ViewportSpace m_viewPortSpace;
 
     std::unique_ptr<Menu> m_menu;
+    std::unique_ptr<LevelHandler> m_levelHandler;
+    std::unique_ptr<GameOver> m_gameOverHandler;
+
+
     std::unique_ptr<Duck> m_duck;
     std::unique_ptr<Crosshair> m_crosshair;
     std::unique_ptr<Field> m_field;
@@ -48,15 +52,19 @@ private:
 
     std::unique_ptr<Rectangle> m_ocassionalBBox;
 
-    bool m_inGame = true;
+    bool m_inGame = false;
+    bool m_gameOver = false;
 
     glm::vec4 m_backGroundColor = { 0,0,0,1 };
 
     float m_timeBetweenDucks = 0;
-    float m_maxTimeBetweenDucks = 3.;
+    float m_maxTimeBetweenDucks = 1.5;
 
     float m_shotAnimationDuration = 0.1f;
     float m_shotAnimationTime = 0;
     int m_shotAnimationActive = 0;
+    bool m_justGotShot = false;
+
+    int m_currentLevel = 1;
 };
 

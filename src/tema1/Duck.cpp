@@ -1,18 +1,28 @@
 #include "Duck.hpp"
 
-Duck::Duck(TranformUtils::LogicSpace logicSpace, TranformUtils::ViewportSpace viewPort)
+Duck::Duck(
+	TranformUtils::LogicSpace logicSpace,
+	TranformUtils::ViewportSpace viewPort, 
+	Shader* shader, 
+	const gfxc::Camera* camera,
+	DuckProperties* props)
 	:
-	Object(logicSpace, viewPort),
+	Object(logicSpace, viewPort, shader, camera),
+	m_props(props),
 	m_randomEngine(std::random_device{}()),
-	m_scale(5),
-	m_flyingSpeed(10),
 	m_randomStartPositionGenerator(
 		logicSpace.GetX() + 15/100*logicSpace.GetWidth(), 
 		logicSpace.GetRightX() - 15/100*logicSpace.GetWidth()),
 	m_randomStartAngleGenerator(
 		MySafeGeometry::MyDeg2Rad(30.f),
 		MySafeGeometry::MyDeg2Rad(150.f)),
-	m_randomChancesForDirectionChange(40, 100)
+	m_randomPositionRotationAngleGenerator(
+		0.f,
+		2.f * std::numbers::pi_v<float>),
+	m_randomReflexionChancesGenerator(
+		0.f,
+		1.f
+	)
 {
 	m_components.emplace("left-leg", new Rectangle("left-leg",
 		{ 0.053, 0.214 },
@@ -45,9 +55,23 @@ Duck::Duck(TranformUtils::LogicSpace logicSpace, TranformUtils::ViewportSpace vi
 		{ 0.330, 0.695 },
 		Colors::YELLOW, -0.1f));
 
-	m_components.emplace("big-eye", new Circle("big-eye", 10, Colors::RED, 0.2f, { 0.566, 0.747, 0 }));
-	m_components.emplace("small-eye", new Circle("small-eye", 10, Colors::WHITE, 0.10f, { 0.566, 0.824, 0 }, .1f));
-	m_components.emplace("iris", new Circle("iris", 10, Colors::BLACK, 0.05f, { 0.566, 0.835, 0 }, .2f));
+	m_components.emplace("big-eye", new Circle("big-eye", 
+		10, 
+		Colors::RED, 
+		0.2f, 
+		{ 0.566, 0.747, 0 }));
+	m_components.emplace("small-eye", new Circle("small-eye", 
+		10,
+		Colors::WHITE, 
+		0.10f, 
+		{ 0.566, 0.824, 0 }, 
+		.1f));
+	m_components.emplace("iris", new Circle("iris", 
+		10, 
+		Colors::BLACK, 
+		0.05f, 
+		{ 0.566, 0.835, 0 }, 
+		.2f));
 
 	m_components.emplace("beak", new Triangle("beak",
 		{ 0.734, 0.735 },
@@ -76,7 +100,7 @@ void Duck::Update(float deltaTime)
 {
 	m_timeBeingASlave += deltaTime;
 
-	if (m_timeBeingASlave > m_slaveryTime)
+	if (m_timeBeingASlave > m_props->slaveryTime)
 		SetFree();
 
 	this->UpdatePosition(deltaTime);
@@ -85,7 +109,7 @@ void Duck::Update(float deltaTime)
 
 void Duck::UpdateAnimation(float deltaTime)
 {
-	m_modelMatrix *= TranformUtils::Scale(m_scale, m_scale);
+	m_modelMatrix *= TranformUtils::Scale(m_props->scale, m_props->scale);
 	this->UpdateFlyAnimation(deltaTime);
 }
 
@@ -93,17 +117,29 @@ void Duck::UpdatePosition(float deltaTime)
 {
 	if (!m_isDead)
 	{
-		m_position += m_flyingDirection * m_flyingSpeed * deltaTime;
+		m_position += m_flyingDirection * m_props->flyingSpeed * deltaTime;
+		if (m_props->duckDificulty >= 3 && m_timeBeingASlave > (m_props->timeBetweenRandomPositionChanges * m_currentPositionChange) && !m_IsFree)
+		{
+			MySafeGeometry::MyClockwiseRotateVectorWithAngle(
+				m_flyingDirection, 
+				m_randomPositionRotationAngleGenerator(m_randomEngine));
+
+			MySafeGeometry::MyNormalize(m_flyingDirection);
+			
+			OrientModel();
+
+			m_currentPositionChange += 1;
+		}
 	}
 	else
 	{
 		if (m_deadDramaticRotationAngle > MySafeGeometry::MyDeg2Rad(90.f))
 		{
-			m_position += glm::vec3{ 0, -1, 0 } * m_deadFallingSpeed * deltaTime;
+			m_position += glm::vec3{ 0, -1, 0 } *m_props->deadFallingSpeed * deltaTime;
 		}
 		else
 		{
-			m_deadDramaticRotationAngle += m_deadDramaticRotationSpeed * deltaTime;
+			m_deadDramaticRotationAngle += m_props->deadDramaticRotationSpeed * deltaTime;
 		}
 	}
 	glm::mat3 logicTransformMatrix = m_VLMatrix;
@@ -123,7 +159,7 @@ void Duck::UpdateFlyAnimation(float deltaTime)
 		return;
 
 	// Right wing rotation calculation
-	m_rightWingRotationAngle += m_rightWingRotationAngularSpeed * deltaTime * m_rightWingRotationDirection;
+	m_rightWingRotationAngle += m_props->rightWingRotationAngularSpeed * deltaTime * m_rightWingRotationDirection;
 
 	if (m_rightWingRotationAngle > std::numbers::pi_v<float> / 4)
 		m_rightWingRotationDirection = -1;
@@ -135,7 +171,7 @@ void Duck::UpdateFlyAnimation(float deltaTime)
 	m_rightWingModelMatrix *= TranformUtils::Translate(-0.480f ,-0.350f);
 
 	// Left wing rotation calculation
-	m_leftWingRotationAngle += m_leftWingRotationAngularSpeed * deltaTime * m_leftWingRotationDirection;
+	m_leftWingRotationAngle += m_props->leftWingRotationAngularSpeed * deltaTime * m_leftWingRotationDirection;
 	
 	if (m_leftWingRotationAngle > std::numbers::pi_v<float> / 4)
 		m_leftWingRotationDirection = -1;
@@ -147,23 +183,23 @@ void Duck::UpdateFlyAnimation(float deltaTime)
 	m_leftWingModelMatrix *= TranformUtils::Translate(-0.250f, -0.550f);
 }
 
-void Duck::ForceRenderByCustomModelMatrix(Shader* shader, glm::mat3 modelMatrix, const gfxc::Camera* const camera)
+void Duck::ForceRenderByCustomModelMatrix(glm::mat3 modelMatrix)
 {
 	for (auto& current : m_components)
-		current.second->Render(shader, modelMatrix, camera);
+		current.second->Render(m_shader, modelMatrix, m_camera);
 	m_modelMatrix = modelMatrix;
 }
 
-void Duck::Render(Shader* shader, const gfxc::Camera* const camera)
+void Duck::Render()
 {
 	for (auto& current : m_components)
 	{
 		if(current.first != "right-wing" && current.first != "left-wing")
-			current.second->Render(shader, m_modelMatrix, camera);
+			current.second->Render(m_shader, m_modelMatrix, m_camera);
 	}
 
-	m_components["right-wing"]->Render(shader, m_rightWingModelMatrix, camera);
-	m_components["left-wing"]->Render(shader, m_leftWingModelMatrix, camera);
+	m_components["right-wing"]->Render(m_shader, m_rightWingModelMatrix, m_camera);
+	m_components["left-wing"]->Render(m_shader, m_leftWingModelMatrix, m_camera);
 }
 
 BoundingBox Duck::GetBoundingBox() const
@@ -208,26 +244,34 @@ void Duck::CollisionDetectAndAct()
 
 	CollisionUtils::CollInfo collInfo = this->GetCollisionInfo();
 
-	if (collInfo.collisionAngle < std::numbers::pi_v<float> / 2)
+	if (collInfo.collisionDetected == true && collInfo.collisionAngle < std::numbers::pi_v<float> / 2)
 	{
-		switch (collInfo.collisionType)
+		if (m_props->duckDificulty < 2 || m_randomReflexionChancesGenerator(m_randomEngine) > 0.5f)
 		{
-		case CollisionUtils::LEFT_WALL:
-			m_flyingDirection = MySafeGeometry::MyReflectByTheNormal({ 1, 0, 0 }, m_flyingDirection);
-			m_modelOrientation = 1;
-			break;
-		case CollisionUtils::RIGHT_WALL:
-			m_flyingDirection = MySafeGeometry::MyReflectByTheNormal({ -1, 0, 0 }, m_flyingDirection);
-			m_modelOrientation = -1;
-			break;
-		case CollisionUtils::UPPER_WALL:
-			m_nuVreauSaFaAsta = -1;
-			m_flyingDirection = MySafeGeometry::MyReflectByTheNormal({ 0, -1, 0 }, m_flyingDirection);
-			break;
-		case CollisionUtils::BOTTOM_WALL:
-			m_nuVreauSaFaAsta = 1;
-			m_flyingDirection = MySafeGeometry::MyReflectByTheNormal({ 0, 1, 0 }, m_flyingDirection);
-			break;
+			switch (collInfo.collisionType)
+			{
+			case CollisionUtils::LEFT_WALL:
+				m_flyingDirection = MySafeGeometry::MyReflectByTheNormal({ 1, 0, 0 }, m_flyingDirection);
+				m_modelOrientation = 1;
+				break;
+			case CollisionUtils::RIGHT_WALL:
+				m_flyingDirection = MySafeGeometry::MyReflectByTheNormal({ -1, 0, 0 }, m_flyingDirection);
+				m_modelOrientation = -1;
+				break;
+			case CollisionUtils::UPPER_WALL:
+				m_nuVreauSaFaAsta = -1;
+				m_flyingDirection = MySafeGeometry::MyReflectByTheNormal({ 0, -1, 0 }, m_flyingDirection);
+				break;
+			case CollisionUtils::BOTTOM_WALL:
+				m_nuVreauSaFaAsta = 1;
+				m_flyingDirection = MySafeGeometry::MyReflectByTheNormal({ 0, 1, 0 }, m_flyingDirection);
+				break;
+			}
+		}
+		else
+		{
+			m_flyingDirection *= -1;
+			OrientModel();
 		}
 	}
 }
@@ -237,7 +281,7 @@ bool Duck::GotShot(glm::vec2 shotPoint)
 	if (GetBoundingBox().IsInside(shotPoint))
 	{
 		m_nrOfShots++;
-		switch (m_duckDificulty)
+		switch (m_props->duckDificulty)
 		{
 		case 1:
 		case 2:
@@ -258,4 +302,12 @@ bool Duck::GotShot(glm::vec2 shotPoint)
 	}
 
 	return false;
+}
+
+void Duck::OrientModel()
+{
+	if (MySafeGeometry::MyGetAngleBetween({ 1, 0, 0 }, m_flyingDirection) > MySafeGeometry::MyDeg2Rad(90.f))
+		m_modelOrientation = -1;
+	else
+		m_modelOrientation = 1;
 }

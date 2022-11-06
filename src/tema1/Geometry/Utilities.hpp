@@ -238,6 +238,12 @@ namespace MySafeGeometry
     {
         MyCounterClockwiseRotateVectorWithAngle(v, -theta);
     }
+    inline glm::vec3 MyGetCounterClockwiseRotatedVector(glm::vec3 v, float theta)
+    {
+        glm::vec3 arr = v;
+        MyCounterClockwiseRotateVectorWithAngle(arr, theta);
+        return arr;
+    }
     inline glm::vec3 MyVectorMatrixProduct(glm::vec3 v, glm::mat3 mat)
     {
         return 

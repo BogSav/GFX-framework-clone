@@ -11,9 +11,11 @@ public:
 		TranformUtils::LogicSpace logicSpace,
 		TranformUtils::ViewportSpace viewPort,
 		float scale,
-		Color color = Colors::WHITE)
+		Shader* shader,
+		const gfxc::Camera* camera,
+		Color color = Colors::RED)
 		:
-		Object(logicSpace, viewPort),
+		Object(logicSpace, viewPort, shader, camera),
 		m_color(color),
 		m_scale(scale)
 	{

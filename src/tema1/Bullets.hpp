@@ -33,18 +33,18 @@ private:
 		std::vector<std::unique_ptr<GeometryObject>> m_geometries;;
 	};
 public:
-	Bullets(TranformUtils::LogicSpace logicSpace, TranformUtils::ViewportSpace viewPortSpace)
+	Bullets(TranformUtils::LogicSpace logicSpace, TranformUtils::ViewportSpace viewPortSpace, Shader* shader, const gfxc::Camera* camera)
 		:
-		Object(logicSpace, viewPortSpace),
+		Object(logicSpace, viewPortSpace, shader, camera),
 		m_nrOfBullets(3)
 	{
 		ResetBullets();
 	}
-	void Render(Shader* shader, const gfxc::Camera* const camera)
+	void Render() override
 	{
 		glm::mat3 modelMatrix = TranformUtils::VisualizationTransf2D(m_logicSpace, m_viewPort);
 		std::for_each(m_bullets.begin(), m_bullets.end(), [&](const auto& curr) {
-			curr->Render(shader, modelMatrix, camera);
+			curr->Render(m_shader, modelMatrix, m_camera);
 			});
 	}
 	void ShotBullet()
@@ -58,6 +58,7 @@ public:
 	void ResetBullets()
 	{
 		float position = 0;
+		m_bullets.clear();
 		for (size_t i = 0; i < m_nrOfBullets; i++, position += 1.2f)
 		{
 			m_bullets.emplace_back(new Bullet({ position, 0, 0 }));
