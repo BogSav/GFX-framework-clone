@@ -34,7 +34,7 @@ Duck::Duck(
 	} while (MySafeGeometry::MyGetAngleBetween(this->m_flyingDirection, {0, 1, 0})
 			 < MySafeGeometry::MyDeg2Rad(40));
 
-	m_modelOrientation = theta > MySafeGeometry::MyDeg2Rad(90.f) ? -1 : 1;
+	OrientModel();
 }
 
 void Duck::GenerateBodyComponents()
@@ -144,7 +144,7 @@ void Duck::UpdatePosition(float deltaTime)
 	logicTransformMatrix *=
 		TranformUtils::Rotate(-m_modelOrientation * m_deadDramaticRotationAngle);
 	logicTransformMatrix *= TranformUtils::ReflectionMatrixOY(m_modelOrientation);
-	// logicTransformMatrix *= TranformUtils::ReflectionMatrixOX(m_nuVreauSaFaAsta);
+	//logicTransformMatrix *= TranformUtils::ReflectionMatrixOX(m_nuVreauSaFaAsta);
 	logicTransformMatrix *= TranformUtils::Translate(-0.4f, -0.4f);
 	m_modelMatrix = logicTransformMatrix;
 }
@@ -266,20 +266,16 @@ void Duck::CollisionDetectAndAct()
 			case CollisionUtils::LEFT_WALL:
 				m_flyingDirection =
 					MySafeGeometry::MyReflectByTheNormal({1, 0, 0}, m_flyingDirection);
-				m_modelOrientation = 1;
 				break;
 			case CollisionUtils::RIGHT_WALL:
 				m_flyingDirection =
 					MySafeGeometry::MyReflectByTheNormal({-1, 0, 0}, m_flyingDirection);
-				m_modelOrientation = -1;
 				break;
 			case CollisionUtils::UPPER_WALL:
-				m_nuVreauSaFaAsta = -1;
 				m_flyingDirection =
 					MySafeGeometry::MyReflectByTheNormal({0, -1, 0}, m_flyingDirection);
 				break;
 			case CollisionUtils::BOTTOM_WALL:
-				m_nuVreauSaFaAsta = 1;
 				m_flyingDirection =
 					MySafeGeometry::MyReflectByTheNormal({0, 1, 0}, m_flyingDirection);
 				break;
@@ -288,8 +284,8 @@ void Duck::CollisionDetectAndAct()
 		else
 		{
 			m_flyingDirection *= -1;
-			OrientModel();
 		}
+		OrientModel();
 	}
 }
 
@@ -328,4 +324,10 @@ void Duck::OrientModel()
 		m_modelOrientation = -1;
 	else
 		m_modelOrientation = 1;
+
+	if (MySafeGeometry::MyGetAngleBetween({0, 1, 0}, m_flyingDirection)
+		> MySafeGeometry::MyDeg2Rad(90.f))
+		m_nuVreauSaFaAsta = -1;
+	else
+		m_nuVreauSaFaAsta = 1;
 }
