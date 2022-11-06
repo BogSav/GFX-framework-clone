@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Object.hpp"
+#include "Hearts.hpp"
 
 #include <random>
 
@@ -26,6 +27,9 @@ public:
 
 	glm::mat3 GetModelMatrix() const { return m_modelMatrix; };
 	BoundingBox GetRawBBox() const { return m_bbox; };
+	void SetTimeServed() { m_timeBeingASlave = m_slaveryTime; };
+	float GetTimeBeingASlave() { return m_timeBeingASlave; };
+	float GetSlaveryTime() { return m_slaveryTime; };
 private:
 	CollisionUtils::CollInfo GetCollisionInfo();
 
@@ -38,6 +42,7 @@ private:
 
 private:
 	std::unordered_map<std::string, std::unique_ptr<GeometryObject>> m_components;
+	Hearts* m_hearts;
 
 	// Random things
 	mutable std::mt19937 m_randomEngine;
@@ -76,4 +81,7 @@ private:
 	bool m_isDead = false;
 	int m_duckDificulty = 1;
 	bool m_IsFree = false;
+
+	float m_slaveryTime = 8.f;
+	float m_timeBeingASlave = 0;
 };

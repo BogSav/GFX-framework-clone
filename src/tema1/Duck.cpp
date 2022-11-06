@@ -74,6 +74,11 @@ Duck::Duck(TranformUtils::LogicSpace logicSpace, TranformUtils::ViewportSpace vi
 
 void Duck::Update(float deltaTime)
 {
+	m_timeBeingASlave += deltaTime;
+
+	if (m_timeBeingASlave > m_slaveryTime)
+		SetFree();
+
 	this->UpdatePosition(deltaTime);
 	this->UpdateAnimation(deltaTime);
 }
@@ -101,13 +106,13 @@ void Duck::UpdatePosition(float deltaTime)
 			m_deadDramaticRotationAngle += m_deadDramaticRotationSpeed * deltaTime;
 		}
 	}
-	glm::mat3 logicTransformMatrix = glm::mat3(1);
-	logicTransformMatrix *= TranformUtils::Translate(m_position[0] + 0.5, m_position[1] + 0.5);
+	glm::mat3 logicTransformMatrix = m_VLMatrix;
+	logicTransformMatrix *= TranformUtils::Translate(m_position[0] + 0.4, m_position[1] + 0.4);
 	logicTransformMatrix *= TranformUtils::Rotate(-m_modelOrientation * m_deadDramaticRotationAngle);
 	logicTransformMatrix *= TranformUtils::ReflectionMatrixOY(m_modelOrientation);
 	//logicTransformMatrix *= TranformUtils::ReflectionMatrixOX(m_nuVreauSaFaAsta);
-	logicTransformMatrix *= TranformUtils::Translate(-0.5, -0.5);
-	m_modelMatrix = m_VLMatrix * logicTransformMatrix;
+	logicTransformMatrix *= TranformUtils::Translate(-0.4, -0.4);
+	m_modelMatrix = logicTransformMatrix;
 }
 
 void Duck::UpdateFlyAnimation(float deltaTime)
@@ -198,6 +203,9 @@ CollisionUtils::CollInfo Duck::GetCollisionInfo()
 
 void Duck::CollisionDetectAndAct()
 {
+	if (IsDead() || IsFree())
+		return;
+
 	CollisionUtils::CollInfo collInfo = this->GetCollisionInfo();
 
 	if (collInfo.collisionAngle < std::numbers::pi_v<float> / 2)

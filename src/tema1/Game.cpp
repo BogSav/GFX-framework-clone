@@ -38,11 +38,20 @@ void Game::Init()
     m_logicSpace.SetHeight(20);
     m_logicSpace.SetWidth(20);
 
-    m_menu = std::make_unique<Menu>(window, window->GetResolution(), Colors::RED, 2.5f);
+    m_menu = std::make_unique<Menu>(
+        window, 
+        window->GetResolution(), 
+        Colors::RED, 
+        2.5f);
 
-    m_duck = std::make_unique<Duck>(m_logicSpace, m_viewPortSpace);
+    m_duck = std::make_unique<Duck>(
+        m_logicSpace, 
+        m_viewPortSpace);
     
-    m_crosshair = std::make_unique<Crosshair>(m_logicSpace, m_viewPortSpace, 3.5f);
+    m_crosshair = std::make_unique<Crosshair>(
+        m_logicSpace, 
+        m_viewPortSpace, 
+        3.5f);
 
     m_field = std::make_unique<Field>(
         TranformUtils::LogicSpace{0.5, 0, 6, 2},
@@ -56,7 +65,7 @@ void Game::Init()
     m_handler = std::make_unique<ProgressHandler>(
         TranformUtils::LogicSpace{ 0, 0, 5, 1 },
         TranformUtils::ViewportSpace{ 520, 650, 200, 40 },
-        m_slaveryTime);
+        m_duck->GetSlaveryTime());
 
     m_bullets = std::make_unique<Bullets>(
         TranformUtils::LogicSpace{ 0, 0, 4, 2 },
@@ -81,7 +90,7 @@ void Game::RenderGameSceneAndComponents(float deltaTimeSeconds)
     m_crosshair->Render(shaders["VertexColor"], GetSceneCamera());
     m_field->Render(shaders["VertexColor"], GetSceneCamera());
     m_hearts->Render(shaders["VertexColor"], GetSceneCamera());
-    m_handler->Render(shaders["VertexColor"], GetSceneCamera(), m_timeBeingASlave);
+    m_handler->Render(shaders["VertexColor"], GetSceneCamera());
     m_bullets->Render(shaders["VertexColor"], GetSceneCamera());
 }
 
@@ -94,44 +103,46 @@ void Game::Update(float deltaTimeSeconds)
     }
     else
     {
+        m_shotAnimationTime += deltaTimeSeconds * m_shotAnimationActive;
+        if (m_shotAnimationActive == 1)
+        {
+            m_backGroundColor = Colors::getColorPlusAlpha(Colors::WHITE, 1.f);
+            if (m_shotAnimationTime > m_shotAnimationDuration)
+            {
+                m_shotAnimationTime = 0;
+                m_shotAnimationActive = 0;
+                m_backGroundColor = Colors::getColorPlusAlpha(Colors::BLACK, 1.f);
+            }
+        }
+
         m_duck->Update(deltaTimeSeconds);
 
         if (m_duck->IsDead())
         {
-            m_deathAnimationTimmer += deltaTimeSeconds;
-            if (m_deathAnimationTimmer > m_deathAnimationDuration)
-            {
-                m_backGroundColor = Colors::getColorPlusAlpha(Colors::BLACK, 1.f);
-                m_duck.reset(new Duck(m_logicSpace, m_viewPortSpace));
-                m_deathAnimationTimmer = 0;
-                m_timeBeingASlave = 0;
-                m_bullets->ResetBullets();
-            }
+            m_backGroundColor = Colors::getColorPlusAlpha(Colors::DARK_RED, 1.f);
         }
-        else if(m_duck->IsFree())
+        else if (m_duck->IsFree())
         {
-            m_timeBetweenDucks += deltaTimeSeconds;
             m_backGroundColor = Colors::getColorPlusAlpha(Colors::CYAN, 1.f);
-            if (m_timeBetweenDucks > m_maxTimeBetweenDucks && m_duck->GetBoundingBox().IsOutsideOfViewPort(m_viewPortSpace))
-            {
-                m_backGroundColor = Colors::getColorPlusAlpha(Colors::BLACK, 1.f);
-                m_hearts->LoseAHeart();
-                m_timeBetweenDucks = 0;
-                m_bullets->ResetBullets();
-                m_timeBeingASlave = 0;
-                m_duck.reset(new Duck(m_logicSpace, m_viewPortSpace));
-            }
         }
         else
         {
-            if (m_timeBeingASlave > m_slaveryTime)
+            m_duck->CollisionDetectAndAct();
+            m_handler->SetProgress(m_duck->GetTimeBeingASlave());
+        }
+
+        if (m_duck->IsFree() || m_duck->IsDead())
+        {
+            m_timeBetweenDucks += deltaTimeSeconds;
+            if (m_timeBetweenDucks > m_maxTimeBetweenDucks && m_duck->GetBoundingBox().IsOutsideOfViewPort(m_viewPortSpace))
             {
-                m_duck->SetFree();
-            }
-            else
-            {
-                m_timeBeingASlave += deltaTimeSeconds;
-                m_duck->CollisionDetectAndAct();
+                if (m_duck->IsFree())
+                {
+                    m_hearts->LoseAHeart();
+                }
+                m_backGroundColor = Colors::getColorPlusAlpha(Colors::BLACK, 1.f);
+                m_duck.reset(new Duck(m_logicSpace, m_viewPortSpace));
+                m_bullets->ResetBullets();
             }
         }
 
@@ -174,19 +185,20 @@ void Game::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
     //std::cout << m_duck->GetBoundingBox().GetBottomLeftCorner() << std::endl;
     if (m_inGame)
     {
-        m_bullets->ShotBullet();
-        if (!m_duck->IsFree() && m_duck->GotShot({ mouseX, m_viewPortSpace.GetUpperY() - mouseY }))
+        if (!m_duck->IsFree())
         {
-            if (m_duck->IsDead())
+            m_bullets->ShotBullet();
+
+            m_shotAnimationActive = 1;
+
+            m_duck->GotShot({ mouseX, m_viewPortSpace.GetUpperY() - mouseY });
+
+            if (m_bullets->IsCartridgeEmpty() && !m_duck->IsDead())
             {
-                m_backGroundColor = Colors::getColorPlusAlpha(Colors::DARK_RED, 1.f);
-                std::cout << "asdfasdf" << std::endl;
+                m_duck->SetFree();
+                m_duck->SetTimeServed();
+                m_hearts->LoseAHeart();
             }
-        }
-        if (m_bullets->IsCartridgeEmpty() && !m_duck->IsDead())
-        {
-            m_timeBeingASlave = m_slaveryTime;
-            m_duck->SetFree();
         }
     }
     else

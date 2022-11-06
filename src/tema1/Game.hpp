@@ -52,13 +52,11 @@ private:
 
     glm::vec4 m_backGroundColor = { 0,0,0,1 };
 
-    float m_deathAnimationTimmer = 0.;
-    float m_deathAnimationDuration = 2;
-
-    float m_timeBeingASlave = 0;
-    float m_slaveryTime = 8.f;
-
     float m_timeBetweenDucks = 0;
-    float m_maxTimeBetweenDucks = 2.;
+    float m_maxTimeBetweenDucks = 3.;
+
+    float m_shotAnimationDuration = 0.1f;
+    float m_shotAnimationTime = 0;
+    int m_shotAnimationActive = 0;
 };
 

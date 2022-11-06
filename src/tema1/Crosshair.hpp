@@ -11,7 +11,7 @@ public:
 		TranformUtils::LogicSpace logicSpace,
 		TranformUtils::ViewportSpace viewPort,
 		float scale,
-		Color color = Colors::RED)
+		Color color = Colors::WHITE)
 		:
 		Object(logicSpace, viewPort),
 		m_color(color),

@@ -46,6 +46,17 @@ public:
         glm::mat3 modelMatrix = glm::mat3(1);
         m_textBox->Render(shader, modelMatrix, camera);
 	}
+    void RenderScore(Shader* shader, const gfxc::Camera* camera)
+    {
+        textRenderer->RenderText("START",
+            m_resolution.x / 2.f - 65.f,
+            m_resolution.y / 2.f - 20.f,
+            m_scale,
+            m_textColor);
+
+        glm::mat3 modelMatrix = glm::mat3(1);
+        m_textBox->Render(shader, modelMatrix, camera);
+    }
 
     bool CheckForStartClick(int x, int y, WindowObject* window)
     {
