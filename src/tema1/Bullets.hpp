@@ -57,6 +57,7 @@ public:
 			m_bullets.emplace_back(new Bullet({position, 0, 0}));
 		}
 	}
+	int GetRemainingBullets() { return m_bullets.size(); };
 
 private:
 	std::vector<std::unique_ptr<Bullet>> m_bullets;

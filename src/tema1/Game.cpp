@@ -57,7 +57,7 @@ void Game::Init()
 		std::make_unique<GameOver>(window, window->GetResolution(), Colors::RED, 2.5f);
 
 	m_levelHandler =
-		std::make_unique<LevelHandler>(window, window->GetResolution(), Colors::CYAN, 1.f);
+		std::make_unique<LevelHandler>(window, window->GetResolution(), Colors::BLUE, 1.f);
 
 	m_crosshair = std::make_unique<Crosshair>(
 		m_logicSpace, m_viewPortSpace, 3.5f, shaders["VertexColor"], GetSceneCamera());
@@ -126,13 +126,13 @@ void Game::Update(float deltaTimeSeconds)
 		m_shotAnimationTime += deltaTimeSeconds * m_shotAnimationActive;
 		if (m_shotAnimationActive == 1)
 		{
-			m_backGroundColor = Colors::getColorPlusAlpha(Colors::LIGHT_GRAY, 1.f);
+			m_backGroundColor = Colors::getColorPlusAlpha(Colors::WHITE, 1.f);
 			if (m_shotAnimationTime > m_shotAnimationDuration)
 			{
 				m_shotAnimationTime = 0;
 				m_shotAnimationActive = 0;
 				m_justGotShot = false;
-				m_backGroundColor = Colors::getColorPlusAlpha(Colors::BLACK, 1.f);
+				m_backGroundColor = Colors::getColorPlusAlpha(Colors::CYAN, 1.f);
 			}
 		}
 
@@ -146,7 +146,7 @@ void Game::Update(float deltaTimeSeconds)
 			}
 			else if (m_duck->IsFree())
 			{
-				m_backGroundColor = Colors::getColorPlusAlpha(Colors::CYAN, 1.f);
+				m_backGroundColor = Colors::getColorPlusAlpha(Colors::LIGHT_GOLD, 1.f);
 			}
 			else
 			{
@@ -185,8 +185,9 @@ void Game::Update(float deltaTimeSeconds)
 								GetSceneCamera(),
 								Duck::DuckProperties::GenerateDuckPropertiesAccordingToLevel(
 									m_currentLevel)));
+							m_handler->ResetLimit(m_duck->GetSlaveryTime());
 						}
-						m_backGroundColor = Colors::getColorPlusAlpha(Colors::BLACK, 1.f);
+						m_backGroundColor = Colors::getColorPlusAlpha(Colors::CYAN, 1.f);
 					}
 				}
 			}
@@ -197,6 +198,7 @@ void Game::Update(float deltaTimeSeconds)
 	else
 	{
 		m_gameOverHandler->RenderGameOver(m_currentLevel > 10);
+		m_backGroundColor = Colors::getColorPlusAlpha(Colors::BLACK, 1.f);
 	}
 }
 
@@ -214,6 +216,22 @@ void Game::OnInputUpdate(float deltaTime, int mods)
 
 void Game::OnKeyPress(int key, int mods)
 {
+	if (m_gameOver && key == GLFW_KEY_SPACE)
+	{
+		m_currentLevel = 1;
+		m_inGame = false;
+		m_gameOver = false;
+		window->ShowPointer();
+		m_duck.reset(new Duck(
+			m_logicSpace,
+			m_viewPortSpace,
+			shaders["VertexColor"],
+			GetSceneCamera(),
+			Duck::DuckProperties::GenerateDuckPropertiesAccordingToLevel(m_currentLevel)));
+		m_bullets->ResetBullets();
+		m_hearts->ResetHearts();
+		m_handler->ResetLimit(m_duck->GetSlaveryTime());
+	}
 }
 
 
@@ -243,7 +261,8 @@ void Game::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 
 			m_justGotShot = m_duck->GotShot({mouseX, m_viewPortSpace.GetUpperY() - mouseY});
 
-			if (m_bullets->IsCartridgeEmpty() && !m_duck->IsDead())
+			if ((m_bullets->GetRemainingBullets() < m_duck->GetRemainingRequiredShots())
+				|| (m_bullets->IsCartridgeEmpty() && !m_duck->IsDead()))
 			{
 				m_duck->SetFree();
 				m_duck->SetTimeServed();
@@ -256,6 +275,7 @@ void Game::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 		{
 			m_inGame = true;
 			m_crosshair->UpdatePosition(mouseX, m_viewPortSpace.GetUpperY() - mouseY);
+			m_backGroundColor = Colors::getColorPlusAlpha(Colors::CYAN, 1.f);
 		}
 	}
 }

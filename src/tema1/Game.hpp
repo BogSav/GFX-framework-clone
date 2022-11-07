@@ -64,5 +64,5 @@ private:
 	int m_shotAnimationActive = 0;
 	bool m_justGotShot = false;
 
-	int m_currentLevel = 1;
+	int m_currentLevel = 9;
 };

@@ -26,6 +26,8 @@ public:
 
 		float timeBetweenRandomPositionChanges = 1.5f;
 
+		int requieredShots = 1;
+
 		int duckDificulty = 1;
 
 	public:
@@ -38,6 +40,10 @@ public:
 			props->flyingSpeed = 5.f * (props->duckDificulty + 1.f);
 
 			props->slaveryTime = 10.f - props->duckDificulty;
+
+			props->requieredShots = props->duckDificulty <= 3 ? 1
+				: (props->duckDificulty == 4)                 ? 2
+															  : 3;
 
 			return props;
 		}
@@ -71,6 +77,7 @@ public:
 	void SetTimeServed() { m_timeBeingASlave = m_props->slaveryTime; };
 	float GetTimeBeingASlave() { return m_timeBeingASlave; };
 	float GetSlaveryTime() { return m_props->slaveryTime; };
+	int GetRemainingRequiredShots() { return m_props->requieredShots - m_nrOfShots; };
 
 private:
 	CollisionUtils::CollInfo GetCollisionInfo();

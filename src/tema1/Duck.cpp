@@ -294,26 +294,9 @@ bool Duck::GotShot(glm::vec2 shotPoint)
 	if (GetBoundingBox().IsInside(shotPoint))
 	{
 		m_nrOfShots++;
-		switch (m_props->duckDificulty)
-		{
-		case 1:
-		case 2:
-		case 3:
-			if (m_nrOfShots >= 1)
-				m_isDead = true;
-			break;
-		case 4:
-			if (m_nrOfShots >= 2)
-				m_isDead = true;
-			break;
-		case 5:
-			if (m_nrOfShots >= 3)
-				m_isDead = true;
-			break;
-		}
-		return true;
+		if (m_nrOfShots >= m_props->requieredShots)
+			m_isDead = true;
 	}
-
 	return false;
 }
 

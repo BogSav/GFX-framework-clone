@@ -47,9 +47,7 @@ public:
 		const gfxc::Camera* camera)
 		: Object(logicSpace, viewPortSpace, shader, camera)
 	{
-		m_hearts.emplace_back(new Heart({0, 0, 0}));
-		m_hearts.emplace_back(new Heart({5, 0, 0}));
-		m_hearts.emplace_back(new Heart({10, 0, 0}));
+		ResetHearts();
 	}
 	void Render() override
 	{
@@ -59,6 +57,11 @@ public:
 			m_hearts.begin(),
 			m_hearts.end(),
 			[&](const auto& curr) { curr->Render(m_shader, modelMatrix, m_camera); });
+	}
+	void ResetHearts() {
+		m_hearts.emplace_back(new Heart({0, 0, 0}));
+		m_hearts.emplace_back(new Heart({5, 0, 0}));
+		m_hearts.emplace_back(new Heart({10, 0, 0}));
 	}
 	void LoseAHeart() { m_hearts.pop_back(); }
 	bool AnyHeartsLeft() { return m_hearts.size() != 0; }
