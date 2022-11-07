@@ -175,12 +175,12 @@ inline glm::vec3 MyReflectByTheNormal(glm::vec3 n, const glm::vec3 v)
 }
 inline void MyCounterClockwiseRotateVectorWithAngle(glm::vec3& v, float theta)
 {
-	const float y = v[1];
+	const float x = v[0];
 	const float cos_f = glm::cosf(theta);
 	const float sin_f = glm::sinf(theta);
 
 	v[0] = v[0] * cos_f - v[1] * sin_f;
-	v[1] = y * sin_f + v[1] * cos_f;
+	v[1] = x * sin_f + v[1] * cos_f;
 }
 inline void MyClockwiseRotateVectorWithAngle(glm::vec3& v, float theta)
 {

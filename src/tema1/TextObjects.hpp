@@ -144,22 +144,22 @@ public:
 	{
 		m_textRenderer->RenderText(
 			"GAME OVER",
-			m_resolution.x / 2.f - 100.f,
-			m_resolution.y / 2.f - 20.f,
+			m_resolution.x / 2.f - 110.f,
+			m_resolution.y / 2.f - 10.f,
 			m_scale,
 			m_textColor);
 		if (gameWon)
 			m_textRenderer->RenderText(
 				"YOU WON",
-				m_resolution.x / 2.f - 80.f,
-				m_resolution.y / 2.f + 60.f,
+				m_resolution.x / 2.f - 90.f,
+				m_resolution.y / 2.f + 50.f,
 				m_scale,
 				m_textColor);
 		else
 			m_textRenderer->RenderText(
 				"YOU LOST",
-				m_resolution.x / 2.f - 80.f,
-				m_resolution.y / 2.f + 60.f,
+				m_resolution.x / 2.f - 90.f,
+				m_resolution.y / 2.f + 50.f,
 				m_scale,
 				m_textColor);
 	}

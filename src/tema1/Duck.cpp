@@ -108,8 +108,11 @@ void Duck::UpdatePosition(float deltaTime)
 	if (!m_isDead)
 	{
 		if (m_IsFree)
+		{
 			if (m_flyingDirection[1] < 0)
 				m_flyingDirection[1] *= -1;
+			m_props->flyingSpeed = 10.f;
+		}
 
 		m_position += m_flyingDirection * m_props->flyingSpeed * deltaTime;
 
@@ -118,10 +121,8 @@ void Duck::UpdatePosition(float deltaTime)
 				> (m_props->timeBetweenRandomPositionChanges * m_currentPositionChange)
 			&& !m_IsFree)
 		{
-			MySafeGeometry::MyClockwiseRotateVectorWithAngle(
-				m_flyingDirection, m_randomPositionRotationAngleGenerator(m_randomEngine));
-
-			MySafeGeometry::MyNormalize(m_flyingDirection);
+			m_flyingDirection = MySafeGeometry::MyGetCounterClockwiseRotatedVector(
+				{1, 0, 0}, m_randomPositionRotationAngleGenerator(m_randomEngine));
 
 			OrientModel();
 
