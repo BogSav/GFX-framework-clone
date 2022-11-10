@@ -74,11 +74,15 @@ public:
 
 	glm::mat3 GetModelMatrix() const { return m_modelMatrix; };
 	BoundingBox GetRawBBox() const { return m_bbox; };
+	
 	void SetTimeServed() { m_timeBeingASlave = m_props->slaveryTime; };
+	
 	float GetTimeBeingASlave() { return m_timeBeingASlave; };
 	float GetSlaveryTime() { return m_props->slaveryTime; };
+	
 	int GetRemainingRequiredShots() { return m_props->requieredShots - m_nrOfShots; };
-
+	
+	bool SentenceOver() { return m_timeBeingASlave > m_props->slaveryTime; };
 private:
 	CollisionUtils::CollInfo GetCollisionInfo();
 
@@ -86,8 +90,8 @@ private:
 
 	void UpdateAnimation(float deltaTime);
 	void UpdatePosition(float deltaTime);
-
-	void UpdateFlyAnimation(float);
+	void UpdateModelMatrix();
+	void UpdateWingsAnimation(float);
 
 	void CalculateBoundingBox();
 
@@ -128,6 +132,8 @@ private:
 	int m_nrOfShots = 0;
 	bool m_isDead = false;
 	bool m_IsFree = false;
+
+	bool m_animationActive = true;
 
 	int m_currentPositionChange = 1;
 

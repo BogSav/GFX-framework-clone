@@ -88,26 +88,29 @@ void Duck::Update(float deltaTime)
 {
 	m_timeBeingASlave += deltaTime;
 
-	if (m_timeBeingASlave > m_props->slaveryTime)
+	if (SentenceOver())
 	{
 		SetFree();
 	}
 
-	this->UpdatePosition(deltaTime);
-	this->UpdateAnimation(deltaTime);
-}
+	if (!IsDead() && !IsFree())
+	{
+		this->CollisionDetectAndAct();
+	}
 
-void Duck::UpdateAnimation(float deltaTime)
-{
-	m_modelMatrix *= TranformUtils::Scale(m_props->scale, m_props->scale);
-	this->UpdateFlyAnimation(deltaTime);
+	if (m_animationActive)
+	{
+		this->UpdatePosition(deltaTime);
+		this->UpdateModelMatrix();
+		this->UpdateAnimation(deltaTime);
+	}
 }
 
 void Duck::UpdatePosition(float deltaTime)
 {
-	if (!m_isDead)
+	if (!IsDead())
 	{
-		if (m_IsFree)
+		if (IsFree())
 		{
 			if (m_flyingDirection[1] < 0)
 				m_flyingDirection[1] *= -1;
@@ -140,23 +143,32 @@ void Duck::UpdatePosition(float deltaTime)
 			m_deadDramaticRotationAngle += m_props->deadDramaticRotationSpeed * deltaTime;
 		}
 	}
+}
+
+void Duck::UpdateModelMatrix()
+{
 	glm::mat3 logicTransformMatrix = m_VLMatrix;
 	logicTransformMatrix *= TranformUtils::Translate(m_position[0] + 0.4f, m_position[1] + 0.4f);
 	logicTransformMatrix *=
 		TranformUtils::Rotate(-m_modelOrientation * m_deadDramaticRotationAngle);
 	logicTransformMatrix *= TranformUtils::ReflectionMatrixOY(m_modelOrientation);
-	//logicTransformMatrix *= TranformUtils::ReflectionMatrixOX(m_nuVreauSaFaAsta);
+	logicTransformMatrix *= TranformUtils::Scale(m_props->scale, m_props->scale);
+	// logicTransformMatrix *= TranformUtils::ReflectionMatrixOX(m_nuVreauSaFaAsta);
 	logicTransformMatrix *= TranformUtils::Translate(-0.4f, -0.4f);
 	m_modelMatrix = logicTransformMatrix;
 }
 
-void Duck::UpdateFlyAnimation(float deltaTime)
+void Duck::UpdateAnimation(float deltaTime)
 {
 	m_leftWingModelMatrix = m_modelMatrix;
 	m_rightWingModelMatrix = m_modelMatrix;
-	if (m_isDead)
-		return;
 
+	if (!IsDead())
+		this->UpdateWingsAnimation(deltaTime);
+}
+
+void Duck::UpdateWingsAnimation(float deltaTime)
+{
 	// Right wing rotation calculation
 	m_rightWingRotationAngle +=
 		m_props->rightWingRotationAngularSpeed * deltaTime * m_rightWingRotationDirection;
@@ -252,9 +264,6 @@ CollisionUtils::CollInfo Duck::GetCollisionInfo()
 
 void Duck::CollisionDetectAndAct()
 {
-	if (IsDead() || IsFree())
-		return;
-
 	CollisionUtils::CollInfo collInfo = this->GetCollisionInfo();
 
 	if (collInfo.collisionDetected == true

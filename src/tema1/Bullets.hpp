@@ -46,7 +46,13 @@ public:
 			m_bullets.end(),
 			[&](const auto& curr) { curr->Render(m_shader, modelMatrix, m_camera); });
 	}
-	void ShotBullet() { m_bullets.pop_back(); }
+	void ShotBullet()
+	{
+		if (!m_bullets.empty())
+		{
+			m_bullets.pop_back();
+		}
+	}
 	bool IsCartridgeEmpty() { return m_bullets.size() == 0; }
 	void ResetBullets()
 	{

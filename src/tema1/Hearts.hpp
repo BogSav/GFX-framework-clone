@@ -63,7 +63,11 @@ public:
 		m_hearts.emplace_back(new Heart({5, 0, 0}));
 		m_hearts.emplace_back(new Heart({10, 0, 0}));
 	}
-	void LoseAHeart() { m_hearts.pop_back(); }
+	void LoseAHeart()
+	{
+		if (!m_hearts.empty())
+			m_hearts.pop_back();
+	}
 	bool AnyHeartsLeft() { return m_hearts.size() != 0; }
 
 private:

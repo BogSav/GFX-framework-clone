@@ -150,7 +150,6 @@ void Game::Update(float deltaTimeSeconds)
 			}
 			else
 			{
-				m_duck->CollisionDetectAndAct();
 				m_handler->SetProgress(m_duck->GetTimeBeingASlave());
 			}
 
