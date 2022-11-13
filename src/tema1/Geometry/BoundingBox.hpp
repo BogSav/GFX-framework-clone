@@ -41,13 +41,6 @@ public:
 			(m_upperRightCorner[1] - m_bottomLeftCorner[1]) / 2.f};
 	}
 
-	bool IsInside(glm::vec2 point) const
-	{
-		return !(
-			point[0] > m_upperRightCorner[0] || point[0] < m_bottomLeftCorner[0]
-			|| point[1] > m_upperRightCorner[1] || point[1] < m_bottomLeftCorner[1]);
-	}
-
 	BoundingBox GetBoundingBoxTransformed(glm::mat3 trMatrix) const
 	{
 		BoundingBox aux;
@@ -69,6 +62,21 @@ public:
 		return (
 			m_upperRightCorner[0] < vp.GetX() || m_upperRightCorner[1] < vp.GetY()
 			|| m_bottomLeftCorner[0] > vp.GetRightX() || m_bottomLeftCorner[1] > vp.GetUpperY());
+	}
+
+	bool IsInside(glm::vec2 point) const
+	{
+		return !(
+			point[0] > m_upperRightCorner[0] || point[0] < m_bottomLeftCorner[0]
+			|| point[1] > m_upperRightCorner[1] || point[1] < m_bottomLeftCorner[1]);
+	}
+
+	bool IsInside(BoundingBox rhs) const
+	{
+		return GetBottomLeftCorner()[0] > rhs.GetBottomLeftCorner()[0]
+			&& GetBottomLeftCorner()[1] > rhs.GetBottomLeftCorner()[1]
+			&& GetUpperRightCorner()[0] < rhs.GetUpperRightCorner()[0]
+			&& GetUpperRightCorner()[1] < rhs.GetUpperRightCorner()[1];
 	}
 
 private:

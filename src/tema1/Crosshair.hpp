@@ -24,6 +24,8 @@ public:
 			"horizontal-line",
 			new Rectangle(
 				"horizontal-line", {-4, -0.5}, {-4, 0.5}, {4, 0.5}, {4, -0.5}, m_color, 0.4f));
+
+		this->CalculateBoundingBox();
 	}
 
 	void UpdatePosition(int screenX, int screenY)
@@ -33,8 +35,16 @@ public:
 		m_modelMatrix *= TranformUtils::Scale(m_scale, m_scale);
 	}
 
+	void CalculateBoundingBox()
+	{
+		for (auto& current : m_components)
+			this->m_bbox += current.second->GetBoundingBox();
+	}
+
+	BoundingBox GetBoundingBox() { return this->m_bbox.GetBoundingBoxTransformed(m_modelMatrix); }
+
 private:
 	float m_scale;
-
+	BoundingBox m_bbox;
 	Color m_color;
 };

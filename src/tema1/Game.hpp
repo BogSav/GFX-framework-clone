@@ -21,7 +21,7 @@ public:
 
 private:
 	void FrameStart() override;
-	void RenderGameSceneAndComponents(float);
+	void RenderAndUpdateGameComponents(float);
 	void Update(float deltaTimeSeconds) override;
 	void FrameEnd() override;
 
@@ -33,6 +33,8 @@ private:
 	void OnMouseBtnPress(int mouseX, int mouseY, int button, int mods) override;
 	void OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods) override;
 
+	void JumpToLevel11();
+
 private:
 	TranformUtils::LogicSpace m_logicSpace;
 	TranformUtils::ViewportSpace m_viewPortSpace;
@@ -43,10 +45,11 @@ private:
 
 
 	std::unique_ptr<Duck> m_duck;
+	std::unique_ptr<Duck> m_duck2;
 	std::unique_ptr<Crosshair> m_crosshair;
 	std::unique_ptr<Field> m_field;
 	std::unique_ptr<Hearts> m_hearts;
-	std::unique_ptr<ProgressHandler> m_handler;
+	std::unique_ptr<ProgressHandler> m_progressHandler;
 	std::unique_ptr<Bullets> m_bullets;
 
 	std::unique_ptr<Rectangle> m_ocassionalBBox;
@@ -55,9 +58,6 @@ private:
 	bool m_gameOver = false;
 
 	glm::vec4 m_backGroundColor = {0, 0, 0, 1};
-
-	float m_timeBetweenDucks = 0;
-	float m_maxTimeBetweenDucks = 1.5;
 
 	float m_shotAnimationDuration = 0.1f;
 	float m_shotAnimationTime = 0;

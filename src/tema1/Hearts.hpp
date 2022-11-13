@@ -36,7 +36,6 @@ private:
 
 	private:
 		std::vector<std::unique_ptr<GeometryObject>> m_geometries;
-		;
 	};
 
 public:
@@ -59,6 +58,8 @@ public:
 			[&](const auto& curr) { curr->Render(m_shader, modelMatrix, m_camera); });
 	}
 	void ResetHearts() {
+		m_hearts.clear();
+
 		m_hearts.emplace_back(new Heart({0, 0, 0}));
 		m_hearts.emplace_back(new Heart({5, 0, 0}));
 		m_hearts.emplace_back(new Heart({10, 0, 0}));

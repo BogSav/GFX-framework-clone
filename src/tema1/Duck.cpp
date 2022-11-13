@@ -1,4 +1,5 @@
 #include "Duck.hpp"
+#include <iostream>
 
 Duck::Duck(
 	TranformUtils::LogicSpace logicSpace,
@@ -15,26 +16,30 @@ Duck::Duck(
 	  m_randomStartAngleGenerator(
 		  MySafeGeometry::MyDeg2Rad(30.f), MySafeGeometry::MyDeg2Rad(150.f)),
 	  m_randomPositionRotationAngleGenerator(0.f, 2.f * std::numbers::pi_v<float>),
-	  m_randomReflexionChancesGenerator(0.f, 1.f)
+	  m_randomReflexionChancesGenerator(0.f, 1.f),
+	  m_shotAnimation(new ShotAnmimation(m_logicSpace, m_viewPort, m_shader, m_camera, 2.f))
 {
 	this->GenerateBodyComponents();
+
 	this->CalculateBoundingBox();
 
 	this->m_VLMatrix = TranformUtils::VisualizationTransf2DUnif(m_logicSpace, m_viewPort);
 
 	this->m_position[0] = m_randomStartPositionGenerator(m_randomEngine);
-	this->m_position[1] = 3 / 100 * logicSpace.GetHeight() + logicSpace.GetY();
+	this->m_position[1] = 3.f / 100.f * logicSpace.GetHeight() + logicSpace.GetY();
 
-	float theta;
 	do
 	{
-		theta = m_randomStartAngleGenerator(m_randomEngine);
+		float theta = m_randomStartAngleGenerator(m_randomEngine);
 		this->m_flyingDirection[0] = glm::cosf(theta);
 		this->m_flyingDirection[1] = glm::sinf(theta);
 	} while (MySafeGeometry::MyGetAngleBetween(this->m_flyingDirection, {0, 1, 0})
 			 < MySafeGeometry::MyDeg2Rad(40));
 
 	OrientModel();
+
+	m_aliveTimer.ResetTime();
+	m_shotAnimationTimer.ResetTime();
 }
 
 void Duck::GenerateBodyComponents()
@@ -86,20 +91,31 @@ void Duck::GenerateBodyComponents()
 
 void Duck::Update(float deltaTime)
 {
-	m_timeBeingASlave += deltaTime;
+	if (m_idle)
+		return;
 
-	if (SentenceOver())
+	if (m_gotShot)
 	{
-		SetFree();
+		if (m_shotAnimationTimer.TimePassedValue(m_props->shotAnimationDuration))
+		{
+			m_gotShot = false;
+			m_shotAnimationTimer.ResetTime();
+			m_shotAnimation->ResetShotAnimation();
+		}
+
+		m_shotAnimation->UpdateAndRender(m_modelMatrix, deltaTime);
 	}
-
-	if (!IsDead() && !IsFree())
+	else
 	{
-		this->CollisionDetectAndAct();
-	}
+		if (!IsDead() && !IsFree())
+		{
+			this->CollisionDetectAndAct();
+			if (SentenceIsOver())
+			{
+				this->SetFree();
+			}
+		}
 
-	if (m_animationActive)
-	{
 		this->UpdatePosition(deltaTime);
 		this->UpdateModelMatrix();
 		this->UpdateAnimation(deltaTime);
@@ -110,19 +126,12 @@ void Duck::UpdatePosition(float deltaTime)
 {
 	if (!IsDead())
 	{
-		if (IsFree())
-		{
-			if (m_flyingDirection[1] < 0)
-				m_flyingDirection[1] *= -1;
-			m_props->flyingSpeed = 10.f;
-		}
-
 		m_position += m_flyingDirection * m_props->flyingSpeed * deltaTime;
 
-		if (m_props->duckDificulty >= 3
-			&& m_timeBeingASlave
-				> (m_props->timeBetweenRandomPositionChanges * m_currentPositionChange)
-			&& !m_IsFree)
+		if (m_props->duckDificulty >= Difficulties::MEDIUM
+			&& m_aliveTimer.TimePassedValue(
+				m_props->timeBetweenRandomPositionChanges * m_currentPositionChange)
+			&& !IsFree())
 		{
 			m_flyingDirection = MySafeGeometry::MyGetCounterClockwiseRotatedVector(
 				{1, 0, 0}, m_randomPositionRotationAngleGenerator(m_randomEngine));
@@ -205,6 +214,9 @@ void Duck::ForceRenderByCustomModelMatrix(glm::mat3 modelMatrix)
 
 void Duck::Render()
 {
+	if (m_idle)
+		return;
+
 	for (auto& current : m_components)
 	{
 		if (current.first != "right-wing" && current.first != "left-wing")
@@ -218,6 +230,28 @@ void Duck::Render()
 BoundingBox Duck::GetBoundingBox() const
 {
 	return m_bbox.GetBoundingBoxTransformed(m_modelMatrix);
+}
+
+bool Duck::IsFreeForReset()
+{
+	if (!IsFree() && !IsDead())
+		return false;
+
+	if (GetBoundingBox().IsOutsideOfViewPort(m_viewPort))
+	{
+		if (m_waitingForReset == false)
+		{
+			m_resetTimer.ResetTime();
+			m_waitingForReset = true;
+			return false;
+		}
+		else
+		{
+			return m_resetTimer.TimePassedValue(m_props->resetTime);
+		}
+	}
+
+	return false;
 }
 
 void Duck::CalculateBoundingBox()
@@ -269,7 +303,7 @@ void Duck::CollisionDetectAndAct()
 	if (collInfo.collisionDetected == true
 		&& collInfo.collisionAngle < std::numbers::pi_v<float> / 2)
 	{
-		if (m_props->duckDificulty < 2 || m_randomReflexionChancesGenerator(m_randomEngine) > 0.5f)
+		if (m_props->duckDificulty < Difficulties::EASY || m_randomReflexionChancesGenerator(m_randomEngine) > 0.5f)
 		{
 			switch (collInfo.collisionType)
 			{
@@ -299,15 +333,41 @@ void Duck::CollisionDetectAndAct()
 	}
 }
 
-bool Duck::GotShot(glm::vec2 shotPoint)
+void Duck::Shot(glm::vec2 shotPoint)
 {
+	if (IsFree() || IsDead())
+		return;
+
 	if (GetBoundingBox().IsInside(shotPoint))
 	{
 		m_nrOfShots++;
+
+		m_gotShot = true;
+		m_shotAnimationTimer.ResetTime();
+
 		if (m_nrOfShots >= m_props->requieredShots)
 			m_isDead = true;
 	}
-	return false;
+}
+
+void Duck::Shot(BoundingBox crossHairBBox)
+{
+	if (m_idle)
+		return;
+
+	if (IsFree() || IsDead())
+		return;
+
+	if (crossHairBBox.IsInside(this->GetBoundingBox()))
+	{
+		m_nrOfShots++;
+
+		m_gotShot = true;
+		m_shotAnimationTimer.ResetTime();
+
+		if (m_nrOfShots >= m_props->requieredShots)
+			m_isDead = true;
+	}
 }
 
 void Duck::OrientModel()
@@ -323,4 +383,17 @@ void Duck::OrientModel()
 		m_nuVreauSaFaAsta = -1;
 	else
 		m_nuVreauSaFaAsta = 1;
+}
+
+void Duck::SetFree()
+{
+	if (m_IsFree)
+		return;
+
+	if (m_flyingDirection[1] < 0)
+		m_flyingDirection[1] *= -1;
+
+	m_props->flyingSpeed = 10.f;
+
+	m_IsFree = true;
 }

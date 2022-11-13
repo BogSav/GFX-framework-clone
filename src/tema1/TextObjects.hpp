@@ -99,16 +99,17 @@ public:
 	LevelHandler(WindowObject* window, glm::ivec2 resolution, Color textColor, float scale)
 		: TextObject(window, resolution), m_textColor(textColor), m_scale(scale)
 	{
-		m_difficulties[1] = "Easy";
-		m_difficulties[2] = "Easy again";
-		m_difficulties[3] = "Ehh..medium";
-		m_difficulties[4] = "Medium again, let's see";
-		m_difficulties[5] = "It gets harder ;)";
-		m_difficulties[6] = "You start having surprises, right?";
-		m_difficulties[7] = "Ok..you got here...";
-		m_difficulties[8] = "I think you are rly good";
-		m_difficulties[9] = "So you want more?";
-		m_difficulties[10] = "One more to go!";
+		m_levels[1] = "Easy";
+		m_levels[2] = "Easy again";
+		m_levels[3] = "Ehh..medium";
+		m_levels[4] = "Medium again, let's see";
+		m_levels[5] = "It gets harder ;)";
+		m_levels[6] = "You start having surprises, right?";
+		m_levels[7] = "Ok..you got here...";
+		m_levels[8] = "I think you are rly good";
+		m_levels[9] = "So you want more?";
+		m_levels[10] = "This will prepare you for what's next";
+		m_levels[11] = "FINAL LEVEL: Now they are two";
 	}
 
 public:
@@ -116,7 +117,7 @@ public:
 	{
 		m_textRenderer->RenderText(
 			"Level: " + std::to_string(currentLevel) + " / " + std::to_string(nrOfLevels) + " - "
-				+ m_difficulties[currentLevel],
+				+ m_levels[currentLevel],
 			8.f,
 			8.f,
 			m_scale,
@@ -124,7 +125,7 @@ public:
 	}
 
 private:
-	std::unordered_map<int, std::string> m_difficulties;
+	std::unordered_map<int, std::string> m_levels;
 
 	Color m_textColor;
 	float m_scale;
@@ -142,24 +143,24 @@ public:
 public:
 	void RenderGameOver(bool gameWon)
 	{
-		m_textRenderer->RenderText(
-			"GAME OVER",
-			m_resolution.x / 2.f - 110.f,
-			m_resolution.y / 2.f - 10.f,
-			m_scale,
-			m_textColor);
+		//m_textRenderer->RenderText(
+		//	"GAME OVER",
+		//	m_resolution.x / 2.f - 110.f,
+		//	m_resolution.y / 2.f - 10.f,
+		//	m_scale,
+		//	m_textColor);
 		if (gameWon)
 			m_textRenderer->RenderText(
 				"YOU WON",
 				m_resolution.x / 2.f - 90.f,
-				m_resolution.y / 2.f + 50.f,
+				m_resolution.y / 2.f,
 				m_scale,
 				m_textColor);
 		else
 			m_textRenderer->RenderText(
 				"YOU LOST",
 				m_resolution.x / 2.f - 90.f,
-				m_resolution.y / 2.f + 50.f,
+				m_resolution.y / 2.f,
 				m_scale,
 				m_textColor);
 	}
