@@ -125,7 +125,6 @@ Mesh* Lab6::CreateMesh(const char *name, const std::vector<VertexFormat> &vertic
     glEnableVertexAttribArray(3);
     glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), (void*)(2 * sizeof(glm::vec3) + sizeof(glm::vec2)));
     // ========================================================================
-
     // Unbind the VAO
     glBindVertexArray(0);
 
@@ -195,18 +194,28 @@ void Lab6::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & modelM
     glUseProgram(shader->program);
 
     // TODO(student): Get shader location for uniform mat4 "Model"
+    int location = glGetUniformLocation(shader->program, "Model");
 
     // TODO(student): Set shader uniform "Model" to modelMatrix
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
     // TODO(student): Get shader location for uniform mat4 "View"
+    location = glGetUniformLocation(shader->program, "View");
 
     // TODO(student): Set shader uniform "View" to viewMatrix
     glm::mat4 viewMatrix = GetSceneCamera()->GetViewMatrix();
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(viewMatrix));
 
     // TODO(student): Get shader location for uniform mat4 "Projection"
+    location = glGetUniformLocation(shader->program, "Projection");
 
     // TODO(student): Set shader uniform "Projection" to projectionMatrix
     glm::mat4 projectionMatrix = GetSceneCamera()->GetProjectionMatrix();
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+    
+    location = glGetUniformLocation(shader->program, "Radians");
+    GLfloat fl = static_cast<float>(Engine::GetElapsedTime());
+    glUniform1fv(location, 1, &fl);
 
     // Draw the object
     glBindVertexArray(mesh->GetBuffers()->m_VAO);
