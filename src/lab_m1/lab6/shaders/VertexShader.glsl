@@ -22,9 +22,11 @@ void main()
 {
     // TODO(student): Send output to fragment shader
     // frag_color = vertex_color;
-    frag_color = vec3(sin(Radians), cos(Radians + 3.14 / 2), sin(Radians));
+    frag_color = vec3(abs(sin(Radians)), abs(cos(Radians - 3.14/6)), abs(sin(Radians - 3.14/2))) + vertex_normal;
     frag_normal = vertex_normal;
 
     // TODO(student): Compute gl_Position
     gl_Position = Projection * View * Model * vec4(v_position, 1.0);
+    gl_Position.x += sin(Radians) * 2;
+    gl_Position.y += cos(Radians) * 2;
 }
