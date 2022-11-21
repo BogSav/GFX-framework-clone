@@ -23,6 +23,23 @@ void Game::Init()
 	//camera->SetRotation(glm::vec3(0, 0, 0));
 	//camera->Update();
 	//GetCameraInput()->SetActive(false);
+
+	{
+		Shader* shader = new Shader("MyShader");
+		shader->AddShader(
+			PATH_JOIN(
+				window->props.selfDir, SOURCE_PATH::TEMA2, "shaders", "VertexShader.glsl"),
+			GL_VERTEX_SHADER);
+		shader->AddShader(
+			PATH_JOIN(
+				window->props.selfDir, SOURCE_PATH::TEMA2, "shaders", "FragmentShader.glsl"),
+			GL_FRAGMENT_SHADER);
+		shader->CreateAndLink();
+		shaders[shader->GetName()] = shader;
+	}
+
+	tr = new PlanarTriangle(
+		shaders["MyShader"], GetSceneCamera(), {0, 0, 0}, {0, 1, 0}, {1, 0, 0}, {1, 0, 0});
 }
 
 
@@ -43,6 +60,7 @@ void Game::RenderAndUpdateGameComponents(float deltaTimeSeconds)
 
 void Game::Update(float deltaTimeSeconds)
 {
+	tr->Render(glm::mat4(1), {0,0,1});
 }
 
 void Game::FrameEnd()

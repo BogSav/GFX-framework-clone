@@ -2,6 +2,8 @@
 
 #include "components/simple_scene.h"
 
+#include "Geometries/PlaneTriangle.hpp"
+
 class Game : public gfxc::SimpleScene
 {
 public:
@@ -23,6 +25,6 @@ private:
 	void OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY) override;
 	void OnMouseBtnPress(int mouseX, int mouseY, int button, int mods) override;
 	void OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods) override;
-
-	void JumpToLevel11();
+private:
+	PlanarTriangle* tr = nullptr;
 };
