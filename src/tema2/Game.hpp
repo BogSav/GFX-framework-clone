@@ -2,7 +2,7 @@
 
 #include "components/simple_scene.h"
 
-#include "Geometries/PlaneTriangle.hpp"
+#include "GameComponents/Pista.hpp"
 
 class Game : public gfxc::SimpleScene
 {
@@ -26,5 +26,5 @@ private:
 	void OnMouseBtnPress(int mouseX, int mouseY, int button, int mods) override;
 	void OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods) override;
 private:
-	PlanarTriangle* tr = nullptr;
+	std::unique_ptr<GameComponent> m_pista;
 };

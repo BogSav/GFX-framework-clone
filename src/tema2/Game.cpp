@@ -38,8 +38,7 @@ void Game::Init()
 		shaders[shader->GetName()] = shader;
 	}
 
-	tr = new PlanarTriangle(
-		shaders["MyShader"], GetSceneCamera(), {0, 0, 0}, {0, 1, 0}, {1, 0, 0}, {1, 0, 0});
+	m_pista = std::make_unique<Pista>(shaders["MyShader"], GetSceneCamera(), 4);
 }
 
 
@@ -60,7 +59,7 @@ void Game::RenderAndUpdateGameComponents(float deltaTimeSeconds)
 
 void Game::Update(float deltaTimeSeconds)
 {
-	tr->Render(glm::mat4(1), {0,0,1});
+	m_pista->Render();
 }
 
 void Game::FrameEnd()

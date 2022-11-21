@@ -17,5 +17,6 @@ void main()
         frag_color = vertex_color;
     else
         frag_color = UniformColor;
+
     gl_Position = Projection * View * Model * vec4(v_position, 1.0);
 }
