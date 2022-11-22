@@ -80,7 +80,7 @@ void Lab7::Update(float deltaTimeSeconds)
     {
         glm::mat4 modelMatrix = glm::mat4(1);
         modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 1, 0));
-        RenderSimpleMesh(meshes["sphere"], shaders["LabShader"], modelMatrix);
+		RenderSimpleMesh(meshes["sphere"], shaders["LabShader"], modelMatrix, {1,0,0});
     }
 
     {
@@ -103,7 +103,7 @@ void Lab7::Update(float deltaTimeSeconds)
         glm::mat4 modelMatrix = glm::mat4(1);
         modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0.01f, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.25f));
-        RenderSimpleMesh(meshes["plane"], shaders["LabShader"], modelMatrix);
+		RenderSimpleMesh(meshes["plane"], shaders["LabShader"], modelMatrix, {0.5,0.5,0.5});
     }
 
     // Render the point light in the scene
@@ -122,7 +122,8 @@ void Lab7::FrameEnd()
 }
 
 
-void Lab7::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & modelMatrix, const glm::vec3 &color)
+void Lab7::RenderSimpleMesh(
+	Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix, const glm::vec3& color)
 {
     if (!mesh || !shader || !shader->GetProgramID())
         return;
@@ -132,11 +133,26 @@ void Lab7::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & modelM
 
     // Set shader uniforms for light & material properties
     // TODO(student): Set light position uniform
+	int position = glGetUniformLocation(shader->program, "light_position");
+	glUniform3fv(position, 1, glm::value_ptr(lightPosition));
 
     glm::vec3 eyePosition = GetSceneCamera()->m_transform->GetWorldPosition();
     // TODO(student): Set eye position (camera position) uniform
+	position = glGetUniformLocation(shader->program, "eye_position");
+	glUniform3fv(position, 1, glm::value_ptr(eyePosition));
 
     // TODO(student): Set material property uniforms (shininess, kd, ks, object color)
+	position = glGetUniformLocation(shader->program, "material_kd");
+	glUniform1fv(position, 1, &materialKd);
+
+	position = glGetUniformLocation(shader->program, "material_ks");
+	glUniform1fv(position, 1, &materialKs);
+
+    position = glGetUniformLocation(shader->program, "material_shininess");
+	glUniform1uiv(position, 1, &materialShininess);
+
+    position = glGetUniformLocation(shader->program, "object_color");
+	glUniform3fv(position, 1, glm::value_ptr(color));
 
     // Bind model matrix
     GLint loc_model_matrix = glGetUniformLocation(shader->program, "Model");
