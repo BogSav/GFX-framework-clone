@@ -143,16 +143,20 @@ void Lab7::RenderSimpleMesh(
 
     // TODO(student): Set material property uniforms (shininess, kd, ks, object color)
 	position = glGetUniformLocation(shader->program, "material_kd");
-	glUniform1fv(position, 1, &materialKd);
+	glUniform1f(position, materialKd);
 
 	position = glGetUniformLocation(shader->program, "material_ks");
-	glUniform1fv(position, 1, &materialKs);
+	glUniform1f(position, materialKs);
 
     position = glGetUniformLocation(shader->program, "material_shininess");
-	glUniform1uiv(position, 1, &materialShininess);
+	glUniform1i(position, materialShininess);
 
     position = glGetUniformLocation(shader->program, "object_color");
 	glUniform3fv(position, 1, glm::value_ptr(color));
+
+    position = glGetUniformLocation(shader->program, "light_change");
+    float v[2] = { Engine::GetElapsedTime(), 2.0f };
+    glUniform1fv(position, 2, v);
 
     // Bind model matrix
     GLint loc_model_matrix = glGetUniformLocation(shader->program, "Model");
