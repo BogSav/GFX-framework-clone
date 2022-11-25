@@ -2,70 +2,62 @@
 
 #include "tema2/Geometries/PlanarTriangle.hpp"
 
+#include <fstream>
+
 Pista::Pista(
 	Shader* shader,
-	const gfxc::Camera* const camera,
+	const CustomCamera* const camera,
 	const double width,
 	const glm::vec3& origin,
 	const double scale)
 	: GameComponent(shader, camera, origin, scale), m_width(width)
 {
 	this->InitTrack();
+	m_modelMatrix = glm::scale(m_modelMatrix, {6, 0, 6});
 }
 
 void Pista::InitTrack()
 {
-	m_trackPoints.reserve(7);
-	m_trackPoints.emplace_back(0, -7.8, 0);
-	m_trackPoints.emplace_back(19.7, -3.6, 0);
-	m_trackPoints.emplace_back(25.7, 7.9, 0);
-	m_trackPoints.emplace_back(6.11, 19.518, 0);
-	m_trackPoints.emplace_back(-18.47, 13.711, 0);
-	m_trackPoints.emplace_back(-22.3, -2.169, 0);
+	this->InitTrackPointsFromFile();
 
-	this->IncreasePointDensityByLinearInterpolation();
-	this->IncreasePointDensityByPolynomialInterpolation();
+	m_exteriorPoints = this->GenerateExteriorPoints();
 
-	std::vector<glm::vec3> exteriorPoints = this->GenerateExteriorPoints();
-	this->GenerateGeometries(exteriorPoints);
+	this->GenerateGeometries();
 }
 
-void Pista::IncreasePointDensityByLinearInterpolation()
+void Pista::InitTrackPointsFromFile()
 {
-	std::vector<glm::vec3> interpolationPoints;
+	std::string fileName = m_trackName + ".txt";
+	std::string path = PATH_JOIN(SOURCE_PATH::TEMA2, "Piste", fileName);
+	
+	std::ifstream inputf;
 
-	for (size_t it = 0; it < m_trackPoints.size() - 1; it++)
+	try
 	{
-		double distance = glm::distance(m_trackPoints[it], m_trackPoints[it + 1]);
-		if (distance < 2 * m_interpolationStep)
-			continue;
-
-		interpolationPoints.push_back(m_trackPoints[it]);
+		inputf.open(path);
 		
-		int interpolationSteps = (int)std::floor(distance / m_interpolationStep);
-		
-		float stepInX = std::abs(m_trackPoints[it].x - m_trackPoints[it + 1].x) / interpolationSteps;
-		float stepInY = std::abs(m_trackPoints[it].y - m_trackPoints[it + 1].y) / interpolationSteps;
+		if (inputf.fail())
+			throw std::exception("Nu exista");
 
-		for (size_t stepNr = 1; stepNr < interpolationSteps; stepNr++)
-		{ 
-			interpolationPoints.emplace_back(
-				std::min(m_trackPoints[it].x, m_trackPoints[it + 1].x) + stepNr * stepInX,
-				std::min(m_trackPoints[it].y, m_trackPoints[it + 1].y) + stepNr * stepInY,
-				0);
+		size_t size;
+		inputf >> size;
+
+		m_trackPoints.reserve(size);
+		
+		for (size_t i = 0; i < size; i++)
+		{
+			float x, y, z;
+			inputf >> x >> y >> z;
+
+			m_trackPoints.emplace_back(x, 0, -y);
 		}
 
-		interpolationPoints.push_back(m_trackPoints[it + 1]);
+		inputf.close();
 	}
-
-	m_trackPoints.clear();
-	m_trackPoints = interpolationPoints;
-}
-
-
-void Pista::IncreasePointDensityByPolynomialInterpolation()
-{
-	return;
+	catch (std::exception e)
+	{
+		throw e;
+	}
 }
 
 std::vector<glm::vec3> Pista::GenerateExteriorPoints()
@@ -102,7 +94,7 @@ std::vector<glm::vec3> Pista::GenerateExteriorPoints()
 		glm::dot(exteriorDirection1, exteriorDirection2);
 
 		const glm::vec3 finalExteriorDirection =
-			glm::normalize(exteriorDirection1 + exteriorDirection2);
+			glm::normalize((exteriorDirection1 + exteriorDirection2) / 2.f);
 
 		const glm::vec3 exteriorPoint =
 			*std::next(it) + finalExteriorDirection * static_cast<float>(m_width);
@@ -131,7 +123,7 @@ std::vector<glm::vec3> Pista::GenerateExteriorPoints()
 	return exteriorPoints;
 }
 
-void Pista::GenerateGeometries(const std::vector<glm::vec3>& exteriorPoints)
+void Pista::GenerateGeometries()
 {
 	m_geometries.reserve(m_trackPoints.size() * 2);
 
@@ -140,32 +132,32 @@ void Pista::GenerateGeometries(const std::vector<glm::vec3>& exteriorPoints)
 		m_geometries.emplace_back(new PlanarTriangle(
 			m_shader,
 			m_camera,
-			exteriorPoints[it],
+			m_exteriorPoints[it],
 			m_trackPoints[it],
 			m_trackPoints[it + 1],
 			m_roadColor));
 		m_geometries.emplace_back(new PlanarTriangle(
 			m_shader,
 			m_camera,
-			exteriorPoints[it],
+			m_exteriorPoints[it],
 			m_trackPoints[it + 1],
-			exteriorPoints[it + 1],
+			m_exteriorPoints[it + 1],
 			m_roadColor));
 	}
 	{
 		m_geometries.emplace_back(new PlanarTriangle(
 			m_shader,
 			m_camera,
-			*std::prev(exteriorPoints.end()),
+			*std::prev(m_exteriorPoints.end()),
 			*std::prev(m_trackPoints.end()),
 			*m_trackPoints.begin(),
 			m_roadColor));
 		m_geometries.emplace_back(new PlanarTriangle(
 			m_shader,
 			m_camera,
-			*std::prev(exteriorPoints.end()),
+			*std::prev(m_exteriorPoints.end()),
 			*m_trackPoints.begin(),
-			*exteriorPoints.begin(),
+			*m_exteriorPoints.begin(),
 			m_roadColor));
 	}
 }

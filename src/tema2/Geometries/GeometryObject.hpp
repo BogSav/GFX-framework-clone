@@ -7,26 +7,28 @@
 #include "utils/math_utils.h"
 
 #include "tema2/Utilities/Colors.hpp"
+#include "tema2/Utilities/Camera.hpp"
+
 
 class GeometryObject
 {
 public:
 	GeometryObject() = default;
-	GeometryObject(Shader* shader, const gfxc::Camera* const camera)
+	GeometryObject(Shader* shader, const CustomCamera* const camera)
 		: m_shader(shader), m_camera(camera)
 	{
 	}
 
 	void Render(const glm::mat4& modelMatrix) const
 	{
-		this->UseShader(modelMatrix);
+		this->SendDataToShader(modelMatrix);
 
 		m_mesh->Render();
 	}
 
 	void Render(const glm::mat4& modelMatrix, const Color color) const
 	{
-		this->UseShader(modelMatrix);
+		this->SendDataToShader(modelMatrix);
 
 		int location = glGetUniformLocation(m_shader->program, "UniformColor");
 		glUniform3fv(location, 1, glm::value_ptr(color()));
@@ -35,7 +37,7 @@ public:
 	}
 
 	void Render(
-		Shader* shader, const gfxc::Camera* const camera, const glm::mat4& modelMatrix) const
+		Shader* shader, const CustomCamera* const camera, const glm::mat4& modelMatrix) const
 	{
 		if (!m_mesh || !shader || !shader->program)
 			return;
@@ -58,7 +60,7 @@ public:
 
 	void Render(
 		Shader* shader,
-		const gfxc::Camera* const camera,
+		const CustomCamera* const camera,
 		const glm::mat4& modelMatrix,
 		const Color color) const
 	{
@@ -91,7 +93,7 @@ public:
 	}
 
 private:
-	void UseShader(const glm::mat4& modelMatrix) const
+	void SendDataToShader(const glm::mat4& modelMatrix) const
 	{
 		assert(m_shader != nullptr);
 		assert(m_camera != nullptr);
@@ -110,8 +112,7 @@ private:
 			GL_FALSE,
 			glm::value_ptr(m_camera->GetProjectionMatrix()));
 
-		glm::mat4 finalMatrix = glm::rotate(modelMatrix, RADIANS(-90), {1, 0, 0});
-		glUniformMatrix4fv(m_shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(finalMatrix));
+		glUniformMatrix4fv(m_shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
 		m_mesh->Render();
 	}
@@ -120,5 +121,5 @@ protected:
 	std::unique_ptr<Mesh> m_mesh = nullptr;
 
 	Shader* m_shader = nullptr;
-	const gfxc::Camera* m_camera = nullptr;
+	const CustomCamera* m_camera = nullptr;
 };

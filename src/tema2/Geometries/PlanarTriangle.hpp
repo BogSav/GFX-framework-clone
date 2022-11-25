@@ -17,12 +17,12 @@ public:
 
 	PlanarTriangle(
 		Shader* shader,
-		const gfxc::Camera* const camera,
+		const CustomCamera* const camera,
 		const glm::vec3 v1,
 		const glm::vec3 v2,
 		const glm::vec3 v3,
 		const Color color,
-		const bool wireframe = true)
+		const bool wireframe = false)
 		: GeometryObject(shader, camera)
 	{
 		InitMesh(v1, v2, v3, color, wireframe);
