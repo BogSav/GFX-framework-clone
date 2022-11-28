@@ -1,6 +1,8 @@
 #pragma once
 
 #include "tema2/Geometries/GeometryObject.hpp"
+#include "tema2/Geometries/PlanarRectangle.hpp"
+#include "tema2/Geometries/PlanarTriangle.hpp"
 
 class GameComponent
 {
@@ -8,12 +10,12 @@ public:
 	GameComponent() = delete;
 	GameComponent(
 		Shader* shader,
-		const CustomCamera* const camera,
-		const glm::vec3& origin = glm::vec3{0, 0, 0},
-		const double scale = 1.)
-		: m_shader(shader), m_camera(camera), m_origin(origin), m_scale(scale)
+		const CustomCamera* const camera)
+		: m_shader(shader), m_camera(camera)
 	{
 	}
+
+	virtual void Update(float) { return; }
 
 	// Render with default color, shader and camera
 	void Render()
@@ -61,6 +63,4 @@ protected:
 	std::vector<std::unique_ptr<GeometryObject>> m_geometries;
 
 	glm::mat4 m_modelMatrix = glm::mat4(1);
-	glm::vec3 m_origin;
-	double m_scale;
 };

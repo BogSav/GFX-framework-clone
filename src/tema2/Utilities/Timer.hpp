@@ -44,7 +44,7 @@ public:
 	}
 
 private:
-	std::chrono::steady_clock::time_point m_startPoint;
+	std::chrono::steady_clock::time_point m_startPoint = std::chrono::steady_clock::now();
 	bool m_isActive = false;
 };
 

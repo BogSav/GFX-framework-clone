@@ -10,6 +10,11 @@
 
 #include "tema2/GameComponents/Masina.hpp"
 
+#include "tema2/GameComponents/Field.hpp"
+#include "Display/ScreenElements.hpp"
+
+#include "tema2/Display/Minimap.hpp"
+
 class Game : public gfxc::SimpleScene
 {
 public:
@@ -33,6 +38,10 @@ private:
 	void OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods) override;
 
 	void RenderGameComponents();
+	void RenderMinimap();
+	void RenderScreenObjects();
+
+	void UpdateGameComponents(float);
 
 private:
 	std::vector<std::unique_ptr<GameComponent>> m_components;
@@ -40,4 +49,8 @@ private:
 	CustomCamera* m_camera;
 
 	std::unique_ptr<Masina> m_car;
+	GeometryObject* obj;
+
+	std::unique_ptr<ScreenElements> m_screen;
+	std::unique_ptr<MiniMap> m_minimap;
 };

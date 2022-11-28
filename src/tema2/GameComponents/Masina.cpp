@@ -1,37 +1,139 @@
 #include "Masina.hpp"
+#include <iostream>
 
 Masina::Masina(const WindowObject* window, Shader* shader) : m_shader(shader)
 {
 	m_mesh = std::make_unique<Mesh>();
 	m_mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "mele"), "F1.obj");
 
+	m_modelMatrix = glm::mat4(1);
+
+	m_position = {0, 0, 0};
+	m_scale = {0.25, 0.25, 0.25};
+	m_direction = {1, 0, 0};
+	m_angleOrientation = 0;
+
 	m_camera = new CustomCamera();
 	m_camera->Set(
-		glm::vec3(0, 2, 3.5f), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), window->props.aspectRatio);
+		m_position - m_direction * (m_distanceFromCamera * 2),
+		m_position,
+		glm::vec3{0, 1, 0},
+		window->props.aspectRatio);
+	m_lastCamera = new CustomCamera();
 
-	m_modelMatrix = glm::mat4(1);
+	m_camera->TranslateUpward(1.7f);
+	m_camera->RotateFirstPerson_OX(RADIANS(-10));
+
+	m_gearBox = std::make_unique<GearBox>();
+	m_engine = std::make_unique<physics::Engine>(physics::PhysicsComponents::InstantiateComponents(), m_gearBox.get());
+
+	m_turometru = std::make_unique<Turometru>(window);
 }
 
-void Masina::Render()
+void Masina::Render() const
 {
-	assert(m_shader != nullptr);
-	assert(m_camera != nullptr);
+	this->Render(m_camera, m_shader);
+}
 
-	if (!m_mesh || !m_shader || !m_shader->program)
+void Masina::Render(const CustomCamera* const camera, const Shader* shader) const
+{
+	assert(shader != nullptr);
+	assert(camera != nullptr);
+
+	if (!m_mesh || !shader || !shader->program)
 		return;
 
-	m_shader->Use();
+	shader->Use();
 
 	glUniformMatrix4fv(
-		m_shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(m_camera->GetViewMatrix()));
+		shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
 
 	glUniformMatrix4fv(
-		m_shader->loc_projection_matrix,
+		shader->loc_projection_matrix,
 		1,
 		GL_FALSE,
-		glm::value_ptr(m_camera->GetProjectionMatrix()));
+		glm::value_ptr(camera->GetProjectionMatrix()));
 
-	glUniformMatrix4fv(m_shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(m_modelMatrix));
+	glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(m_modelMatrix));
 
 	m_mesh->Render();
+}
+
+void Masina::Update(double deltaTime)
+{
+	glm::vec3 newPosition = m_engine->GetNewPosition(m_position, m_direction, deltaTime);
+	m_camera->MoveForward(glm::l2Norm(newPosition - m_position));
+	m_position = newPosition;
+
+	this->ComputeModelMatrix();
+	this->UpdateLastParameters();
+
+	m_turometru->UpdateSpeed(static_cast<float>(m_engine->GetSpeedKmh()));
+	m_turometru->UpdateGear(m_engine->GetCurrentGear());
+}
+
+void Masina::Accelerate()
+{
+	m_engine->Accelerate();
+}
+
+void Masina::Brake()
+{
+	m_engine->Brake();
+}
+
+void Masina::InertialDecceleration()
+{
+	m_engine->InertialDeccelerate();
+}
+
+void Masina::RestoreLastState()
+{
+	m_position = m_lastPosition;
+	m_direction = m_lastDirection;
+	m_angleOrientation = m_lastOrientationAngle;
+
+	*m_camera = *m_lastCamera;
+
+	this->ComputeModelMatrix();
+
+	m_engine->Reset();
+}
+
+void Masina::PrintData()
+{
+	std::cout << m_engine->GetSpeedKmh() << " " << m_engine->GetCurrentGear() << std::endl;
+}
+
+void Masina::UpdateOrientation(float deltaTime)
+{
+	float angle = deltaTime * m_stirringAngularSpeed;
+
+	m_angleOrientation += angle;
+
+	m_direction = glm::normalize(
+		glm::rotate(glm::mat4(1.0f), angle, {0, 1, 0})
+		* glm::vec4(m_direction, 0));
+
+	m_camera->RotateThirdPerson_OY(angle);
+}
+
+void Masina::ComputeModelMatrix()
+{
+	m_modelMatrix = glm::mat4(1);
+	m_modelMatrix = glm::translate(m_modelMatrix, m_position);
+	m_modelMatrix = glm::rotate(m_modelMatrix, m_angleOrientation, glm::vec3{0,1,0});
+	m_modelMatrix = glm::scale(m_modelMatrix, m_scale);
+}
+
+void Masina::UpdateLastParameters()
+{
+	if (m_updateLastParametersTimer.PassedTime(5))
+	{
+		m_lastDirection = m_direction;
+		m_lastOrientationAngle = m_angleOrientation;
+		m_lastPosition = m_position;
+
+		*m_lastCamera = *m_camera;
+	}
 }

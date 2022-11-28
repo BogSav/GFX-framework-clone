@@ -12,24 +12,71 @@ public:
 		const glm::vec3& position,
 		const glm::vec3& center,
 		const glm::vec3& up,
-		const float aspectRatio)
+		const float aspectRatio,
+		const bool isOrthographic = false)
 	{
-		Set(position, center, up, aspectRatio);
+		Set(position, center, up, aspectRatio, isOrthographic);
 	}
 
 	void Set(
 		const glm::vec3& position,
 		const glm::vec3& center,
 		const glm::vec3& up,
-		const float aspectRatio)
+		const float aspectRatio,
+		const bool isOrthoGraphic = false,
+		const float left = 0,
+		const float right = 0,
+		const float bottom = 0,
+		const float top = 0)
 	{
 		this->position = position;
 		this->forward = glm::normalize(center - position);
 		this->right = glm::cross(forward, up);
-		this->up = glm::cross(right, forward);
+		this->up = glm::cross(this->right, forward);
 		this->distanceToTarget = glm::length(center - position);
 
-		this->projectionMatrix = glm::perspective(m_fov, aspectRatio, m_zNear, m_Zfar);
+		this->leftOrtho = left;
+		this->rightOrtho = right;
+		this->bottomOrttho = bottom;
+		this->topOrtho = top;
+
+		if (isOrthoGraphic)
+			this->projectionMatrix =
+				glm::ortho(leftOrtho, rightOrtho, bottomOrttho, topOrtho, m_zNear, m_Zfar);
+		else
+			this->projectionMatrix = glm::perspective(m_fov, aspectRatio, m_zNear, m_Zfar);
+	}
+
+	CustomCamera(const CustomCamera& rhs) { *this = rhs; }
+
+	CustomCamera& operator=(const CustomCamera& rhs)
+	{
+		if (this == &rhs)
+			return *this;
+
+		this->bottomOrttho = rhs.bottomOrttho;
+		this->leftOrtho = rhs.leftOrtho;
+		this->rightOrtho = rhs.rightOrtho;
+		this->topOrtho = rhs.rightOrtho;
+
+		this->position = rhs.position;
+		this->forward = rhs.forward;
+		this->right = rhs.right;
+		this->up = rhs.up;
+		this->distanceToTarget = rhs.distanceToTarget;
+
+		this->projectionMatrix = rhs.projectionMatrix;
+
+		return *this;
+	}
+
+	void SetPosition(const glm::vec3 position, const glm::vec3 center)
+	{
+		this->position = position;
+		this->forward = glm::normalize(center - position);
+		this->right = glm::cross(forward, up);
+		this->up = glm::cross(this->right, forward);
+		this->distanceToTarget = glm::length(center - position);
 	}
 
 	void MoveForward(float distance)
@@ -43,7 +90,7 @@ public:
 	{
 		position = position + distance * glm::normalize(forward);
 	}
-	void TranslateUpward(float distance) { position += glm::vec3{0,1,0} * distance; }
+	void TranslateUpward(float distance) { position += glm::vec3{0, 1, 0} * distance; }
 	void TranslateRight(float distance)
 	{
 		position += glm::cross({0, 1, 0}, glm::cross(glm::normalize(right), {0, 1, 0})) * distance;
@@ -97,10 +144,9 @@ public:
 	glm::mat4 GetProjectionMatrix() const { return this->projectionMatrix; }
 
 	glm::vec3 GetTargetPosition() const { return position + forward * distanceToTarget; }
-
 	glm::vec3& GetPosition() { return position; };
 
-public:
+private:
 	float distanceToTarget;
 	glm::vec3 position;
 	glm::vec3 forward;
@@ -110,6 +156,11 @@ public:
 	glm::mat4 projectionMatrix;
 
 	float m_fov = RADIANS(30);
-	float m_zNear = 0.1;
-	float m_Zfar = 500;
+	float m_zNear = 0.1f;
+	float m_Zfar = 1000.f;
+
+	float leftOrtho;
+	float rightOrtho;
+	float bottomOrttho;
+	float topOrtho;
 };

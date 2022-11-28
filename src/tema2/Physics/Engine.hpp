@@ -46,7 +46,15 @@ class Engine
 public:
 	Engine() = delete;
 	Engine(const PhysicsComponents* physics, GearBox* gearBox, const bool isNpc = false)
-		: m_isNpc(isNpc), m_physics(physics), m_gearBox(gearBox){};
+		: m_physics(physics), m_gearBox(gearBox){};
+
+	void Reset()
+	{
+		m_gearBox->Reset();
+		v1 = 0;
+		v2 = 0;
+		F1 = 0;
+	}
 
 	void Accelerate()
 	{
@@ -94,7 +102,7 @@ public:
 			return currentPosition;
 
 		glm::vec3 newPosition =
-			currentPosition + carDirection * static_cast<float>((v1 + v2) * deltaTime / 2);
+			currentPosition + carDirection * static_cast<float>((v1 + v2) * deltaTime / 2 / 2);
 
 		v1 = v2;
 
@@ -103,7 +111,8 @@ public:
 
 	int GetCurrentGear() const { return m_gearBox->GetCurrentGear(); }
 
-	double GetSpeed() const { return v1; }
+	double GetSpeedMph() const { return v1; }
+	double GetSpeedKmh() const { return v1 * 3.6; }
 
 private:
 	double ComputeResultantForce(const glm::vec3& carDirection) const
@@ -135,8 +144,6 @@ private:
 	}
 
 private:
-	const bool m_isNpc;
-
 	double v1 = 0;
 	double v2 = 0;
 

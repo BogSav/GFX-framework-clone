@@ -9,27 +9,29 @@ public:
 	Pista(
 		Shader* shader,
 		const CustomCamera* const camera,
-		const double width,
-		const glm::vec3& origin = glm::vec3{0, 0, 0},
-		const double scale = 1.);
+		const double width);
+
+	const std::vector<glm::vec3>& GetInteriorPoints() const { return m_trackPoints; };
+
+	friend class CollisionEngine;
 
 private:
 	void InitTrack();
 	void InitTrackPointsFromFile();
 
-
 	std::vector<glm::vec3> GenerateExteriorPoints();
 	void GenerateGeometries();
+	void GenerateLines();
 
 private:
 	std::vector<glm::vec3> m_trackPoints;
 	std::vector<glm::vec3> m_exteriorPoints;
 
-	Color m_roadColor = Colors::LightGray;
+	Color m_roadColor = Colors::Gray;
+	Color m_linesColor = Colors::White;
+
 	const double m_width;
 	const glm::vec3 m_zAxisNormal = glm::vec3{0, 1, 0};
-
-	const double m_interpolationStep = 1;
 
 	const std::string m_trackName = "MonacoF1";
 };
