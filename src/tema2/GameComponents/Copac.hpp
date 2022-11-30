@@ -1,9 +1,9 @@
 #pragma once
 
+#include "tema2/CollisionCore/CollisionEngine.hpp"
 #include "tema2/GameComponents/Field.hpp"
 #include "tema2/GameComponents/Pista.hpp"
 #include "tema2/Geometries/Cuboid.hpp"
-#include "tema2/CollisionCore/CollisionEngine.hpp"
 
 #include <random>
 
@@ -11,7 +11,7 @@ class Tree : public GameComponent
 {
 public:
 	static Tree* GenerateRandomTree(
-		Shader* shader, const CustomCamera* const camera, const Pista* pista, const Field* field)
+		const Shader* const shader, CustomCamera* const camera, const Pista* pista, const Field* field)
 	{
 		Tree* tmp = nullptr;
 
@@ -25,15 +25,14 @@ public:
 		return tmp;
 	}
 
-	glm::vec3 GetTrunkCenter() const
-	{
-		return m_position + glm::vec3{m_trunkWidth / 2.f, 0, 0}
-		+ glm::vec3{0, 0, m_trunkWidth / 2.f};
-	}
+	friend class CollisionEngine;
 
 private:
+	Tree() = delete;
+	Tree(const Shader* const shader, CustomCamera* const camera) : GameComponent(shader, camera) {}
+
 	static Tree* ReGenerateTree(
-		Shader* shader, const CustomCamera* const camera, const Pista* pista, const Field* field)
+		const Shader* const shader, CustomCamera* const camera, const Pista* pista, const Field* field)
 	{
 		Tree* tmp = new Tree(shader, camera);
 
@@ -43,7 +42,7 @@ private:
 			field->Getposition().x, field->Getposition().x + field->GetWidth());
 		std::uniform_int_distribution<int> posYGenerator(
 			field->Getposition().z, field->Getposition().z + field->GetLength());
-		std::uniform_real_distribution<float> trunkWidthGenerator(3.f,6.f);
+		std::uniform_real_distribution<float> trunkWidthGenerator(3.f, 6.f);
 		std::uniform_real_distribution<float> crownWidthGenerator(10.f, 15.f);
 		std::uniform_real_distribution<float> trunkHeightGenerator(10.f, 20.f);
 		std::uniform_real_distribution<float> crownHeightGenerator(7.f, 14.f);
@@ -61,17 +60,6 @@ private:
 		}
 
 		return tmp;
-	}
-
-private:
-	Tree() = default;
-	Tree(Shader* shader, const CustomCamera* const camera) : GameComponent(shader, camera)
-	{
-		m_position = glm::vec3{0, 0, 0};
-		m_trunkHieght = 15;
-		m_trunkWidth = 4;
-		m_crownHeight = 9;
-		m_crownWidth = 15;
 	}
 
 	void Init()
@@ -96,6 +84,12 @@ private:
 			Colors::TreeGreen));
 	}
 
+	glm::vec3 GetTrunkCenter() const
+	{
+		return m_position + glm::vec3{m_trunkWidth / 2.f, 0, 0}
+		+ glm::vec3{0, 0, m_trunkWidth / 2.f};
+	}
+
 private:
 	glm::vec3 m_position;
 
@@ -104,9 +98,4 @@ private:
 
 	float m_crownWidth;
 	float m_crownHeight;
-};
-
-struct TreeGenerator
-{
-
 };

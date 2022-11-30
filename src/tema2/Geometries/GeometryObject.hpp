@@ -16,7 +16,7 @@ class GeometryObject
 {
 public:
 	GeometryObject() = default;
-	GeometryObject(Shader* shader, const CustomCamera* const camera)
+	GeometryObject(const Shader* const shader, CustomCamera* const camera)
 		: m_shader(shader), m_camera(camera)
 	{
 	}
@@ -28,7 +28,20 @@ public:
 		m_mesh->Render();
 	}
 
-	void Render(const glm::mat4& modelMatrix, const Color color) const
+	void Render(const glm::mat4& modelMatrix, const glm::vec3& carPosition, const float& coefficient) const
+	{
+		this->SendDataToShader(modelMatrix);
+
+		int location = glGetUniformLocation(m_shader->program, "CarPosition");
+		glUniform3fv(location, 1, glm::value_ptr(carPosition));
+
+		location = glGetUniformLocation(m_shader->program, "CurveCoefficient");
+		glUniform1f(location, coefficient);
+
+		m_mesh->Render();
+	}
+
+	void Render(const glm::mat4& modelMatrix, const Color& color) const
 	{
 		this->SendDataToShader(modelMatrix);
 
@@ -39,7 +52,7 @@ public:
 	}
 
 	void Render(
-		Shader* shader, const CustomCamera* const camera, const glm::mat4& modelMatrix) const
+		const Shader* const shader, const CustomCamera* const camera, const glm::mat4& modelMatrix) const
 	{
 		if (!m_mesh || !shader || !shader->program)
 			return;
@@ -61,7 +74,7 @@ public:
 	}
 
 	void Render(
-		Shader* shader,
+		const Shader* const shader,
 		const CustomCamera* const camera,
 		const glm::mat4& modelMatrix,
 		const Color color) const
@@ -88,12 +101,6 @@ public:
 		m_mesh->Render();
 	}
 
-	void ChangeShader(Shader* newShader)
-	{
-		m_shader = nullptr;
-		m_shader = newShader;
-	}
-
 private:
 	void SendDataToShader(const glm::mat4& modelMatrix) const
 	{
@@ -115,13 +122,11 @@ private:
 			glm::value_ptr(m_camera->GetProjectionMatrix()));
 
 		glUniformMatrix4fv(m_shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-
-		m_mesh->Render();
 	}
 
 protected:
 	std::unique_ptr<Mesh> m_mesh = nullptr;
 
-	Shader* m_shader = nullptr;
-	const CustomCamera* m_camera = nullptr;
+	const Shader* m_shader = nullptr;
+	CustomCamera* m_camera = nullptr;
 };

@@ -17,8 +17,8 @@ public:
 	}
 
 	PlanarRectangle(
-		Shader* shader,
-		const CustomCamera* const camera,
+		const Shader* const shader,
+		CustomCamera* const camera,
 		const glm::vec3 v1,
 		const glm::vec3 v2,
 		const glm::vec3 v3,

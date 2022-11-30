@@ -8,9 +8,7 @@ class GameComponent
 {
 public:
 	GameComponent() = delete;
-	GameComponent(
-		Shader* shader,
-		const CustomCamera* const camera)
+	GameComponent(const Shader* const shader, CustomCamera* const camera)
 		: m_shader(shader), m_camera(camera)
 	{
 	}
@@ -18,7 +16,7 @@ public:
 	virtual void Update(float) { return; }
 
 	// Render with default color, shader and camera
-	void Render()
+	void Render() const
 	{
 		std::for_each(
 			m_geometries.begin(),
@@ -26,8 +24,21 @@ public:
 			[this](const auto& current) { current->Render(m_modelMatrix); });
 	}
 
+	// Render with default color, shader and camera, but with car position for the curve and curve
+	// coefficient
+	void Render(const glm::vec3& carPosition, const float& coefficient) const
+	{
+		std::for_each(
+			m_geometries.begin(),
+			m_geometries.end(),
+			[this,
+			 &carPosition = std::as_const(carPosition),
+			 &coefficient = std::as_const(coefficient)](const auto& current)
+			{ current->Render(m_modelMatrix, carPosition, coefficient); });
+	}
+
 	// Render with default color and shader, but with custom camera
-	void Render(const CustomCamera* const camera)
+	void Render(const CustomCamera* const camera) const
 	{
 		std::for_each(
 			m_geometries.begin(),
@@ -37,7 +48,7 @@ public:
 	}
 
 	// Render with default shader and camera, but with custom color
-	void Render(const Color color)
+	void Render(const Color color) const
 	{
 		std::for_each(
 			m_geometries.begin(),
@@ -47,18 +58,18 @@ public:
 	}
 
 	// Render with default shader but custom color and camera
-	void Render(const CustomCamera* const camera, const Color color)
+	void Render(const CustomCamera* const camera, const Color color) const
 	{
 		std::for_each(
 			m_geometries.begin(),
 			m_geometries.end(),
-			[this, &color, &camera = std::as_const(camera)](const auto& current)
-			{ current->Render(m_shader, camera, m_modelMatrix, color); });
+			[this, &color = std::as_const(color), &camera = std::as_const(camera)](
+				const auto& current) { current->Render(m_shader, camera, m_modelMatrix, color); });
 	}
 
 protected:
-	Shader* m_shader;
-	const CustomCamera* m_camera;
+	const Shader* const m_shader;
+	CustomCamera* const m_camera;
 
 	std::vector<std::unique_ptr<GeometryObject>> m_geometries;
 

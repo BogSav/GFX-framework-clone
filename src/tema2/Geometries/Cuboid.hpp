@@ -20,8 +20,8 @@ public:
 	}
 
 	Cuboid(
-		Shader* shader,
-		const CustomCamera* const camera,
+		const Shader* const shader,
+		CustomCamera* const camera,
 		const glm::vec3 v1,
 		const float width,
 		const float length,

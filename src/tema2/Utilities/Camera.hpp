@@ -155,7 +155,7 @@ private:
 
 	glm::mat4 projectionMatrix;
 
-	float m_fov = RADIANS(30);
+	float m_fov = RADIANS(60);
 	float m_zNear = 0.1f;
 	float m_Zfar = 1000.f;
 

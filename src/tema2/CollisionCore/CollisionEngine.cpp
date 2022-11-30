@@ -2,52 +2,56 @@
 
 #include "tema2/GameComponents/Copac.hpp"
 
-bool CollisionEngine::IsOnTrack(const Pista* pista, const Masina* masina)
+bool CollisionEngine::IsOnTrack(const Pista* pista, const GameComponent* component)
 {
 	bool isOnTrack = false;
-	for (size_t it = 0; it < pista->m_trackPoints.size() - 1; it++)
+	if (const Masina* masina = dynamic_cast<const Masina*>(component))
 	{
-		if (CollisionEngine::IsInside(
-				pista->m_exteriorPoints[it],
-				pista->m_trackPoints[it],
-				pista->m_trackPoints[it + 1],
-				pista->m_exteriorPoints[it + 1],
-				masina->m_position))
+		for (size_t it = 0; it < pista->m_trackPoints.size() - 1; it++)
 		{
-			isOnTrack = true;
-			break;
+			if (CollisionEngine::IsInside(
+					pista->m_exteriorPoints[it],
+					pista->m_trackPoints[it],
+					pista->m_trackPoints[it + 1],
+					pista->m_exteriorPoints[it + 1],
+					masina->m_position))
+			{
+				isOnTrack = true;
+				break;
+			}
 		}
+		return isOnTrack;
 	}
-	return isOnTrack;
-}
 
-bool CollisionEngine::IsOnTrack(const Pista* pista, const Tree* tree)
-{
-	bool isOnTrack = false;
-	for (size_t it = 0; it < pista->m_trackPoints.size() - 1; it++)
+	if (const Tree* tree = dynamic_cast<const Tree*>(component))
 	{
-		if (CollisionEngine::IsInside(
-				pista->m_exteriorPoints[it],
-				pista->m_trackPoints[it],
-				pista->m_trackPoints[it + 1],
-				pista->m_exteriorPoints[it + 1],
-				tree->GetTrunkCenter()))
+		for (size_t it = 0; it < pista->m_trackPoints.size() - 1; it++)
 		{
-			isOnTrack = true;
-			break;
+			if (CollisionEngine::IsInside(
+					pista->m_exteriorPoints[it],
+					pista->m_trackPoints[it],
+					pista->m_trackPoints[it + 1],
+					pista->m_exteriorPoints[it + 1],
+					tree->GetTrunkCenter()))
+			{
+				isOnTrack = true;
+				break;
+			}
 		}
+		return isOnTrack;
 	}
-	return isOnTrack;
+
+	throw std::exception("Wtf are you trying to check?");
 }
 
 template <class T>
-inline constexpr void CollisionEngine::IsCollidingWithNPC(
-	const Masina* masina, T* gameObject, bool& IsColliding)
+void CollisionEngine::IsCollidingWithNPC(
+	const Masina* masina, const T* possibleNpc, bool& IsColliding)
 {
 	if (IsColliding)
 		return;
 
-	if (const MasinaObstacol* npc = dynamic_cast<const MasinaObstacol*>(gameObject))
+	if (const MasinaObstacol* npc = dynamic_cast<const MasinaObstacol*>(possibleNpc))
 	{
 		IsColliding = CollisionEngine::IsInside(
 			npc->m_position,
@@ -63,9 +67,9 @@ inline constexpr void CollisionEngine::IsCollidingWithNPC(
 	}
 }
 
-constexpr bool CollisionEngine::IsInside(
+constexpr inline bool CollisionEngine::IsInside(
 	const glm::vec3& v1,
-	const glm::vec3& v2,
+	const glm::vec3& v2,32
 	const glm::vec3& v3,
 	const glm::vec3& v4,
 	const glm::vec3& point)

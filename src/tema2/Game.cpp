@@ -40,7 +40,7 @@ void Game::Init()
 	m_car = std::make_unique<Masina>(window, shaders["VertexNormal"]);
 
 	m_camera = new CustomCamera();
-	//m_camera->Set(
+	// m_camera->Set(
 	//	glm::vec3(0, 2, 3.5f), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), window->props.aspectRatio);
 	m_camera = m_car->GetCamera();
 
@@ -63,15 +63,15 @@ void Game::Init()
 	//		pista->GetInteriorPoints(), shaders["MyShader"], m_camera));
 	// }
 
-	if (const Pista* pista = dynamic_cast<const Pista*>(m_components[0].get()))
-	{
-		if (const Field* field = dynamic_cast<const Field*>(m_components[1].get()))
-		{
-			for (int i = 0; i < 10; i++)
-				m_components.emplace_back(
-					Tree::GenerateRandomTree(shaders["MyShader"], m_camera, pista, field));
-		}
-	}
+	//if (const Pista* pista = dynamic_cast<const Pista*>(m_components[0].get()))
+	//{
+	//	if (const Field* field = dynamic_cast<const Field*>(m_components[1].get()))
+	//	{
+	//		for (size_t i = 0; i < 10; i++)
+	//			m_components.emplace_back(
+	//				Tree::GenerateRandomTree(shaders["MyShader"], m_camera, pista, field));
+	//	}
+	//}
 
 
 	m_minimap = std::make_unique<MiniMap>(window, glm::vec2{900, 50}, 300.f, 150.f, -30.f, -30.f);
@@ -223,7 +223,8 @@ void Game::RenderGameComponents()
 	glViewport(0, 0, resolution.x, resolution.y);
 
 	std::for_each(
-		m_components.begin(), m_components.end(), [](const auto& curr) { curr->Render(); });
+		m_components.begin(),
+		m_components.end(), [this](const auto& curr) { curr->Render(m_car->GetPosition(), 0); });
 
 	m_car->Render();
 }

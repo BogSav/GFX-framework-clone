@@ -1,41 +1,43 @@
 #include "Masina.hpp"
+
 #include <iostream>
 
-Masina::Masina(const WindowObject* window, Shader* shader) : m_shader(shader)
+Masina::Masina(const WindowObject* const window, const Shader* const shader)
+	: m_shader(shader), m_camera(new CustomCamera()), m_lastCamera(new CustomCamera())
 {
 	m_mesh = std::make_unique<Mesh>();
 	m_mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "mele"), "F1.obj");
 
 	m_modelMatrix = glm::mat4(1);
 
-	m_position = {0, 0, 0};
-	m_scale = {0.25, 0.25, 0.25};
+	m_position = {0, -0.1, 0};
+	m_scale = {0.7, 0.7, 0.7};
 	m_direction = {1, 0, 0};
 	m_angleOrientation = 0;
+	m_distanceFromCamera = 6;
 
-	m_camera = new CustomCamera();
 	m_camera->Set(
-		m_position - m_direction * (m_distanceFromCamera * 2),
+		m_position - m_direction * (m_distanceFromCamera * 2.f),
 		m_position,
 		glm::vec3{0, 1, 0},
 		window->props.aspectRatio);
-	m_lastCamera = new CustomCamera();
 
-	m_camera->TranslateUpward(1.7f);
-	m_camera->RotateFirstPerson_OX(RADIANS(-10));
+	m_camera->TranslateUpward(m_distanceFromCamera);
+	m_camera->RotateFirstPerson_OX(RADIANS(-15));
 
 	m_gearBox = std::make_unique<GearBox>();
-	m_engine = std::make_unique<physics::Engine>(physics::PhysicsComponents::InstantiateComponents(), m_gearBox.get());
+	m_engine = std::make_unique<physics::Engine>(
+		physics::PhysicsComponents::InstantiateComponents(), m_gearBox.get());
 
 	m_turometru = std::make_unique<Turometru>(window);
 }
 
 void Masina::Render() const
 {
-	this->Render(m_camera, m_shader);
+	this->Render(m_camera.get(), m_shader);
 }
 
-void Masina::Render(const CustomCamera* const camera, const Shader* shader) const
+void Masina::Render(CustomCamera* const camera, const Shader* const shader) const
 {
 	assert(shader != nullptr);
 	assert(camera != nullptr);
@@ -49,10 +51,7 @@ void Masina::Render(const CustomCamera* const camera, const Shader* shader) cons
 		shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
 
 	glUniformMatrix4fv(
-		shader->loc_projection_matrix,
-		1,
-		GL_FALSE,
-		glm::value_ptr(camera->GetProjectionMatrix()));
+		shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetProjectionMatrix()));
 
 	glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(m_modelMatrix));
 
@@ -111,9 +110,8 @@ void Masina::UpdateOrientation(float deltaTime)
 
 	m_angleOrientation += angle;
 
-	m_direction = glm::normalize(
-		glm::rotate(glm::mat4(1.0f), angle, {0, 1, 0})
-		* glm::vec4(m_direction, 0));
+	m_direction =
+		glm::normalize(glm::rotate(glm::mat4(1.0f), angle, {0, 1, 0}) * glm::vec4(m_direction, 0));
 
 	m_camera->RotateThirdPerson_OY(angle);
 }
@@ -122,7 +120,7 @@ void Masina::ComputeModelMatrix()
 {
 	m_modelMatrix = glm::mat4(1);
 	m_modelMatrix = glm::translate(m_modelMatrix, m_position);
-	m_modelMatrix = glm::rotate(m_modelMatrix, m_angleOrientation, glm::vec3{0,1,0});
+	m_modelMatrix = glm::rotate(m_modelMatrix, m_angleOrientation, glm::vec3{0, 1, 0});
 	m_modelMatrix = glm::scale(m_modelMatrix, m_scale);
 }
 

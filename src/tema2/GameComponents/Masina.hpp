@@ -3,21 +3,15 @@
 #include "tema2/Utilities/Camera.hpp"
 #include "tema2/Physics/Engine.hpp"
 
-#include "components/simple_scene.h"
-#include "core/engine.h"
-
-#include "utils/glm_utils.h"
-#include "utils/math_utils.h"
-
 #include "tema2/Display/Turometru.hpp"
 
 class Masina
 {
 public:
-	Masina(const WindowObject*, Shader*);
+	Masina(const WindowObject* const, const Shader* const);
 
 	void Render() const;
-	void Render(const CustomCamera* const camera, const Shader*) const;
+	void Render(CustomCamera* const camera, const Shader* const) const;
 
 	void Update(double);
 	void UpdateOrientation(float);
@@ -30,9 +24,9 @@ public:
 
 	void PrintData();
 
-	const Turometru* GetTurometru() { return m_turometru.get(); }
-	const glm::vec3 GetPosition() const { return m_position; }
-	CustomCamera* GetCamera() { return m_camera; };
+	const glm::vec3& GetPosition() const { return m_position; }
+	const Turometru* const GetTurometru() const { return m_turometru.get(); }
+	const CustomCamera* const GetCamera() const { return m_camera.get(); };
 
 	friend class CollisionEngine;
 
@@ -41,12 +35,13 @@ private:
 	void UpdateLastParameters();
 
 private:
-	Shader* m_shader;
-	CustomCamera* m_camera;
-	CustomCamera* m_lastCamera;
+	const Shader* const m_shader;
+	std::unique_ptr<CustomCamera> const m_camera;
+	std::unique_ptr<CustomCamera> const m_lastCamera;
 
 	std::unique_ptr<physics::Engine> m_engine;
 	std::unique_ptr<GearBox> m_gearBox;
+	std::unique_ptr<Turometru> m_turometru;
 
 	std::unique_ptr<Mesh> m_mesh;
 
@@ -61,11 +56,9 @@ private:
 
 	DTimer m_updateLastParametersTimer;
 
-	float m_distanceFromCamera = 3;
+	float m_distanceFromCamera;
 
 	float m_stirringAngularSpeed = RADIANS(45);
 
 	glm::mat4 m_modelMatrix;
-
-	std::unique_ptr<Turometru> m_turometru;
 };

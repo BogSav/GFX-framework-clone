@@ -11,15 +11,13 @@ private:
 	CollisionEngine();
 
 public:
-	static bool IsOnTrack(const Pista* pista, const Masina* masina);
-	static bool IsOnTrack(const Pista*, const class Tree*);
+	static bool IsOnTrack(const Pista* pista, const GameComponent* component);
 
 	template <class T>
-	static constexpr void IsCollidingWithNPC(
-		const Masina* masina, T* gameObject, bool& IsColliding);
+	static void IsCollidingWithNPC(const Masina* masina, const T* gameObject, bool& IsColliding);
 
 private:
-	static constexpr bool IsInside(
+	static inline constexpr bool IsInside(
 		const glm::vec3& v1,
 		const glm::vec3& v2,
 		const glm::vec3& v3,

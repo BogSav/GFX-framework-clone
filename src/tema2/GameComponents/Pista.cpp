@@ -3,25 +3,32 @@
 #include <fstream>
 
 Pista::Pista(
-	Shader* shader,
-	const CustomCamera* const camera,
-	const double width)
-	: GameComponent(shader, camera), m_width(width)
+	const Shader* const shader,
+	CustomCamera* const camera,
+	const double& width,
+	Color roadColor,
+	Color linesColor,
+	std::string trackName)
+	: GameComponent(shader, camera),
+	  m_width(width),
+	  m_roadColor(roadColor),
+	  m_linesColor(linesColor),
+	  m_trackName(trackName)
 {
 	this->InitTrack();
 }
 
 void Pista::InitTrack()
 {
-	this->InitTrackPointsFromFile();
+	this->ReadTrackPointsFromFile();
 
-	m_exteriorPoints = this->GenerateExteriorPoints();
+	this->GenerateExteriorPoints();
 
 	this->GenerateGeometries();
 	this->GenerateLines();
 }
 
-void Pista::InitTrackPointsFromFile()
+void Pista::ReadTrackPointsFromFile()
 {
 	std::string fileName = m_trackName + ".txt";
 	std::string path = PATH_JOIN(SOURCE_PATH::TEMA2, "Piste", fileName);
@@ -56,10 +63,9 @@ void Pista::InitTrackPointsFromFile()
 	}
 }
 
-std::vector<glm::vec3> Pista::GenerateExteriorPoints()
+void Pista::GenerateExteriorPoints()
 {
-	std::vector<glm::vec3> exteriorPoints;
-	exteriorPoints.reserve(m_trackPoints.size());
+	m_exteriorPoints.reserve(m_trackPoints.size());
 
 	{
 		const glm::vec3 segmentDirection1 =
@@ -76,7 +82,7 @@ std::vector<glm::vec3> Pista::GenerateExteriorPoints()
 		const glm::vec3 exteriorPoint =
 			*m_trackPoints.cbegin() + finalExteriorDirection * static_cast<float>(m_width);
 
-		exteriorPoints.push_back(exteriorPoint);
+		m_exteriorPoints.push_back(exteriorPoint);
 	}
 
 	for (auto it = m_trackPoints.cbegin(); it != std::prev(m_trackPoints.cend(), 2); ++it)
@@ -93,7 +99,7 @@ std::vector<glm::vec3> Pista::GenerateExteriorPoints()
 		const glm::vec3 exteriorPoint =
 			*std::next(it) + finalExteriorDirection * static_cast<float>(m_width);
 
-		exteriorPoints.push_back(exteriorPoint);
+		m_exteriorPoints.push_back(exteriorPoint);
 	}
 
 	{
@@ -111,10 +117,8 @@ std::vector<glm::vec3> Pista::GenerateExteriorPoints()
 		const glm::vec3 exteriorPoint =
 			*std::prev(m_trackPoints.end()) + finalExteriorDirection * static_cast<float>(m_width);
 
-		exteriorPoints.push_back(exteriorPoint);
+		m_exteriorPoints.push_back(exteriorPoint);
 	}
-
-	return exteriorPoints;
 }
 
 void Pista::GenerateGeometries()
@@ -163,12 +167,12 @@ void Pista::GenerateLines()
 		m_geometries.emplace_back(new PlanarRectangle(
 			m_shader,
 			m_camera,
-			utils::GetInterpolatedPoint(m_trackPoints[i], m_exteriorPoints[i], 0.48f) + glm::vec3{0,0.1,0},
+			utils::GetInterpolatedPoint(m_trackPoints[i], m_exteriorPoints[i], 0.48f) + glm::vec3{0,0.001,0},
 			utils::GetInterpolatedPoint(m_trackPoints[i + 1], m_exteriorPoints[i + 1], 0.48f)
-				+ glm::vec3{0,0.1,0},
+				+ glm::vec3{0,0.001,0},
 			utils::GetInterpolatedPoint(m_trackPoints[i + 1], m_exteriorPoints[i + 1], 0.52f)
-				+ glm::vec3{0,0.1,0},
-			utils::GetInterpolatedPoint(m_trackPoints[i], m_exteriorPoints[i], 0.52f) + glm::vec3{0,0.1,0},
+				+ glm::vec3{0,0.001,0},
+			utils::GetInterpolatedPoint(m_trackPoints[i], m_exteriorPoints[i], 0.52f) + glm::vec3{0,0.001,0},
 			m_linesColor));
 	}
 }
