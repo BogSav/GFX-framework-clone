@@ -66,7 +66,7 @@ private:
 		}
 
 		return tmp;
-	}
+	} 
 
 	void Init()
 	{

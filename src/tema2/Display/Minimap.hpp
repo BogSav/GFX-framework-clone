@@ -26,7 +26,7 @@ public:
 		m_ortoCamera->Set(
 			glm::vec3(0, 10, 0),
 			glm::vec3(0, 0, 0),
-			glm::vec3(-1, 0, -1),
+			glm::vec3(1, 0, 1),
 			window->props.aspectRatio,
 			true,
 			left,

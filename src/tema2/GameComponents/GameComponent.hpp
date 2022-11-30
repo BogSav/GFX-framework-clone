@@ -1,10 +1,10 @@
 #pragma once
 
-#include "tema2/3dGeometries/GeometryObject.hpp"
-
+#include "Lighting/LightingComponent.hpp"
 #include "tema2/3dGeometries/3dPolygon.hpp"
 #include "tema2/3dGeometries/3dPolyhedron.hpp"
 #include "tema2/3dGeometries/3dTriangle.hpp"
+#include "tema2/3dGeometries/GeometryObject.hpp"
 
 class GameComponent
 {
@@ -38,6 +38,25 @@ public:
 			 &coefficient = std::as_const(coefficient)](const auto& current)
 			{ current->Render(m_modelMatrix, carPosition, coefficient); });
 	}
+
+	//void Render(
+	//	const glm::vec3& carPosition,
+	//	const glm::vec3& eyePosition,
+	//	const float& coefficient,
+	//	const VectorOfLightingComponents& lightingComponents) const
+	//{
+	//	std::for_each(
+	//		m_geometries.begin(),
+	//		m_geometries.end(),
+	//		[this,
+	//		 &eyePosition = std::as_const(eyePosition),
+	//		 &carPosition = std::as_const(carPosition),
+	//		 &coefficient = std::as_const(coefficient),
+	//		 &lightingComponents = std::as_const(lightingComponents)](const auto& current) {
+	//			current->Render(
+	//				m_modelMatrix, carPosition, eyePosition, coefficient, lightingComponents);
+	//		});
+	//}
 
 	// Render with default color and shader, but with custom camera
 	void Render(const CustomCamera* const camera) const

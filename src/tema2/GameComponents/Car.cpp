@@ -14,10 +14,12 @@ Car::Car(const WindowObject* window, const Shader* const shader)
 
 	m_modelMatrix = glm::mat4(1);
 
-	m_position = {0, -0.1, 0};
+	m_position = {-10, -0.1, -40};
 	m_scale = {0.7, 0.7, 0.7};
 	m_direction = {1, 0, 0};
 	m_angleOrientation = 0;
+
+	this->UpdateOrientation(-1);
 
 	m_camera->Set(
 		m_position - m_direction * (m_distanceFromCamera * 2.f),

@@ -11,7 +11,7 @@
 #include "tema2/GameComponents/Car.hpp"
 
 #include "tema2/GameComponents/Field.hpp"
-#include "tema2/Display/Screen.hpp"
+#include "tema2/Display/ScreenElements.hpp"
 
 #include "tema2/Display/Minimap.hpp"
 

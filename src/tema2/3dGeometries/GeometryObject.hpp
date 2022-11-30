@@ -11,6 +11,10 @@
 
 #include "tema2/Utilities/Utilities.hpp"
 
+#include "tema2/GameComponents/Lighting/LightingComponent.hpp"
+
+//typedef typename std::vector<std::reference_wrapper<std::unique_ptr<LightingComponent>>>
+//	VectorOfLightingComponents;
 
 class GeometryObject
 {
@@ -40,6 +44,26 @@ public:
 
 		m_mesh->Render();
 	}
+
+	//void Render(
+	//	const glm::mat4& modelMatrix,
+	//	const glm::vec3& carPosition,
+	//	const glm::vec3& eyePosition,
+	//	const float& coefficient,
+	//	const VectorOfLightingComponents& lightingComponents) const
+	//{
+	//	this->SendDataToShader(modelMatrix);
+
+	//	int location = glGetUniformLocation(m_shader->program, "CarPosition");
+	//	glUniform3fv(location, 1, glm::value_ptr(carPosition));
+
+	//	location = glGetUniformLocation(m_shader->program, "CurveCoefficient");
+	//	glUniform1f(location, coefficient);
+
+
+
+	//	m_mesh->Render();
+	//}
 
 	void Render(const glm::mat4& modelMatrix, const Color& color) const
 	{

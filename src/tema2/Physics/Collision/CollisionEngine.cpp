@@ -2,46 +2,14 @@
 
 #include "tema2/GameComponents/Tree.hpp"
 
-bool CollisionEngine::IsOnTrack(const Track* pista, const GameComponent* component)
+bool CollisionEngine::IsOnTrack(const Track* track, const Car* car)
 {
-	bool isOnTrack = false;
-	if (const Car* masina = dynamic_cast<const Car*>(component))
-	{
-		for (size_t it = 0; it < pista->m_trackPoints.size() - 1; it++)
-		{
-			if (CollisionEngine::IsInside(
-					pista->m_exteriorPoints[it],
-					pista->m_trackPoints[it],
-					pista->m_trackPoints[it + 1],
-					pista->m_exteriorPoints[it + 1],
-					masina->m_position))
-			{
-				isOnTrack = true;
-				break;
-			}
-		}
-		return isOnTrack;
-	}
+	return CollisionEngine::IsOnTrack(track, car->GetPosition());
+}
 
-	if (const Tree* tree = dynamic_cast<const Tree*>(component))
-	{
-		for (size_t it = 0; it < pista->m_trackPoints.size() - 1; it++)
-		{
-			if (CollisionEngine::IsInside(
-					pista->m_exteriorPoints[it],
-					pista->m_trackPoints[it],
-					pista->m_trackPoints[it + 1],
-					pista->m_exteriorPoints[it + 1],
-					tree->GetTrunkCenter()))
-			{
-				isOnTrack = true;
-				break;
-			}
-		}
-		return isOnTrack;
-	}
-
-	throw std::exception("Wtf are you trying to check?");
+bool CollisionEngine::IsOnTrack(const Track* track, const Tree* tree)
+{
+	return CollisionEngine::IsOnTrack(track, tree->GetTrunkCenter());
 }
 
 template <class T>
@@ -65,6 +33,23 @@ void CollisionEngine::IsCollidingWithNPC(
 	{
 		IsColliding = false;
 	}
+}
+
+inline bool CollisionEngine::IsOnTrack(const Track* track, const glm::vec3& pos)
+{
+	for (size_t it = 0; it < track->m_trackPoints.size() - 1; it++)
+	{
+		if (CollisionEngine::IsInside(
+				track->m_exteriorPoints[it],
+				track->m_trackPoints[it],
+				track->m_trackPoints[it + 1],
+				track->m_exteriorPoints[it + 1],
+				pos))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 constexpr inline bool CollisionEngine::IsInside(

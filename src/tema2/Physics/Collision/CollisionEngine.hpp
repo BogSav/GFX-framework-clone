@@ -11,7 +11,8 @@ private:
 	CollisionEngine();
 
 public:
-	static bool IsOnTrack(const Track* pista, const GameComponent* component);
+	static bool IsOnTrack(const Track* track, const Car* car);
+	static bool IsOnTrack(const Track* track, const class Tree* tree);
 
 	template <class T>
 	static void IsCollidingWithNPC(const Car* masina, const T* gameObject, bool& IsColliding);
@@ -23,4 +24,6 @@ private:
 		const glm::vec3& v3,
 		const glm::vec3& v4,
 		const glm::vec3& point);
+
+	static inline bool IsOnTrack(const Track* track, const glm::vec3& pos);
 };

@@ -22,7 +22,7 @@ void Game::Init()
 	{
 		Shader* shader = new Shader("MyShader");
 		shader->AddShader(
-			PATH_JOIN(window->props.selfDir, SOURCE_PATH::TEMA2, "Shaders", "VertexShader.glsl"),
+			PATH_JOIN(window->props.selfDir, SOURCE_PATH::TEMA2, "Shaders", "SimpleVertexShader.glsl"),
 			GL_VERTEX_SHADER);
 		shader->AddShader(
 			PATH_JOIN(window->props.selfDir, SOURCE_PATH::TEMA2, "Shaders", "FragmentShader.glsl"),
@@ -49,7 +49,7 @@ void Game::Init()
 	m_components.emplace_back(
 		new Field(shaders["MyShader"], m_camera, glm::vec3{-400, 0, -200}, 850, 500));
 
-	 if (const Track* pista = dynamic_cast<const Track*>(m_components[0].get()))
+	if (const Track* pista = dynamic_cast<const Track*>(m_components[0].get()))
 	{
 		m_components.emplace_back(NPC::CreateNewNPCRandomized(
 			pista->GetInteriorPoints(), shaders["MyShader"], m_camera));
@@ -65,7 +65,7 @@ void Game::Init()
 		m_components.emplace_back(
 			NPC::CreateNewNPCRandomized(
 			pista->GetInteriorPoints(), shaders["MyShader"], m_camera));
-	 }
+	}
 
 	if (const Track* pista = dynamic_cast<const Track*>(m_components[0].get()))
 	{
@@ -95,10 +95,10 @@ void Game::Update(float deltaTimeSeconds)
 	m_car->Update(deltaTimeSeconds);
 	// m_car->PrintData();
 
-	// std::cout << std::boolalpha
-	//		  << CollisionEngine::IsOnTrack(
-	//				 dynamic_cast<const Pista*>(m_components[0].get()), m_car.get())
-	//		  << std::endl;
+	 //std::cout << std::boolalpha
+		//	  << CollisionEngine::IsOnTrack(
+		//			 dynamic_cast<const Track*>(m_components[0].get()), m_car.get())
+		//	  << std::endl;
 
 	// bool isInCollision = false;
 	// std::for_each(
