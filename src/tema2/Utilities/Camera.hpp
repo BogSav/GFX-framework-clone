@@ -74,8 +74,8 @@ public:
 	{
 		this->position = position;
 		this->forward = glm::normalize(center - position);
-		this->right = glm::cross(forward, up);
-		this->up = glm::cross(this->right, forward);
+		this->right = glm::cross(this->forward, this->up);
+		this->up = glm::cross(this->right, this->forward);
 		this->distanceToTarget = glm::length(center - position);
 	}
 

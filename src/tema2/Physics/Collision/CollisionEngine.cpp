@@ -1,11 +1,11 @@
 #include "CollisionEngine.hpp"
 
-#include "tema2/GameComponents/Copac.hpp"
+#include "tema2/GameComponents/Tree.hpp"
 
-bool CollisionEngine::IsOnTrack(const Pista* pista, const GameComponent* component)
+bool CollisionEngine::IsOnTrack(const Track* pista, const GameComponent* component)
 {
 	bool isOnTrack = false;
-	if (const Masina* masina = dynamic_cast<const Masina*>(component))
+	if (const Car* masina = dynamic_cast<const Car*>(component))
 	{
 		for (size_t it = 0; it < pista->m_trackPoints.size() - 1; it++)
 		{
@@ -46,12 +46,12 @@ bool CollisionEngine::IsOnTrack(const Pista* pista, const GameComponent* compone
 
 template <class T>
 void CollisionEngine::IsCollidingWithNPC(
-	const Masina* masina, const T* possibleNpc, bool& IsColliding)
+	const Car* masina, const T* possibleNpc, bool& IsColliding)
 {
 	if (IsColliding)
 		return;
 
-	if (const MasinaObstacol* npc = dynamic_cast<const MasinaObstacol*>(possibleNpc))
+	if (const NPC* npc = dynamic_cast<const NPC*>(possibleNpc))
 	{
 		IsColliding = CollisionEngine::IsInside(
 			npc->m_position,
@@ -69,7 +69,7 @@ void CollisionEngine::IsCollidingWithNPC(
 
 constexpr inline bool CollisionEngine::IsInside(
 	const glm::vec3& v1,
-	const glm::vec3& v2,32
+	const glm::vec3& v2,
 	const glm::vec3& v3,
 	const glm::vec3& v4,
 	const glm::vec3& point)

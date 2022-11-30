@@ -1,9 +1,13 @@
-#include "Masina.hpp"
+#include "Car.hpp"
 
 #include <iostream>
 
-Masina::Masina(const WindowObject* const window, const Shader* const shader)
-	: m_shader(shader), m_camera(new CustomCamera()), m_lastCamera(new CustomCamera())
+Car::Car(const WindowObject* window, const Shader* const shader)
+	: m_shader(shader),
+	  m_camera(new CustomCamera()),
+	  m_lastCamera(new CustomCamera()),
+	  m_distanceFromCamera(6),
+	  m_stirringAngularSpeed(RADIANS(45))
 {
 	m_mesh = std::make_unique<Mesh>();
 	m_mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "mele"), "F1.obj");
@@ -14,7 +18,6 @@ Masina::Masina(const WindowObject* const window, const Shader* const shader)
 	m_scale = {0.7, 0.7, 0.7};
 	m_direction = {1, 0, 0};
 	m_angleOrientation = 0;
-	m_distanceFromCamera = 6;
 
 	m_camera->Set(
 		m_position - m_direction * (m_distanceFromCamera * 2.f),
@@ -29,15 +32,17 @@ Masina::Masina(const WindowObject* const window, const Shader* const shader)
 	m_engine = std::make_unique<physics::Engine>(
 		physics::PhysicsComponents::InstantiateComponents(), m_gearBox.get());
 
-	m_turometru = std::make_unique<Turometru>(window);
+	m_speedometer = std::make_unique<Speedometer>(window);
+
+	this->ComputeModelMatrix();
 }
 
-void Masina::Render() const
+void Car::Render() const
 {
 	this->Render(m_camera.get(), m_shader);
 }
 
-void Masina::Render(CustomCamera* const camera, const Shader* const shader) const
+void Car::Render(CustomCamera* const camera, const Shader* const shader) const
 {
 	assert(shader != nullptr);
 	assert(camera != nullptr);
@@ -58,7 +63,7 @@ void Masina::Render(CustomCamera* const camera, const Shader* const shader) cons
 	m_mesh->Render();
 }
 
-void Masina::Update(double deltaTime)
+void Car::Update(double deltaTime)
 {
 	glm::vec3 newPosition = m_engine->GetNewPosition(m_position, m_direction, deltaTime);
 	m_camera->MoveForward(glm::l2Norm(newPosition - m_position));
@@ -67,26 +72,26 @@ void Masina::Update(double deltaTime)
 	this->ComputeModelMatrix();
 	this->UpdateLastParameters();
 
-	m_turometru->UpdateSpeed(static_cast<float>(m_engine->GetSpeedKmh()));
-	m_turometru->UpdateGear(m_engine->GetCurrentGear());
+	m_speedometer->UpdateSpeed(static_cast<float>(m_engine->GetSpeedKmh()));
+	m_speedometer->UpdateGear(m_engine->GetCurrentGear());
 }
 
-void Masina::Accelerate()
+void Car::Accelerate()
 {
 	m_engine->Accelerate();
 }
 
-void Masina::Brake()
+void Car::Brake()
 {
 	m_engine->Brake();
 }
 
-void Masina::InertialDecceleration()
+void Car::InertialDecceleration()
 {
 	m_engine->InertialDeccelerate();
 }
 
-void Masina::RestoreLastState()
+void Car::RestoreLastState()
 {
 	m_position = m_lastPosition;
 	m_direction = m_lastDirection;
@@ -99,12 +104,12 @@ void Masina::RestoreLastState()
 	m_engine->Reset();
 }
 
-void Masina::PrintData()
+void Car::PrintData()
 {
 	std::cout << m_engine->GetSpeedKmh() << " " << m_engine->GetCurrentGear() << std::endl;
 }
 
-void Masina::UpdateOrientation(float deltaTime)
+void Car::UpdateOrientation(float deltaTime)
 {
 	float angle = deltaTime * m_stirringAngularSpeed;
 
@@ -116,7 +121,7 @@ void Masina::UpdateOrientation(float deltaTime)
 	m_camera->RotateThirdPerson_OY(angle);
 }
 
-void Masina::ComputeModelMatrix()
+void Car::ComputeModelMatrix()
 {
 	m_modelMatrix = glm::mat4(1);
 	m_modelMatrix = glm::translate(m_modelMatrix, m_position);
@@ -124,7 +129,7 @@ void Masina::ComputeModelMatrix()
 	m_modelMatrix = glm::scale(m_modelMatrix, m_scale);
 }
 
-void Masina::UpdateLastParameters()
+void Car::UpdateLastParameters()
 {
 	if (m_updateLastParametersTimer.PassedTime(5))
 	{

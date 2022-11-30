@@ -1,15 +1,15 @@
 #pragma once
 
-#include "2dRectangle.hpp"
-#include "tema2/Display/Minimap.hpp"
-#include "tema2/Display/Turometru.hpp"
-#include "tema2/Utilities/Transformations.hpp"
+#include "2dPolygon.hpp"
+#include "Minimap.hpp"
+#include "Speedometer.hpp"
+#include "tema2/Utilities/Utilities.hpp"
 
 class ScreenElements
 {
 public:
 	ScreenElements() = delete;
-	ScreenElements(const WindowObject* window, const MiniMap* miniMap, const Turometru* turometru)
+	ScreenElements(const WindowObject* window, const MiniMap* miniMap, const Speedometer* turometru)
 		: m_NDCSpace(-1.f, -1.f, 2.f, 2.f),
 		  m_logicSpace(
 			  0,
@@ -54,10 +54,12 @@ private:
 
 	void CreateMinimapFrame()
 	{
-		// Creare frame minimap
+		// Setare propietati frame minimap
 		m_minmapFrameColor = Colors::Black;
 		m_minimapFrameOutlineSize = 5.f;
-		m_minimapFrame = std::make_unique<Rectangle2d>(
+
+		// Crearea propriu-zisa
+		m_minimapFrame = std::make_unique<Polygon2d>(
 			glm::vec2{
 				m_miniMap->GetX() - m_minimapFrameOutlineSize,
 				m_miniMap->GetY() - m_minimapFrameOutlineSize},
@@ -74,10 +76,10 @@ private:
 
 	std::unique_ptr<Shader> m_shader;
 
-	const Turometru* m_turometru;
+	const Speedometer* const m_turometru;
 
 	const MiniMap* m_miniMap;
-	std::unique_ptr<Rectangle2d> m_minimapFrame;
+	std::unique_ptr<Polygon2d> m_minimapFrame;
 	Color m_minmapFrameColor;
 	float m_minimapFrameOutlineSize;
 };

@@ -3,12 +3,12 @@
 #include "tema2/Utilities/Camera.hpp"
 #include "tema2/Physics/Engine.hpp"
 
-#include "tema2/Display/Turometru.hpp"
+#include "tema2/Display/Speedometer.hpp"
 
-class Masina
+class Car
 {
 public:
-	Masina(const WindowObject* const, const Shader* const);
+	Car(const WindowObject*, const Shader* const);
 
 	void Render() const;
 	void Render(CustomCamera* const camera, const Shader* const) const;
@@ -25,7 +25,7 @@ public:
 	void PrintData();
 
 	const glm::vec3& GetPosition() const { return m_position; }
-	const Turometru* const GetTurometru() const { return m_turometru.get(); }
+	const Speedometer* const GetTurometru() const { return m_speedometer.get(); }
 	const CustomCamera* const GetCamera() const { return m_camera.get(); };
 
 	friend class CollisionEngine;
@@ -41,7 +41,7 @@ private:
 
 	std::unique_ptr<physics::Engine> m_engine;
 	std::unique_ptr<GearBox> m_gearBox;
-	std::unique_ptr<Turometru> m_turometru;
+	std::unique_ptr<Speedometer> m_speedometer;
 
 	std::unique_ptr<Mesh> m_mesh;
 
@@ -56,9 +56,8 @@ private:
 
 	DTimer m_updateLastParametersTimer;
 
-	float m_distanceFromCamera;
-
-	float m_stirringAngularSpeed = RADIANS(45);
+	const float m_distanceFromCamera;
+	const float m_stirringAngularSpeed;
 
 	glm::mat4 m_modelMatrix;
 };

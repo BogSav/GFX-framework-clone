@@ -12,7 +12,7 @@ class Circle2d
 {
 public:
 	Circle2d() = delete;
-	Circle2d(const glm::vec2 origin, const float radius, const int nrOfSteps, Color color)
+	Circle2d(const glm::vec2& origin, const float& radius, const int& nrOfSteps, Color color)
 	{
 		std::vector<VertexFormat> vertices;
 		std::vector<unsigned int> indices;
@@ -45,7 +45,7 @@ public:
 		m_mesh->InitFromData(vertices, indices);
 	}
 
-	void Render(const Shader* shader, const glm::mat3& transformMatrix, const glm::mat3& modelMatrix)
+	void Render(const Shader* const shader, const glm::mat3& transformMatrix, const glm::mat3& modelMatrix)
 	{
 		if (!m_mesh || !shader || !shader->program)
 			return;

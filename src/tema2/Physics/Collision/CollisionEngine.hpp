@@ -1,9 +1,9 @@
 #pragma once
 
 #include "tema2/GameComponents/GameComponent.hpp"
-#include "tema2/GameComponents/Masina.hpp"
-#include "tema2/GameComponents/MasinaObstacol.hpp"
-#include "tema2/GameComponents/Pista.hpp"
+#include "tema2/GameComponents/Car.hpp"
+#include "tema2/GameComponents/Track.hpp"
+#include "tema2/GameComponents/NPC.hpp"
 
 class CollisionEngine
 {
@@ -11,10 +11,10 @@ private:
 	CollisionEngine();
 
 public:
-	static bool IsOnTrack(const Pista* pista, const GameComponent* component);
+	static bool IsOnTrack(const Track* pista, const GameComponent* component);
 
 	template <class T>
-	static void IsCollidingWithNPC(const Masina* masina, const T* gameObject, bool& IsColliding);
+	static void IsCollidingWithNPC(const Car* masina, const T* gameObject, bool& IsColliding);
 
 private:
 	static inline constexpr bool IsInside(

@@ -1,9 +1,9 @@
 #include "tema2/Game.hpp"
 
-#include "tema2/CollisionCore/CollisionEngine.hpp"
-#include "tema2/GameComponents/Copac.hpp";
-#include "tema2/GameComponents/MasinaObstacol.hpp"
-#include "tema2/Utilities/Transformations.hpp"
+#include "tema2/Utilities/Utilities.hpp"
+#include "tema2/GameComponents/NPC.hpp"
+#include "tema2/GameComponents/Tree.hpp"
+#include "tema2/Physics/Collision/CollisionEngine.hpp"
 
 #include <iostream>
 #include <vector>
@@ -37,41 +37,45 @@ void Game::Init()
 		meshes[mesh->GetMeshID()] = mesh;
 	}
 
-	m_car = std::make_unique<Masina>(window, shaders["VertexNormal"]);
+	m_car = std::make_unique<Car>(window, shaders["VertexNormal"]);
 
 	m_camera = new CustomCamera();
 	// m_camera->Set(
 	//	glm::vec3(0, 2, 3.5f), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), window->props.aspectRatio);
-	m_camera = m_car->GetCamera();
+	m_camera = const_cast<CustomCamera*>(m_car->GetCamera());
 
 	// Modificare camera in cea a masinii
-	m_components.emplace_back(new Pista(shaders["MyShader"], m_camera, 20));
+	m_components.emplace_back(new Track(shaders["MyShader"], m_camera, 20));
 	m_components.emplace_back(
 		new Field(shaders["MyShader"], m_camera, glm::vec3{-400, 0, -200}, 850, 500));
 
-	// if (const Pista* pista = dynamic_cast<const Pista*>(m_components[0].get()))
-	//{
-	//	m_components.emplace_back(MasinaObstacol::CreateNewNPCRandomized(
-	//		pista->GetInteriorPoints(), shaders["MyShader"], m_camera));
-	//	m_components.emplace_back(MasinaObstacol::CreateNewNPCRandomized(
-	//		pista->GetInteriorPoints(), shaders["MyShader"], m_camera));
-	//	m_components.emplace_back(MasinaObstacol::CreateNewNPCRandomized(
-	//		pista->GetInteriorPoints(), shaders["MyShader"], m_camera));
-	//	m_components.emplace_back(MasinaObstacol::CreateNewNPCRandomized(
-	//		pista->GetInteriorPoints(), shaders["MyShader"], m_camera));
-	//	m_components.emplace_back(MasinaObstacol::CreateNewNPCRandomized(
-	//		pista->GetInteriorPoints(), shaders["MyShader"], m_camera));
-	// }
+	 if (const Track* pista = dynamic_cast<const Track*>(m_components[0].get()))
+	{
+		m_components.emplace_back(NPC::CreateNewNPCRandomized(
+			pista->GetInteriorPoints(), shaders["MyShader"], m_camera));
+		m_components.emplace_back(
+			NPC::CreateNewNPCRandomized(
+			pista->GetInteriorPoints(), shaders["MyShader"], m_camera));
+		m_components.emplace_back(
+			NPC::CreateNewNPCRandomized(
+			pista->GetInteriorPoints(), shaders["MyShader"], m_camera));
+		m_components.emplace_back(
+			NPC::CreateNewNPCRandomized(
+			pista->GetInteriorPoints(), shaders["MyShader"], m_camera));
+		m_components.emplace_back(
+			NPC::CreateNewNPCRandomized(
+			pista->GetInteriorPoints(), shaders["MyShader"], m_camera));
+	 }
 
-	//if (const Pista* pista = dynamic_cast<const Pista*>(m_components[0].get()))
-	//{
-	//	if (const Field* field = dynamic_cast<const Field*>(m_components[1].get()))
-	//	{
-	//		for (size_t i = 0; i < 10; i++)
-	//			m_components.emplace_back(
-	//				Tree::GenerateRandomTree(shaders["MyShader"], m_camera, pista, field));
-	//	}
-	//}
+	if (const Track* pista = dynamic_cast<const Track*>(m_components[0].get()))
+	{
+		if (const Field* field = dynamic_cast<const Field*>(m_components[1].get()))
+		{
+			for (size_t i = 0; i < 10; i++)
+				m_components.emplace_back(
+					Tree::GenerateRandomTree(shaders["MyShader"], m_camera, pista, field));
+		}
+	}
 
 
 	m_minimap = std::make_unique<MiniMap>(window, glm::vec2{900, 50}, 300.f, 150.f, -30.f, -30.f);
@@ -105,6 +109,9 @@ void Game::Update(float deltaTimeSeconds)
 	// std::cout << std::boolalpha << isInCollision << std::endl;
 	// if (isInCollision)
 	//	m_car->RestoreLastState();
+
+	if (frametimer.PassedTime(0.5))
+	std::cout << 1 / deltaTimeSeconds << std::endl;
 
 	m_minimap->UpdateMinimapCameraBasedOnCarPosition(m_car.get());
 
@@ -224,7 +231,7 @@ void Game::RenderGameComponents()
 
 	std::for_each(
 		m_components.begin(),
-		m_components.end(), [this](const auto& curr) { curr->Render(m_car->GetPosition(), 0); });
+		m_components.end(), [this](const auto& curr) { curr->Render(); });
 
 	m_car->Render();
 }

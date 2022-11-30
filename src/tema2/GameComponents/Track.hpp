@@ -2,16 +2,17 @@
 
 #include "GameComponent.hpp"
 
-class Pista : public GameComponent
+class Track : public GameComponent
 {
 public:
-	Pista() = delete;
-	Pista(
+	Track() = delete;
+	Track(
 		const Shader* const shader,
 		CustomCamera* const camera,
-		const double& width,
+		const float& width,
 		Color roadColor = Colors::Asfalt,
 		Color linesColor = Colors::White,
+		const float& scaleFactor = 6.0f,
 		std::string trackName = "MonacoF1");
 
 	const std::vector<glm::vec3>& GetInteriorPoints() const { return m_trackPoints; };
@@ -33,7 +34,8 @@ private:
 	const Color m_roadColor = Colors::Gray;
 	const Color m_linesColor;
 
-	const double m_width;
+	const float m_width;
+	const float m_scaleFactor;
 	const glm::vec3 m_zAxisNormal = glm::vec3{0, 1, 0};
 	const std::string m_trackName;
 };

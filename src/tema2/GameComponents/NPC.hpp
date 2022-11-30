@@ -2,13 +2,11 @@
 
 #include "GameComponent.hpp"
 
-class MasinaObstacol : public GameComponent
+class NPC : public GameComponent
 {
 public:
-	static MasinaObstacol* CreateNewNPC(
-		const std::vector<glm::vec3>& intPts, Shader* shader, const CustomCamera* camera);
-	static MasinaObstacol* CreateNewNPCRandomized(
-		const std::vector<glm::vec3>& intPts, Shader* shader, const CustomCamera* camera);
+	static NPC* CreateNewNPCRandomized(
+		const std::vector<glm::vec3>& intPts, const Shader* const shader, CustomCamera* const camera);
 
 	friend class CollisionEngine;
 
@@ -16,8 +14,8 @@ public:
 	void Update(float deltaTime) override;
 
 private:
-	MasinaObstacol() = delete;
-	MasinaObstacol(const std::vector<glm::vec3>&, Shader* shader, const CustomCamera* camera);
+	NPC() = delete;
+	NPC(const std::vector<glm::vec3>&, const Shader* const, CustomCamera* const);
 
 	void Init();
 

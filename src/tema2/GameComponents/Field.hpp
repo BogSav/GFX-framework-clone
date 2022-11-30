@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GameComponent.hpp"
-#include "tema2/Utilities/Transformations.hpp"
+#include "tema2/Utilities/Utilities.hpp"
 
 class Field : public GameComponent
 {
@@ -13,6 +13,7 @@ public:
 		const glm::vec3& startPos,
 		const float& width,
 		const float& length,
+		bool increseTextureDensity = true,
 		const size_t ozTriangleDensity = 20,
 		const size_t oxTrianglreDensity = 20)
 		: GameComponent(shader, camera),
@@ -22,7 +23,10 @@ public:
 		  m_OZTrianglesDensity(ozTriangleDensity),
 		  m_OXTrianglesDensity(oxTrianglreDensity)
 	{
-		this->IncreaseTextureDensity();
+		if (increseTextureDensity)
+		{
+			this->IncreaseTextureDensity();
+		}
 	}
 
 	const glm::vec3& Getposition() const { return m_startPosition; }
@@ -32,14 +36,14 @@ public:
 private:
 	void IncreaseTextureDensity()
 	{
-		const float zstep = m_length / m_OZTrianglesDensity;
-		const float xstep = m_width / m_OXTrianglesDensity;
+		const float zstep = m_length / static_cast<const float>(m_OZTrianglesDensity);
+		const float xstep = m_width / static_cast<const float>(m_OXTrianglesDensity);
 
 		for (float currentZstep = zstep; currentZstep < m_length; currentZstep += zstep)
 		{
 			for (float currentXstep = xstep; currentXstep < m_width; currentXstep += xstep)
 			{
-				m_geometries.emplace_back(new PlanarRectangle(
+				m_geometries.emplace_back(new Polygon3d(
 					m_shader,
 					m_camera,
 					m_startPosition + glm::vec3{currentXstep, -0.1, currentZstep + zstep},
@@ -53,10 +57,10 @@ private:
 
 
 private:
-	glm::vec3 m_startPosition;
-	float m_width;
-	float m_length;
+	const glm::vec3 m_startPosition;
+	const float m_width;
+	const float m_length;
 
-	size_t m_OZTrianglesDensity;
-	size_t m_OXTrianglesDensity;
+	const size_t m_OZTrianglesDensity;
+	const size_t m_OXTrianglesDensity;
 };

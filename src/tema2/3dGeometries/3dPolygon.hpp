@@ -2,10 +2,10 @@
 
 #include "GeometryObject.hpp"
 
-class PlanarRectangle : public GeometryObject
+class Polygon3d : public GeometryObject
 {
 public:
-	PlanarRectangle(
+	Polygon3d(
 		const glm::vec3 v1,
 		const glm::vec3 v2,
 		const glm::vec3 v3,
@@ -16,7 +16,7 @@ public:
 		InitMesh(v1, v2,v3,v4, color, wireframe);
 	}
 
-	PlanarRectangle(
+	Polygon3d(
 		const Shader* const shader,
 		CustomCamera* const camera,
 		const glm::vec3 v1,

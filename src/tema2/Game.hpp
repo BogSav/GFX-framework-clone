@@ -2,16 +2,16 @@
 
 #include "components/simple_scene.h"
 
-#include "GameComponents/Pista.hpp"
+#include "tema2/GameComponents/Track.hpp"
 
 #include "Utilities/Camera.hpp"
 
 #include "Physics/Engine.hpp"
 
-#include "tema2/GameComponents/Masina.hpp"
+#include "tema2/GameComponents/Car.hpp"
 
 #include "tema2/GameComponents/Field.hpp"
-#include "Display/ScreenElements.hpp"
+#include "tema2/Display/Screen.hpp"
 
 #include "tema2/Display/Minimap.hpp"
 
@@ -48,8 +48,10 @@ private:
 
 	CustomCamera* m_camera;
 
-	std::unique_ptr<Masina> m_car;
+	std::unique_ptr<Car> m_car;
 	GeometryObject* obj;
+
+	DTimer frametimer;
 
 	std::unique_ptr<ScreenElements> m_screen;
 	std::unique_ptr<MiniMap> m_minimap;

@@ -2,30 +2,30 @@
 
 #include "GeometryObject.hpp"
 
-class Cuboid : public GeometryObject
+class Polyhedron3d : public GeometryObject
 {
 public:
-	Cuboid(
-		const glm::vec3 v1,
-		const glm::vec3 v2,
-		const glm::vec3 v3,
-		const glm::vec3 v4,
-		const glm::vec3 v5,
-		const glm::vec3 v6,
-		const glm::vec3 v7,
-		const glm::vec3 v8,
+	Polyhedron3d(
+		const glm::vec3& v1,
+		const glm::vec3& v2,
+		const glm::vec3& v3,
+		const glm::vec3& v4,
+		const glm::vec3& v5,
+		const glm::vec3& v6,
+		const glm::vec3& v7,
+		const glm::vec3& v8,
 		const Color color)
 	{
 		InitMesh(v1, v2, v3, v4, v5, v6, v7, v8, color);
 	}
 
-	Cuboid(
+	Polyhedron3d(
 		const Shader* const shader,
 		CustomCamera* const camera,
-		const glm::vec3 v1,
-		const float width,
-		const float length,
-		const float height,
+		const glm::vec3& v1,
+		const float& width,
+		const float& length,
+		const float& height,
 		const Color color)
 		: GeometryObject(shader, camera)
 	{
@@ -43,18 +43,18 @@ public:
 
 private:
 	void InitMesh(
-		const glm::vec3 v1,
-		const glm::vec3 v2,
-		const glm::vec3 v3,
-		const glm::vec3 v4,
-		const glm::vec3 v5,
-		const glm::vec3 v6,
-		const glm::vec3 v7,
-		const glm::vec3 v8,
+		const glm::vec3& v1,
+		const glm::vec3& v2,
+		const glm::vec3& v3,
+		const glm::vec3& v4,
+		const glm::vec3& v5,
+		const glm::vec3& v6,
+		const glm::vec3& v7,
+		const glm::vec3& v8,
 		const Color color)
 	{
 		std::vector<VertexFormat> vertices;
-		vertices.reserve(4);
+		vertices.reserve(8);
 		vertices.emplace_back(v1, color());
 		vertices.emplace_back(v2, color());
 		vertices.emplace_back(v3, color());

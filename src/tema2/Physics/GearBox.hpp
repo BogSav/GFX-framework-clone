@@ -7,7 +7,6 @@
 
 struct GearBox
 {
-public:
 	void Reset()
 	{
 		currentGear = 1;
@@ -30,7 +29,7 @@ public:
 	}
 	void ShiftGearUp()
 	{
-		assert(currentGear < 6);
+		assert(currentGear < 7);
 		currentGear++;
 		isInShift = true;
 	};
@@ -43,8 +42,8 @@ public:
 	double GetBrakeForce() const { return brakeFroce; }
 
 private:
-	std::vector<double> forces = {0, 40000, 35000, 30000, 25000, 20000, 15000};  // Newtons
-	std::vector<double> speeds = {0, 20, 40, 60, 80, 100, 180};  // m/s
+	std::vector<double> forces = {0, 40000, 35000, 30000, 23000, 22000, 21000, 20000};  // Newtons
+	std::vector<double> speeds = {0, 20, 40, 55, 70, 85, 110, 200};  // m/s
 	int currentGear = 1;
 	double brakeFroce = 30000;
 

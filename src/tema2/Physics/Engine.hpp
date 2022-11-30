@@ -4,7 +4,6 @@
 #include "tema2/Utilities/Timer.hpp"
 #include "utils/glm_utils.h"
 
-
 namespace physics
 {
 
@@ -26,6 +25,8 @@ struct PhysicsComponents
 		newComponents->windDirection = glm::vec3{0, 0, 1};
 		newComponents->dragCoefficient = 0.9;  // Adimensional
 
+		newComponents->speedReductionScalingFcator = 2;
+
 		return newComponents;
 	}
 
@@ -38,6 +39,8 @@ struct PhysicsComponents
 	double dragCoefficient = 0;
 	double frontalArea = 0;
 	glm::vec3 windDirection = {0, 0, 0};
+
+	double speedReductionScalingFcator = 0;
 };
 
 
@@ -58,7 +61,7 @@ public:
 
 	void Accelerate()
 	{
-		if (m_gearBox->GetCurrentGear() == 6)
+		if (m_gearBox->GetCurrentGear() == 8)
 			return;
 
 		if (v1 > m_gearBox->GetNeededSpeedToShiftGearUp())
@@ -101,8 +104,10 @@ public:
 		if (!this->UpdateSpeed(carDirection, deltaTime))
 			return currentPosition;
 
-		glm::vec3 newPosition =
-			currentPosition + carDirection * static_cast<float>((v1 + v2) * deltaTime / 2 / 2);
+		glm::vec3 newPosition = currentPosition
+			+ carDirection
+				* static_cast<float>(
+					(v1 + v2) * deltaTime / 2 / m_physics->speedReductionScalingFcator);
 
 		v1 = v2;
 
@@ -111,7 +116,7 @@ public:
 
 	int GetCurrentGear() const { return m_gearBox->GetCurrentGear(); }
 
-	double GetSpeedMph() const { return v1; }
+	double GetSpeedMps() const { return v1; }
 	double GetSpeedKmh() const { return v1 * 3.6; }
 
 private:

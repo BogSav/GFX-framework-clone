@@ -1,8 +1,10 @@
 #pragma once
 
-#include "tema2/Geometries/GeometryObject.hpp"
-#include "tema2/Geometries/PlanarRectangle.hpp"
-#include "tema2/Geometries/PlanarTriangle.hpp"
+#include "tema2/3dGeometries/GeometryObject.hpp"
+
+#include "tema2/3dGeometries/3dPolygon.hpp"
+#include "tema2/3dGeometries/3dPolyhedron.hpp"
+#include "tema2/3dGeometries/3dTriangle.hpp"
 
 class GameComponent
 {

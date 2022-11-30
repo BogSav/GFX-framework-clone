@@ -6,12 +6,12 @@
 #include "utils/glm_utils.h"
 #include "utils/math_utils.h"
 
-class Rectangle2d
+class Polygon2d
 {
 public:
-	Rectangle2d() = delete;
-	Rectangle2d(
-		const glm::vec2 v1, const glm::vec2 v2, const glm::vec2 v3, const glm::vec2 v4, Color color)
+	Polygon2d() = delete;
+	Polygon2d(
+		const glm::vec2& v1, const glm::vec2& v2, const glm::vec2& v3, const glm::vec2& v4, Color color)
 	{
 		std::vector<VertexFormat> vertices;
 		vertices.reserve(4);
@@ -34,8 +34,8 @@ public:
 		m_mesh->InitFromData(vertices, indices);
 	}
 
-	Rectangle2d(const glm::vec2 v1, const double width, const double height, Color color)
-		: Rectangle2d(
+	Polygon2d(const glm::vec2& v1, const double& width, const double& height, Color color)
+		: Polygon2d(
 			v1,
 			v1 + glm::vec2{0, height},
 			v1 + glm::vec2{width, height},
@@ -44,7 +44,7 @@ public:
 	{
 	}
 
-	void Render(const Shader* shader, const glm::mat3& transformMatrix, const glm::mat3& modelMatrix)
+	void Render(const Shader* const shader, const glm::mat3& transformMatrix, const glm::mat3& modelMatrix)
 	{
 		if (!m_mesh || !shader || !shader->program)
 			return;

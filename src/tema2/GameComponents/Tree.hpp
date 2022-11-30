@@ -1,9 +1,9 @@
 #pragma once
 
-#include "tema2/CollisionCore/CollisionEngine.hpp"
-#include "tema2/GameComponents/Field.hpp"
-#include "tema2/GameComponents/Pista.hpp"
-#include "tema2/Geometries/Cuboid.hpp"
+#include "Field.hpp"
+#include "GameComponent.hpp"
+#include "Track.hpp"
+#include "tema2/Physics/Collision/CollisionEngine.hpp"
 
 #include <random>
 
@@ -11,7 +11,10 @@ class Tree : public GameComponent
 {
 public:
 	static Tree* GenerateRandomTree(
-		const Shader* const shader, CustomCamera* const camera, const Pista* pista, const Field* field)
+		const Shader* const shader,
+		CustomCamera* const camera,
+		const Track* pista,
+		const Field* field)
 	{
 		Tree* tmp = nullptr;
 
@@ -32,7 +35,10 @@ private:
 	Tree(const Shader* const shader, CustomCamera* const camera) : GameComponent(shader, camera) {}
 
 	static Tree* ReGenerateTree(
-		const Shader* const shader, CustomCamera* const camera, const Pista* pista, const Field* field)
+		const Shader* const shader,
+		CustomCamera* const camera,
+		const Track* pista,
+		const Field* field)
 	{
 		Tree* tmp = new Tree(shader, camera);
 
@@ -64,7 +70,7 @@ private:
 
 	void Init()
 	{
-		m_geometries.emplace_back(new Cuboid(
+		m_geometries.emplace_back(new Polyhedron3d(
 			m_shader,
 			m_camera,
 			m_position,
@@ -72,7 +78,7 @@ private:
 			m_trunkWidth,
 			m_trunkHieght,
 			Colors::Brown));
-		m_geometries.emplace_back(new Cuboid(
+		m_geometries.emplace_back(new Polyhedron3d(
 			m_shader,
 			m_camera,
 			m_position
@@ -84,7 +90,7 @@ private:
 			Colors::TreeGreen));
 	}
 
-	glm::vec3 GetTrunkCenter() const
+	const glm::vec3& GetTrunkCenter() const
 	{
 		return m_position + glm::vec3{m_trunkWidth / 2.f, 0, 0}
 		+ glm::vec3{0, 0, m_trunkWidth / 2.f};
