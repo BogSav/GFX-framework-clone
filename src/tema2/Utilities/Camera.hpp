@@ -147,7 +147,7 @@ public:
 	glm::vec3& GetPosition() { return position; };
 
 private:
-	float distanceToTarget;
+	float distanceToTarget = 0.f;
 	glm::vec3 position;
 	glm::vec3 forward;
 	glm::vec3 right;
@@ -159,8 +159,8 @@ private:
 	float m_zNear = 0.1f;
 	float m_Zfar = 1000.f;
 
-	float leftOrtho;
-	float rightOrtho;
-	float bottomOrttho;
-	float topOrtho;
+	float leftOrtho = 0.f;
+	float rightOrtho = 0.f;
+	float bottomOrttho = 0.f;
+	float topOrtho = 0.f;
 };

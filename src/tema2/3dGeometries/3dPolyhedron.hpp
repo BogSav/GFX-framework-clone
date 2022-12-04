@@ -55,19 +55,21 @@ private:
 	{
 		std::vector<VertexFormat> vertices;
 		vertices.reserve(8);
-		vertices.emplace_back(v1, color());
-		vertices.emplace_back(v2, color());
-		vertices.emplace_back(v3, color());
-		vertices.emplace_back(v4, color());
-		vertices.emplace_back(v5, color());
-		vertices.emplace_back(v6, color());
-		vertices.emplace_back(v7, color());
-		vertices.emplace_back(v8, color());
+		vertices.emplace_back(v1, color(), glm::vec3{0, 0, 0});
+		vertices.emplace_back(v2, color(), glm::vec3{0, 0, 0});
+		vertices.emplace_back(v3, color(), glm::vec3{0, 0, 0});
+		vertices.emplace_back(v4, color(), glm::vec3{0, 0, 0});
+		vertices.emplace_back(v5, color(), glm::vec3{0, 0, 0});
+		vertices.emplace_back(v6, color(), glm::vec3{0, 0, 0});
+		vertices.emplace_back(v7, color(), glm::vec3{0, 0, 0});
+		vertices.emplace_back(v8, color(), glm::vec3{0, 0, 0});
 
 		std::vector<unsigned int> indices = {0, 1, 2, 1, 3, 2, 2, 3, 7, 2, 7, 6, 1, 7, 3, 1, 5, 7,
 											 6, 7, 4, 7, 5, 4, 0, 4, 1, 1, 4, 5, 2, 6, 4, 0, 2, 4};
 
 		m_mesh = std::make_unique<Mesh>();
+
+		this->CalculateVerticesNormals(vertices, indices);
 
 		m_mesh->InitFromData(vertices, indices);
 	}

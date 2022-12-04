@@ -55,7 +55,7 @@ private:
 	void CreateMinimapFrame()
 	{
 		// Setare propietati frame minimap
-		m_minmapFrameColor = Colors::Black;
+		m_minmapFrameColor = Colors::White;
 		m_minimapFrameOutlineSize = 5.f;
 
 		// Crearea propriu-zisa

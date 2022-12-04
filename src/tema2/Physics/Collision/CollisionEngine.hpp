@@ -1,9 +1,6 @@
 #pragma once
 
 #include "tema2/GameComponents/GameComponent.hpp"
-#include "tema2/GameComponents/Car.hpp"
-#include "tema2/GameComponents/Track.hpp"
-#include "tema2/GameComponents/NPC.hpp"
 
 class CollisionEngine
 {
@@ -11,11 +8,12 @@ private:
 	CollisionEngine();
 
 public:
-	static bool IsOnTrack(const Track* track, const Car* car);
-	static bool IsOnTrack(const Track* track, const class Tree* tree);
+	static bool IsOnTrack(const class Track* track, const class Car* car);
+	static bool IsOnTrack(const class Track* track, const class StreetLight* streetLight);
+	static bool IsOnTrack(const class Track* track, const class Tree* tree);
 
 	template <class T>
-	static void IsCollidingWithNPC(const Car* masina, const T* gameObject, bool& IsColliding);
+	static void IsCollidingWithNPC(const class Car* masina, const T* gameObject, bool& IsColliding);
 
 private:
 	static inline constexpr bool IsInside(
@@ -25,5 +23,5 @@ private:
 		const glm::vec3& v4,
 		const glm::vec3& point);
 
-	static inline bool IsOnTrack(const Track* track, const glm::vec3& pos);
+	static inline bool IsOnTrack(const class Track* track, const glm::vec3& pos);
 };

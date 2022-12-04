@@ -7,13 +7,18 @@ class LightingComponent
 public:
 	LightingComponent() = default;
 
-	const glm::vec3& GetPosition() { return m_position; }
+	friend class GeometryObject;
 
-private:
+protected:
+	virtual const glm::vec3& operator()() const = 0;
+	virtual const glm::vec3& GetLightSourcePosition() const = 0;
+
+protected:
 	glm::vec3 m_position;
 
+private:
 	static constexpr unsigned int materialShiness = 30;
-	
+
 	static constexpr float materialKd = 0.5;
 	static constexpr float materialKs = 0.5;
 };

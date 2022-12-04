@@ -38,25 +38,26 @@ public:
 			 &coefficient = std::as_const(coefficient)](const auto& current)
 			{ current->Render(m_modelMatrix, carPosition, coefficient); });
 	}
-
-	//void Render(
-	//	const glm::vec3& carPosition,
-	//	const glm::vec3& eyePosition,
-	//	const float& coefficient,
-	//	const VectorOfLightingComponents& lightingComponents) const
-	//{
-	//	std::for_each(
-	//		m_geometries.begin(),
-	//		m_geometries.end(),
-	//		[this,
-	//		 &eyePosition = std::as_const(eyePosition),
-	//		 &carPosition = std::as_const(carPosition),
-	//		 &coefficient = std::as_const(coefficient),
-	//		 &lightingComponents = std::as_const(lightingComponents)](const auto& current) {
-	//			current->Render(
-	//				m_modelMatrix, carPosition, eyePosition, coefficient, lightingComponents);
-	//		});
-	//}
+	
+	// The final boss of rendering, light, curve...everything
+	void Render(
+		const glm::vec3& carPosition,
+		const glm::vec3& eyePosition,
+		const float& coefficient,
+		const std::vector<const LightingComponent*>& lightingComponents) const
+	{
+		std::for_each(
+			m_geometries.begin(),
+			m_geometries.end(),
+			[this,
+			 &eyePosition = std::as_const(eyePosition),
+			 &carPosition = std::as_const(carPosition),
+			 &coefficient = std::as_const(coefficient),
+			 &lightingComponents = std::as_const(lightingComponents)](const auto& current) {
+				current->Render(
+					m_modelMatrix, carPosition, eyePosition, coefficient, lightingComponents);
+			});
+	}
 
 	// Render with default color and shader, but with custom camera
 	void Render(const CustomCamera* const camera) const
@@ -86,6 +87,16 @@ public:
 			m_geometries.end(),
 			[this, &color = std::as_const(color), &camera = std::as_const(camera)](
 				const auto& current) { current->Render(m_shader, camera, m_modelMatrix, color); });
+	}
+
+	// Render with custom shader and camera
+	void Render(const Shader* const shader, const CustomCamera* const camera) const
+	{
+		std::for_each(
+			m_geometries.begin(),
+			m_geometries.end(),
+			[this, &shader = std::as_const(shader), &camera = std::as_const(camera)](
+				const auto& current) { current->Render(shader, camera, m_modelMatrix); });
 	}
 
 protected:

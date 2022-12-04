@@ -38,9 +38,9 @@ private:
 	{
 		std::vector<VertexFormat> vertices;
 		vertices.reserve(3);
-		vertices.emplace_back(v1, color());
-		vertices.emplace_back(v2, color());
-		vertices.emplace_back(v3, color());
+		vertices.emplace_back(v1, color(), glm::vec3{0, 0, 0});
+		vertices.emplace_back(v2, color(), glm::vec3{0, 0, 0});
+		vertices.emplace_back(v3, color(), glm::vec3{0, 0, 0});
 
 		std::vector<unsigned int> indices;
 		indices.reserve(3);
@@ -54,6 +54,8 @@ private:
 		{
 			m_mesh->SetDrawMode(GL_LINE_LOOP);
 		}
+
+		this->CalculateVerticesNormals(vertices, indices);
 
 		m_mesh->InitFromData(vertices, indices);
 	}

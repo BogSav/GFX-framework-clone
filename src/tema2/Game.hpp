@@ -45,13 +45,15 @@ private:
 
 private:
 	std::vector<std::unique_ptr<GameComponent>> m_components;
+	std::vector<const LightingComponent*> m_lightingComponents;
 
-	CustomCamera* m_camera;
+	std::shared_ptr<CustomCamera> m_camera;
 
 	std::unique_ptr<Car> m_car;
 	GeometryObject* obj;
 
 	DTimer frametimer;
+	DTimer m_resetTimer;
 
 	std::unique_ptr<ScreenElements> m_screen;
 	std::unique_ptr<MiniMap> m_minimap;

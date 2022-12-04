@@ -1,6 +1,10 @@
 #include "CollisionEngine.hpp"
 
+#include "tema2/GameComponents/Track.hpp"
+#include "tema2/GameComponents/NPC.hpp"
+#include "tema2/GameComponents/Car.hpp"
 #include "tema2/GameComponents/Tree.hpp"
+#include "tema2/GameComponents/Lighting/StreetLight.hpp"
 
 bool CollisionEngine::IsOnTrack(const Track* track, const Car* car)
 {
@@ -10,6 +14,11 @@ bool CollisionEngine::IsOnTrack(const Track* track, const Car* car)
 bool CollisionEngine::IsOnTrack(const Track* track, const Tree* tree)
 {
 	return CollisionEngine::IsOnTrack(track, tree->GetTrunkCenter());
+}
+
+bool CollisionEngine::IsOnTrack(const Track* track, const StreetLight* streetLight)
+{
+	return CollisionEngine::IsOnTrack(track, streetLight->GetBasePosition());
 }
 
 template <class T>

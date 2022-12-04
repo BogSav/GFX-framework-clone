@@ -13,7 +13,7 @@ public:
 		const Color color,
 		const bool wireframe = false)
 	{
-		InitMesh(v1, v2,v3,v4, color, wireframe);
+		InitMesh(v1, v2, v3, v4, color, wireframe);
 	}
 
 	Polygon3d(
@@ -41,10 +41,10 @@ private:
 	{
 		std::vector<VertexFormat> vertices;
 		vertices.reserve(4);
-		vertices.emplace_back(v1, color());
-		vertices.emplace_back(v2, color());
-		vertices.emplace_back(v3, color());
-		vertices.emplace_back(v4, color());
+		vertices.emplace_back(v1, color(), glm::vec3{0, 0, 0});
+		vertices.emplace_back(v2, color(), glm::vec3{0, 0, 0});
+		vertices.emplace_back(v3, color(), glm::vec3{0, 0, 0});
+		vertices.emplace_back(v4, color(), glm::vec3{0, 0, 0});
 
 		std::vector<unsigned int> indices;
 		indices.reserve(6);
@@ -61,6 +61,8 @@ private:
 		{
 			m_mesh->SetDrawMode(GL_LINE_LOOP);
 		}
+
+		this->CalculateVerticesNormals(vertices, indices);
 
 		m_mesh->InitFromData(vertices, indices);
 	}

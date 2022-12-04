@@ -15,7 +15,7 @@ public:
 		const WindowObject* window,
 		Color indicatorColor = Colors::White,
 		Color textColor = Colors::White,
-		Color speedometerBackgroundColor = Colors::Black,
+		Color speedometerBackgroundColor = Colors::Gray,
 		const std::string fontName = "Algerian.ttf")
 		: m_indicatorColor(indicatorColor),
 		  m_textColor(textColor),
@@ -76,5 +76,5 @@ private:
 	const Color m_textColor;
 
 	float m_speed = 0.f;
-	int m_gear = 0.f;
+	int m_gear = 0;
 };

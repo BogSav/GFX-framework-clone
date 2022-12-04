@@ -26,7 +26,7 @@ public:
 
 	const glm::vec3& GetPosition() const { return m_position; }
 	const Speedometer* const GetTurometru() const { return m_speedometer.get(); }
-	const CustomCamera* const GetCamera() const { return m_camera.get(); };
+	const std::shared_ptr<CustomCamera>& GetCamera() const { return m_camera; };
 
 	friend class CollisionEngine;
 
@@ -36,8 +36,8 @@ private:
 
 private:
 	const Shader* const m_shader;
-	std::unique_ptr<CustomCamera> const m_camera;
-	std::unique_ptr<CustomCamera> const m_lastCamera;
+	std::shared_ptr<CustomCamera> m_camera;
+	std::unique_ptr<CustomCamera> m_lastCamera;
 
 	std::unique_ptr<physics::Engine> m_engine;
 	std::unique_ptr<GearBox> m_gearBox;

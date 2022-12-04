@@ -44,9 +44,9 @@ private:
 
 		std::mt19937 randEngine(std::random_device{}());
 
-		std::uniform_int_distribution<int> posXGenerator(
+		std::uniform_real_distribution<float> posXGenerator(
 			field->Getposition().x, field->Getposition().x + field->GetWidth());
-		std::uniform_int_distribution<int> posYGenerator(
+		std::uniform_real_distribution<float> posYGenerator(
 			field->Getposition().z, field->Getposition().z + field->GetLength());
 		std::uniform_real_distribution<float> trunkWidthGenerator(3.f, 6.f);
 		std::uniform_real_distribution<float> crownWidthGenerator(10.f, 15.f);
@@ -90,7 +90,7 @@ private:
 			Colors::TreeGreen));
 	}
 
-	const glm::vec3& GetTrunkCenter() const
+	glm::vec3 GetTrunkCenter() const
 	{
 		return m_position + glm::vec3{m_trunkWidth / 2.f, 0, 0}
 		+ glm::vec3{0, 0, m_trunkWidth / 2.f};
@@ -99,9 +99,9 @@ private:
 private:
 	glm::vec3 m_position;
 
-	float m_trunkWidth;
-	float m_trunkHieght;
+	float m_trunkWidth = 0.f;
+	float m_trunkHieght = 0.f;
 
-	float m_crownWidth;
-	float m_crownHeight;
+	float m_crownWidth = 0.f;
+	float m_crownHeight = 0.f;
 };

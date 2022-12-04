@@ -80,15 +80,15 @@ void NPC::UpdateOrientation()
 
 	if (crossPr < 0 && dotPr > 0)
 	{
-		currentAngle += 3.f * 3.14 / 2.f;
+		currentAngle += 3.f * std::numbers::pi_v<float> / 2.f;
 	}
 	else if (crossPr < 0 && dotPr < 0)
 	{
-		currentAngle += 3.14;
+		currentAngle += std::numbers::pi_v<float>;
 	}
 	else if (crossPr > 0 && dotPr < 0)
 	{
-		currentAngle += 3.14 / 2;
+		currentAngle += std::numbers::pi_v<float> / 2.f;
 	}
 
 	m_orientationAngle = currentAngle - 3.14 / 2;
