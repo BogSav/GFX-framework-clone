@@ -71,7 +71,10 @@ void GeometryObject::Render(
 
 	// Send the positions
 	location = glGetUniformLocation(m_shader->program, "light_positions");
-	glUniform3fv(location, lightingPositions.size(), reinterpret_cast<GLfloat*>(lightingPositions.data()));
+	glUniform3fv(
+		location,
+		static_cast<GLint>(lightingPositions.size()),
+		reinterpret_cast<GLfloat*>(lightingPositions.data()));
 
 	m_mesh->Render();
 }

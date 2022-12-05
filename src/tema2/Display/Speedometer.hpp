@@ -15,7 +15,7 @@ public:
 		const WindowObject* window,
 		Color indicatorColor = Colors::White,
 		Color textColor = Colors::White,
-		Color speedometerBackgroundColor = Colors::Gray,
+		Color speedometerBackgroundColor = Colors::DarkGray,
 		const std::string fontName = "Algerian.ttf")
 		: m_indicatorColor(indicatorColor),
 		  m_textColor(textColor),
@@ -29,9 +29,12 @@ public:
 		m_textEngine = std::make_unique<TextEngine>(window, fontName);
 	}
 
-	void Render(const Shader* const shader, const glm::mat3& transformMatrix) const
+	void Render(
+		const Shader* const shader,
+		const glm::mat3& transformMatrix,
+		const glm::mat3& modelMatrix) const
 	{
-		m_speedometerBackground->Render(shader, transformMatrix, glm::mat3(1));
+		m_speedometerBackground->Render(shader, transformMatrix, modelMatrix);
 
 		glClear(GL_DEPTH_BUFFER_BIT);
 		m_textEngine->Render("0", 22.f, 659.f, 1.2f, m_textColor);

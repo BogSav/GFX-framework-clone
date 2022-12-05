@@ -49,13 +49,13 @@ private:
 
 		std::uniform_real_distribution<float> posXGenerator(
 			field->Getposition().x, field->Getposition().x + field->GetWidth());
-		std::uniform_real_distribution<float> posYGenerator(
+		std::uniform_real_distribution<float> posZGenerator(
 			field->Getposition().z, field->Getposition().z + field->GetLength());
 		std::uniform_real_distribution<float> baseWidthGenerator(3.f, 6.f);
 		std::uniform_real_distribution<float> baseHeightGenerator(10.f, 20.f);
 		std::uniform_real_distribution<float> headHeightGenerator(7.f, 14.f);
 
-		tmp->m_position = glm::vec3{posXGenerator(randEngine), 0, posYGenerator(randEngine)};
+		tmp->m_position = glm::vec3{posXGenerator(randEngine), 0, posZGenerator(randEngine)};
 		tmp->m_baseHeight = baseHeightGenerator(randEngine);
 		tmp->m_baseWidth = baseWidthGenerator(randEngine);
 		tmp->m_headHeight = headHeightGenerator(randEngine);
@@ -94,7 +94,7 @@ private:
 	const glm::vec3& operator()() const override { return this->GetLightSourcePosition(); }
 	const glm::vec3& GetLightSourcePosition() const override
 	{
-		return m_position + glm::vec3{0, m_baseHeight + m_headHeight / 2.f, 0};
+		return m_position + glm::vec3{0, m_baseHeight + m_headHeight, 0} + glm::vec3{m_baseWidth / 2.f, 0, m_baseWidth / 2.f};
 	}
 
 private:

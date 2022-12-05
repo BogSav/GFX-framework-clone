@@ -28,7 +28,7 @@ void main()
 {
     // Lighting calculations
     vec3 world_pos = (Model * vec4(v_position,1)).xyz;
-    float ambient_light = material_kd * 0.02;
+    float ambient_light = material_kd * 0.04;
     float culoareObiect = 0;
 
     for(int i = 0; i < nrOfLightSources; i++)
@@ -47,7 +47,7 @@ void main()
             specular_light = material_ks * pow(max(dot(N, H), 0), material_shininess);
         }
 
-        float factorAtenuare = 1 / (0.0001 * pow(distance(world_pos, light_positions[i]), 2) + 1);
+        float factorAtenuare = 1 / (0.00009 * pow(distance(world_pos, light_positions[i]), 2) + 1);
         culoareObiect += (ambient_light + factorAtenuare * ( diffuse_light + specular_light )) * 1.1;
     }
     

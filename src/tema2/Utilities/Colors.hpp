@@ -78,4 +78,5 @@ static constexpr Color Asfalt = MakeRGB(42u, 41u, 34u);
 static constexpr Color DarkGreen = MakeRGB(0x20u, 0x59u, 0x21u);
 static constexpr Color Brown = MakeRGB(0x55u, 0x34u, 0x2bu);
 static constexpr Color TreeGreen = MakeRGB(0x6au, 0x6cu, 0x00u);
+static constexpr Color DarkGray = MakeRGB(0x3au, 0x3bu, 0x3cu);
 }  // namespace Colors

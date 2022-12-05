@@ -42,19 +42,28 @@ private:
 	void RenderScreenObjects();
 
 	void UpdateGameComponents(float);
+	void UpdateCar(float);
+
+	void CreateShaders();
 
 private:
 	std::vector<std::unique_ptr<GameComponent>> m_components;
 	std::vector<const LightingComponent*> m_lightingComponents;
 
 	std::shared_ptr<CustomCamera> m_camera;
-
 	std::unique_ptr<Car> m_car;
-	GeometryObject* obj;
 
 	DTimer frametimer;
 	DTimer m_resetTimer;
 
+	size_t m_nrOfStreetLights;
+	size_t m_nrOfNPCs;
+	size_t m_nrOfTrees;
+
+	glm::ivec2 m_resolution;
+
 	std::unique_ptr<ScreenElements> m_screen;
-	std::unique_ptr<MiniMap> m_minimap;
+	std::shared_ptr<MiniMap> m_minimap;
+
+	bool m_carReset;
 };

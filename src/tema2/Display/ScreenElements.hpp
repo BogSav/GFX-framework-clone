@@ -9,18 +9,22 @@ class ScreenElements
 {
 public:
 	ScreenElements() = delete;
-	ScreenElements(const WindowObject* window, const MiniMap* miniMap, const Speedometer* turometru)
+	ScreenElements(
+		const WindowObject* window,
+		const std::shared_ptr<MiniMap>& miniMap,
+		const std::shared_ptr<Speedometer>& speedometer)
 		: m_NDCSpace(-1.f, -1.f, 2.f, 2.f),
 		  m_logicSpace(
 			  0,
 			  0,
 			  static_cast<float>(window->GetResolution().x),
-			  static_cast<float>(window->GetResolution().y)),
-		  m_miniMap(miniMap),
-		  m_turometru(turometru)
+			  static_cast<float>(window->GetResolution().y))
 	{
 		// Creare matrice de transformare
 		m_transformMatrix = utils::VisualizationTransf2d(m_logicSpace, m_NDCSpace);
+
+		m_speedometer = speedometer;
+		m_miniMap = miniMap;
 
 		this->CreateShader(window);
 		this->CreateMinimapFrame();
@@ -29,7 +33,7 @@ public:
 	void Render() const
 	{
 		m_minimapFrame->Render(m_shader.get(), m_transformMatrix, glm::mat3(1));
-		m_turometru->Render(m_shader.get(), m_transformMatrix);
+		m_speedometer->Render(m_shader.get(), m_transformMatrix, glm::mat3(1));
 	}
 
 	void RenderCarRepresentation() const
@@ -76,9 +80,9 @@ private:
 
 	std::unique_ptr<Shader> m_shader;
 
-	const Speedometer* const m_turometru;
+	std::shared_ptr<Speedometer> m_speedometer;
+	std::shared_ptr<MiniMap> m_miniMap;
 
-	const MiniMap* m_miniMap;
 	std::unique_ptr<Polygon2d> m_minimapFrame;
 	Color m_minmapFrameColor;
 	float m_minimapFrameOutlineSize;

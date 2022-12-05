@@ -34,7 +34,7 @@ Car::Car(const WindowObject* window, const Shader* const shader)
 	m_engine = std::make_unique<physics::Engine>(
 		physics::PhysicsComponents::InstantiateComponents(), m_gearBox.get());
 
-	m_speedometer = std::make_unique<Speedometer>(window);
+	m_speedometer = std::make_shared<Speedometer>(window);
 
 	this->ComputeModelMatrix();
 }

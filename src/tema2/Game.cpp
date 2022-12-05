@@ -20,110 +20,72 @@ Game::~Game()
 
 void Game::Init()
 {
-	{
-		Shader* shader = new Shader("MyShader");
-		shader->AddShader(
-			PATH_JOIN(
-				window->props.selfDir, SOURCE_PATH::TEMA2, "Shaders", "SimpleVertexShader.glsl"),
-			GL_VERTEX_SHADER);
-		shader->AddShader(
-			PATH_JOIN(window->props.selfDir, SOURCE_PATH::TEMA2, "Shaders", "FragmentShader.glsl"),
-			GL_FRAGMENT_SHADER);
-		shader->CreateAndLink();
-		shaders[shader->GetName()] = shader;
-	}
+	this->CreateShaders();
+	
+	m_nrOfNPCs = 3;
+	m_nrOfStreetLights = 10;
+	m_nrOfTrees = 10;
 
-	{
-		Shader* shader = new Shader("Lighting");
-		shader->AddShader(
-			PATH_JOIN(
-				window->props.selfDir, SOURCE_PATH::TEMA2, "Shaders", "LightVertexShader.glsl"),
-			GL_VERTEX_SHADER);
-		shader->AddShader(
-			PATH_JOIN(window->props.selfDir, SOURCE_PATH::TEMA2, "Shaders", "FragmentShader.glsl"),
-			GL_FRAGMENT_SHADER);
-		shader->CreateAndLink();
-		shaders[shader->GetName()] = shader;
-	}
+	m_resolution = window->props.resolution;
 
+	m_carReset = false;
+
+	// Init the car and set up the camera
 	m_car = std::make_unique<Car>(window, shaders["VertexNormal"]);
-
 	m_camera = m_car->GetCamera();
-	// m_camera->Set(
-	// glm::vec3(0, 2, 3.5f), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), window->props.aspectRatio);
 
-	m_components.emplace_back(new Track(shaders["Lighting"], m_camera.get(), 20));
+	// Init the track and the field
+	m_components.emplace_back(new Track(shaders["LightingShader"], m_camera.get(), 20));
 	m_components.emplace_back(
-		new Field(shaders["Lighting"], m_camera.get(), glm::vec3{-450, 0, -300}, 850, 600));
-
-	// if (const Track* pista = dynamic_cast<const Track*>(m_components[0].get()))
-	//{
-	//	for (size_t i = 0; i < 3; i++)
-	//		m_components.emplace_back(NPC::CreateNewNPCRandomized(
-	//			pista->GetInteriorPoints(), shaders["Lighting"], m_camera.get()));
-	// }
+		new Field(shaders["LightingShader"], m_camera.get(), glm::vec3{-480, 0, -350}, 930, 600));
 
 	if (const Track* pista = dynamic_cast<const Track*>(m_components[0].get()))
 	{
-		if (const Field* field = dynamic_cast<const Field*>(m_components[1].get()))
+		// Generation of the NPCs
+		for (size_t i = 0; i < m_nrOfNPCs; i++)
 		{
-			for (size_t i = 0; i < 10; i++)
-				m_components.emplace_back(
-					Tree::GenerateRandomTree(shaders["Lighting"], m_camera.get(), pista, field));
+			m_components.emplace_back(NPC::CreateNewNPCRandomized(
+				pista->GetInteriorPoints(), shaders["LightingShader"], m_camera.get()));
 		}
-	}
 
-	if (const Track* pista = dynamic_cast<const Track*>(m_components[0].get()))
-	{
+		// Generation of the trees and street lights
 		if (const Field* field = dynamic_cast<const Field*>(m_components[1].get()))
 		{
-			for (size_t i = 0; i < 10; i++)
+			for (size_t i = 0; i < m_nrOfTrees; i++)
+			{
+				m_components.emplace_back(Tree::GenerateRandomTree(
+					shaders["LightingShader"], m_camera.get(), pista, field));
+			}
+
+			for (size_t i = 0; i < m_nrOfStreetLights; i++)
 			{
 				StreetLight* strLight = StreetLight::GenerateRandomStreetLight(
-					shaders["MyShader"], m_camera.get(), pista, field);
+					shaders["SimpleShader"], m_camera.get(), pista, field);
 				m_lightingComponents.push_back(strLight);
 				m_components.emplace_back(strLight);
 			}
 		}
 	}
 
-
-	m_minimap = std::make_unique<MiniMap>(window, glm::vec2{900, 50}, 300.f, 150.f, -30.f, -30.f);
-
-	m_screen = std::make_unique<ScreenElements>(window, m_minimap.get(), m_car->GetTurometru());
+	// Init the minimap and the screen objects
+	m_minimap = std::make_shared<MiniMap>(window, glm::vec2{900, 50}, 300.f, 150.f, -30.f, -30.f);
+	m_screen = std::make_unique<ScreenElements>(window, m_minimap, m_car->GetTurometru());
 }
 
 
 void Game::FrameStart()
 {
-	//glClearColor(0.48f, 0.6f, 0.63f, 1.f);
+	// glClearColor(0.48f, 0.6f, 0.63f, 1.f);
 	glClearColor(0.16, 0.16, 0.16, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Game::Update(float deltaTimeSeconds)
 {
-	m_car->Update(deltaTimeSeconds);
+	this->UpdateCar(deltaTimeSeconds);
 
-	// m_car->PrintData();
-
-	// std::cout << std::boolalpha
-	//	  << CollisionEngine::IsOnTrack(
-	//			 dynamic_cast<const Track*>(m_components[0].get()), m_car.get())
-	//	  << std::endl;
-
-	// bool isInCollision = false;
-	// std::for_each(
-	//	m_components.begin(),
-	//	m_components.end(),
-	//	[this, &isInCollision](const auto& curr)
-	//	{ CollisionEngine::IsCollidingWithNPC(m_car.get(), curr.get(), isInCollision); });
-	// std::cout << std::boolalpha << isInCollision << std::endl;
-	// if (isInCollision)
-	//	m_car->RestoreLastState();
-
-	 if (frametimer.PassedTime(0.5))
-	 std::cout << 1 / deltaTimeSeconds << std::endl;
+	// if (frametimer.PassedTime(0.5))
+	// std::cout << 1 / deltaTimeSeconds << std::endl;
 
 	m_minimap->UpdateMinimapCameraBasedOnCarPosition(m_car.get());
 
@@ -202,7 +164,6 @@ void Game::OnKeyPress(int key, int mods)
 {
 	if (key == GLFW_KEY_SPACE)
 	{
-		std::cout << "sdafasdf";
 		m_car->RestoreLastState();
 	}
 }
@@ -246,13 +207,14 @@ void Game::RenderGameComponents()
 		m_components.end(),
 		[this](const auto& curr)
 		{ curr->Render(m_car->GetPosition(), m_camera->GetPosition(), 0, m_lightingComponents); });
-	// Fcatorul bun este cam 0.001 keep in mind
-	
+	// Factorul bun este cam 0.001 keep in mind
+
 	m_car->Render();
 }
 
 void Game::RenderMinimap()
 {
+	// Set the minimap area
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glViewport(
 		static_cast<int>(m_minimap->GetX()),
@@ -260,15 +222,17 @@ void Game::RenderMinimap()
 		static_cast<int>(m_minimap->GetWidth()),
 		static_cast<int>(m_minimap->GetHeight()));
 
+	// Render each game components in the minimap area
 	std::for_each(
 		m_components.begin(),
 		m_components.end(),
-		[this](const auto& curr) { curr->Render(shaders["MyShader"], m_minimap->GetCamera()); });
+		[this](const auto& curr) { curr->Render(shaders["SimpleShader"], m_minimap->GetCamera()); });
 
 	// m_car->Render(m_minimap->GetCamera(), shaders["VertexNormal"]);
+
+	// Render the representation of the car to the minimap
 	glClear(GL_DEPTH_BUFFER_BIT);
-	glm::ivec2 resolution = window->GetResolution();
-	glViewport(0, 0, resolution.x, resolution.y);
+	glViewport(0, 0, m_resolution.x, m_resolution.y);
 	m_screen->RenderCarRepresentation();
 }
 
@@ -276,7 +240,7 @@ void Game::RenderScreenObjects()
 {
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glm::ivec2 resolution = window->GetResolution();
-	glViewport(0, 0, resolution.x, resolution.y);
+	glViewport(0, 0, m_resolution.x, m_resolution.y);
 
 	m_screen->Render();
 }
@@ -287,4 +251,71 @@ void Game::UpdateGameComponents(float deltaTime)
 		m_components.begin(),
 		m_components.end(),
 		[this, &deltaTime](const auto& curr) { curr->Update(deltaTime); });
+}
+
+void Game::UpdateCar(float deltaTimeSeconds)
+{
+	if (m_carReset)
+	{
+		if (m_resetTimer.PassedTime(2))
+		{
+			m_carReset = false;
+			m_car->RestoreLastState();
+		}
+	}
+	else
+	{
+		// m_car->PrintData();
+		m_car->Update(deltaTimeSeconds);
+		// Check if car is on the track
+		if (!CollisionEngine::IsOnTrack(
+				dynamic_cast<const Track*>(m_components[0].get()), m_car.get()))
+		{
+			m_carReset = true;
+			std::cout << "A iesit de pe pista" << std::endl;
+		}
+
+		// Check if car collides with a NPC
+		for (const auto& gameComponent : m_components)
+		{
+			if (const NPC* npc = dynamic_cast<const NPC*>(gameComponent.get()))
+			{
+				if (CollisionEngine::IsCollidingWithNPC(m_car.get(), npc))
+				{
+					std::cout << "Accident!" << std::endl;
+					m_carReset = true;
+					break;
+				}
+			}
+		}
+	}
+}
+
+void Game::CreateShaders()
+{
+	{
+		Shader* shader = new Shader("SimpleShader");
+		shader->AddShader(
+			PATH_JOIN(
+				window->props.selfDir, SOURCE_PATH::TEMA2, "Shaders", "SimpleVertexShader.glsl"),
+			GL_VERTEX_SHADER);
+		shader->AddShader(
+			PATH_JOIN(window->props.selfDir, SOURCE_PATH::TEMA2, "Shaders", "FragmentShader.glsl"),
+			GL_FRAGMENT_SHADER);
+		shader->CreateAndLink();
+		shaders[shader->GetName()] = shader;
+	}
+
+	{
+		Shader* shader = new Shader("LightingShader");
+		shader->AddShader(
+			PATH_JOIN(
+				window->props.selfDir, SOURCE_PATH::TEMA2, "Shaders", "LightVertexShader.glsl"),
+			GL_VERTEX_SHADER);
+		shader->AddShader(
+			PATH_JOIN(window->props.selfDir, SOURCE_PATH::TEMA2, "Shaders", "FragmentShader.glsl"),
+			GL_FRAGMENT_SHADER);
+		shader->CreateAndLink();
+		shaders[shader->GetName()] = shader;
+	}
 }

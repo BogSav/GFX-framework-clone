@@ -25,7 +25,7 @@ public:
 	void PrintData();
 
 	const glm::vec3& GetPosition() const { return m_position; }
-	const Speedometer* const GetTurometru() const { return m_speedometer.get(); }
+	const std::shared_ptr<Speedometer>& const GetTurometru() const { return m_speedometer; }
 	const std::shared_ptr<CustomCamera>& GetCamera() const { return m_camera; };
 
 	friend class CollisionEngine;
@@ -41,7 +41,7 @@ private:
 
 	std::unique_ptr<physics::Engine> m_engine;
 	std::unique_ptr<GearBox> m_gearBox;
-	std::unique_ptr<Speedometer> m_speedometer;
+	std::shared_ptr<Speedometer> m_speedometer;
 
 	std::unique_ptr<Mesh> m_mesh;
 
