@@ -61,6 +61,12 @@ void Lab8::Init()
         materialKd = 0.5;
         materialKs = 0.5;
     }
+
+    sources.emplace_back(1, lightPosition, glm::vec3(1,0,0), lightDirection, RADIANS(30));
+	lightRight = glm::vec3{1, 0, 0};
+	//lightUp = glm::cross(lightRight, sources[0].direction);
+
+    sources.emplace_back(2, glm::vec3{-2, 1, -2}, glm::vec3(0,0,1), glm::vec3{0}, 0);
 }
 
 
@@ -120,6 +126,13 @@ void Lab8::Update(float deltaTimeSeconds)
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1f));
         RenderMesh(meshes["sphere"], shaders["Simple"], modelMatrix);
     }
+
+    {
+		glm::mat4 modelMatrix = glm::mat4(1);
+		modelMatrix = glm::translate(modelMatrix, glm::vec3{-2, 1, -2});
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1f));
+		RenderMesh(meshes["sphere"], shaders["Simple"], modelMatrix);
+	}
 }
 
 
@@ -138,11 +151,11 @@ void Lab8::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & modelM
     glUseProgram(shader->program);
 
     // Set shader uniforms for light properties
-    int light_position = glGetUniformLocation(shader->program, "light_position");
-    glUniform3f(light_position, lightPosition.x, lightPosition.y, lightPosition.z);
+    //int light_position = glGetUniformLocation(shader->program, "light_position");
+    //glUniform3f(light_position, lightPosition.x, lightPosition.y, lightPosition.z);
 
-    int light_direction = glGetUniformLocation(shader->program, "light_direction");
-    glUniform3f(light_direction, lightDirection.x, lightDirection.y, lightDirection.z);
+    //int light_direction = glGetUniformLocation(shader->program, "light_direction");
+    //glUniform3f(light_direction, lightDirection.x, lightDirection.y, lightDirection.z);
 
     // Set eye position (camera position) uniform
     glm::vec3 eyePosition = GetSceneCamera()->m_transform->GetWorldPosition();
@@ -163,6 +176,35 @@ void Lab8::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & modelM
     glUniform3f(object_color, color.r, color.g, color.b);
 
     // TODO(student): Set any other shader uniforms that you need
+	std::for_each(
+		sources.begin(),
+		sources.end(),
+		[&sources = std::as_const(sources), &shader](const LightSource& source)
+		{
+			auto i = &source - &sources[0];
+
+			std::string name = std::string("lights[") + std::to_string(i) + std::string("].type");
+			GLuint location = glGetUniformLocation(shader->program, name.c_str());
+			glUniform1i(location, source.type);
+
+			name = std::string("lights[") + std::to_string(i) + std::string("].position");
+			location = glGetUniformLocation(shader->program, name.c_str());
+			glUniform3fv(location, 1, glm::value_ptr(source.position));
+
+			name = std::string("lights[") + std::to_string(i) + std::string("].color");
+			location = glGetUniformLocation(shader->program, name.c_str());
+			glUniform3fv(location, 1, glm::value_ptr(source.color));
+
+			name = std::string("lights[") + std::to_string(i) + std::string("].direction");
+			location = glGetUniformLocation(shader->program, name.c_str());
+			glUniform3fv(location, 1, glm::value_ptr(source.direction));
+
+			name = std::string("lights[") + std::to_string(i) + std::string("].cutOff");
+			location = glGetUniformLocation(shader->program, name.c_str());
+			glUniform1f(location, source.cutOff);
+		});
+
+
 
     // Bind model matrix
     GLint loc_model_matrix = glGetUniformLocation(shader->program, "Model");
@@ -210,7 +252,54 @@ void Lab8::OnInputUpdate(float deltaTime, int mods)
         if (window->KeyHold(GLFW_KEY_Q)) lightPosition -= up * deltaTime * speed;
 
         // TODO(student): Set any other keys that you might need
+		sources.data()[0].position = lightPosition;
 
+        auto rotateOx = [this, &deltaTime](glm::vec3& forward, float angle)
+		{
+			forward = glm::normalize(
+				glm::rotate(glm::mat4(1.0f), angle * deltaTime, lightRight)
+				* glm::vec4(forward, 0));
+			//lightUp = glm::normalize(
+			//	glm::rotate(glm::mat4(1.0f), angle * deltaTime, lightRight)
+			//	* glm::vec4(lightUp, 0));
+		};
+
+
+        auto rotateOy = [this, &deltaTime](glm::vec3& forward, float angle)
+		{
+			lightRight = glm::normalize(
+				glm::rotate(glm::mat4(1.0f), angle * deltaTime, {0, 1, 0})
+				* glm::vec4(lightRight, 0));
+			forward = glm::normalize(
+				glm::rotate(glm::mat4(1.0f), angle * deltaTime, {0, 1, 0}) * glm::vec4(forward, 0));
+
+			//lightUp = glm::normalize(glm::cross(lightRight, forward));
+		};
+
+        if (window->KeyHold(GLFW_KEY_I))
+		{
+			rotateOx(sources[0].direction, -3.14);
+		}
+		if (window->KeyHold(GLFW_KEY_K))
+		{
+			rotateOx(sources[0].direction, 3.14);
+		}
+		if (window->KeyHold(GLFW_KEY_J))
+		{
+			rotateOy(sources[0].direction, -3.14);
+		}
+		if (window->KeyHold(GLFW_KEY_L))
+		{
+			rotateOy(sources[0].direction, 3.14);
+		}
+		if (window->KeyHold(GLFW_KEY_U))
+		{
+			sources[0].cutOff += 3.14 / 2 * deltaTime;
+		}
+		if (window->KeyHold(GLFW_KEY_O))
+		{
+			sources[0].cutOff -= 3.14 / 2 * deltaTime;
+		}
     }
 }
 
@@ -220,7 +309,10 @@ void Lab8::OnKeyPress(int key, int mods)
     // Add key press event
 
     // TODO(student): Set keys that you might need
-
+	if (key == GLFW_KEY_F)
+	{
+		sources[0].type = sources[0].type == 1 ? 2 : 1;
+    }
 }
 
 

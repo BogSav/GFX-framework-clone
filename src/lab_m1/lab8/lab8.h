@@ -14,6 +14,21 @@ namespace m1
 
         void Init() override;
 
+
+    private:
+		struct LightSource
+		{
+			LightSource(int t, glm::vec3 pos, glm::vec3 col, glm::vec3 dir, float cut)
+				: type(t), position(pos), color(col), direction(dir), cutOff(cut)
+			{
+			}
+			int type;  // 1 - spot; 2 - normal
+			glm::vec3 position;
+			glm::vec3 color;
+			glm::vec3 direction;
+			float cutOff;
+		};
+
      private:
         void FrameStart() override;
         void Update(float deltaTimeSeconds) override;
@@ -37,6 +52,11 @@ namespace m1
         float materialKs;
 
         // TODO(student): If you need any other class variables, define them here.
+		bool spotlightOn = false;
 
+        std::vector<LightSource> sources;
+
+        glm::vec3 lightRight;
+		glm::vec3 lightUp;
     };
 }   // namespace m1
