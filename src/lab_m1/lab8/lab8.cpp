@@ -62,11 +62,11 @@ void Lab8::Init()
         materialKs = 0.5;
     }
 
-    sources.emplace_back(1, lightPosition, glm::vec3(1,0,0), lightDirection, RADIANS(30));
+    sources.emplace_back(1, lightPosition, glm::vec3(1,0,0), lightDirection, RADIANS(30), 1.2f);
 	lightRight = glm::vec3{1, 0, 0};
 	//lightUp = glm::cross(lightRight, sources[0].direction);
 
-    sources.emplace_back(2, glm::vec3{-2, 1, -2}, glm::vec3(0,0,1), glm::vec3{0}, 0);
+    sources.emplace_back(2, glm::vec3{-2, 1, -2}, glm::vec3(0,0,1), glm::vec3{0}, 0, 5.0f);
 }
 
 
@@ -202,6 +202,10 @@ void Lab8::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & modelM
 			name = std::string("lights[") + std::to_string(i) + std::string("].cutOff");
 			location = glGetUniformLocation(shader->program, name.c_str());
 			glUniform1f(location, source.cutOff);
+
+            name = std::string("lights[") + std::to_string(i) + std::string("].intensity");
+			location = glGetUniformLocation(shader->program, name.c_str());
+			glUniform1f(location, source.intensity);
 		});
 
 

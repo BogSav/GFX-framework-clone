@@ -7,6 +7,7 @@ struct light_source
    vec3 color;
    vec3 direction;
    float cutOff;
+   float intensity;
 };
 
 // Input
@@ -42,6 +43,7 @@ void main()
         vec3 diffuse_light = vec3(0);
         vec3 specular_light = vec3(0);
 
+        vec3 N = normalize(world_normal);
         vec3 L = normalize( lights[i].position - world_position );
         vec3 V = normalize( eye_position - world_position );
         vec3 H = normalize( L + V );
@@ -61,32 +63,32 @@ void main()
                 float linear_att = (spot_light - spot_light_limit) / (1.0f - spot_light_limit);
                 factorAtenuare = pow(linear_att, 2);
 
-                diffuse_light = material_kd * lights[i].color * max(dot(world_normal, L), 0);
-                if (dot(world_normal, L) > 0)
+                diffuse_light = material_kd * lights[i].color * max(dot(N, L), 0);
+                if (dot(N, L) > 0)
                 {
                     specular_light = material_ks * lights[i].color * pow(max(dot(world_normal, H), 0), material_shininess);
                 }
             }
             break;
         case 2:
-            diffuse_light = material_kd * lights[i].color * max(dot(world_normal, L), 0);
-            if (dot(world_normal, L) > 0)
+            diffuse_light = material_kd * lights[i].color * max(dot(N, L), 0);
+            if (dot(N, L) > 0)
             {
-                specular_light = material_ks * lights[i].color * pow(max(dot(world_normal, H), 0), material_shininess);
+                specular_light = material_ks * lights[i].color * pow(max(dot(N, H), 0), material_shininess);
             }
 
             factorAtenuare = 1 / (pow(distance(world_position, lights[i].position), 2) + 1);
             break;      
         }
 
-        semiFinalColor += factorAtenuare * ( diffuse_light + specular_light );
+        semiFinalColor += factorAtenuare * ( diffuse_light + specular_light ) * lights[i].intensity;
     }
 
     // TODO(student): Compute the total light. You can just add the components
     // together, but if you're feeling extra fancy, you can add individual
     // colors to the light components. To do that, pick some vec3 colors that
     // you like, and multiply them with the respective light components.
-    culoareObiect = object_color * ambient_light + semiFinalColor;
+    culoareObiect = object_color * (ambient_light + semiFinalColor);5
 
     // TODO(student): Write pixel out color
     out_color = vec4(culoareObiect.xyz, 1);

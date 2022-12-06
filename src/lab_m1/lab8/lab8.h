@@ -18,8 +18,8 @@ namespace m1
     private:
 		struct LightSource
 		{
-			LightSource(int t, glm::vec3 pos, glm::vec3 col, glm::vec3 dir, float cut)
-				: type(t), position(pos), color(col), direction(dir), cutOff(cut)
+			LightSource(int t, glm::vec3 pos, glm::vec3 col, glm::vec3 dir, float cut, float intens = 1.f)
+				: type(t), position(pos), color(col), direction(dir), cutOff(cut), intensity(intens)
 			{
 			}
 			int type;  // 1 - spot; 2 - normal
@@ -27,6 +27,7 @@ namespace m1
 			glm::vec3 color;
 			glm::vec3 direction;
 			float cutOff;
+			float intensity;
 		};
 
      private:
