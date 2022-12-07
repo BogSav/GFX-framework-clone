@@ -1,19 +1,19 @@
 #pragma once
 
-#include "tema2/Utilities/Camera.hpp"
-#include "tema2/Utilities/Colors.hpp"
-#include "tema2/Utilities/Utilities.hpp"
-
 #include "components/simple_scene.h"
 #include "core/engine.h"
 #include "utils/glm_utils.h"
 #include "utils/math_utils.h"
 
-class GeometryObject
+#include "tema2/Utilities/Camera.hpp"
+#include "tema2/Utilities/Colors.hpp"
+#include "tema2/Utilities/Utilities.hpp"
+
+class GeometryObject3d
 {
 public:
-	GeometryObject() = default;
-	GeometryObject(const Shader* const shader, CustomCamera* const camera);
+	GeometryObject3d() = default;
+	GeometryObject3d(const Shader* const shader, CustomCamera* const camera, Color color);
 
 	void Render(const glm::mat4& modelMatrix) const;
 
@@ -25,7 +25,7 @@ public:
 		const glm::vec3& carPosition,
 		const glm::vec3& eyePosition,
 		const float& coefficient,
-		const std::vector<const class LightingComponent*>&
+		const std::vector<const class LightSourceContainerAdapter*>&
 			lightingComponents) const;
 
 	void Render(const glm::mat4& modelMatrix, const Color& color) const;
@@ -50,6 +50,7 @@ protected:
 
 protected:
 	std::unique_ptr<Mesh> m_mesh = nullptr;
+	Color m_color;
 
 	const Shader* m_shader = nullptr;
 	CustomCamera* m_camera = nullptr;

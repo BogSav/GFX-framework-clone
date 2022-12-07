@@ -1,7 +1,7 @@
 #include "CollisionEngine.hpp"
 
 #include "tema2/GameComponents/Car.hpp"
-#include "tema2/GameComponents/Lighting/StreetLight.hpp"
+#include "tema2/Lighting/StreetLight.hpp"
 #include "tema2/GameComponents/NPC.hpp"
 #include "tema2/GameComponents/Track.hpp"
 #include "tema2/GameComponents/Tree.hpp"

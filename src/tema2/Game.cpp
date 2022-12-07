@@ -1,6 +1,5 @@
 #include "tema2/Game.hpp"
 
-#include "tema2/GameComponents/Lighting/StreetLight.hpp"
 #include "tema2/GameComponents/NPC.hpp"
 #include "tema2/GameComponents/Tree.hpp"
 #include "tema2/Physics/Collision/CollisionEngine.hpp"
@@ -21,7 +20,7 @@ Game::~Game()
 void Game::Init()
 {
 	this->CreateShaders();
-	
+
 	m_nrOfNPCs = 3;
 	m_nrOfStreetLights = 10;
 	m_nrOfTrees = 10;
@@ -67,6 +66,8 @@ void Game::Init()
 		}
 	}
 
+	//m_components.erase(m_components.begin(), m_components.begin() + 1);
+
 	// Init the minimap and the screen objects
 	m_minimap = std::make_shared<MiniMap>(window, glm::vec2{900, 50}, 300.f, 150.f, -30.f, -30.f);
 	m_screen = std::make_unique<ScreenElements>(window, m_minimap, m_car->GetTurometru());
@@ -84,8 +85,8 @@ void Game::Update(float deltaTimeSeconds)
 {
 	this->UpdateCar(deltaTimeSeconds);
 
-	// if (frametimer.PassedTime(0.5))
-	// std::cout << 1 / deltaTimeSeconds << std::endl;
+	if (frametimer.PassedTime(0.5))
+		std::cout << 1 / deltaTimeSeconds << std::endl;
 
 	m_minimap->UpdateMinimapCameraBasedOnCarPosition(m_car.get());
 
@@ -206,7 +207,16 @@ void Game::RenderGameComponents()
 		m_components.begin(),
 		m_components.end(),
 		[this](const auto& curr)
-		{ curr->Render(m_car->GetPosition(), m_camera->GetPosition(), 0, m_lightingComponents); });
+		{
+			if (const LightSourceContainerAdapter* light =
+					dynamic_cast<const LightSourceContainerAdapter*>(curr.get()))
+			{
+				curr->Render();
+			}
+			else
+			curr->Render(m_car->GetPosition(), m_camera->GetPosition(), 0.001, m_lightingComponents);
+			/*curr->Render();*/
+		});
 	// Factorul bun este cam 0.001 keep in mind
 
 	m_car->Render();
@@ -226,7 +236,8 @@ void Game::RenderMinimap()
 	std::for_each(
 		m_components.begin(),
 		m_components.end(),
-		[this](const auto& curr) { curr->Render(shaders["SimpleShader"], m_minimap->GetCamera()); });
+		[this](const auto& curr)
+		{ curr->Render(shaders["SimpleShader"], m_minimap->GetCamera()); });
 
 	// m_car->Render(m_minimap->GetCamera(), shaders["VertexNormal"]);
 
@@ -313,7 +324,8 @@ void Game::CreateShaders()
 				window->props.selfDir, SOURCE_PATH::TEMA2, "Shaders", "LightVertexShader.glsl"),
 			GL_VERTEX_SHADER);
 		shader->AddShader(
-			PATH_JOIN(window->props.selfDir, SOURCE_PATH::TEMA2, "Shaders", "FragmentShader.glsl"),
+			PATH_JOIN(
+				window->props.selfDir, SOURCE_PATH::TEMA2, "Shaders", "LightFragmentShader.glsl"),
 			GL_FRAGMENT_SHADER);
 		shader->CreateAndLink();
 		shaders[shader->GetName()] = shader;

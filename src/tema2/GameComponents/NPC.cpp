@@ -10,7 +10,7 @@ NPC* NPC::CreateNewNPCRandomized(
 	NPC* tmp = new NPC(intPts, shader, camera);
 
 	std::mt19937 randEngine(std::random_device{}());
-	std::uniform_int_distribution<int> quadGenerator(0, intPts.size() - 1);
+	std::uniform_int_distribution<int> quadGenerator(0, static_cast<int>(intPts.size()) - 1);
 	std::uniform_real_distribution<float> widthGenerator(2.5f, 5.f);
 	std::uniform_real_distribution<float> distanceGenerator(7.f, 16.f);
 	std::uniform_real_distribution<float> speedGenerator(15.f, 15.f);

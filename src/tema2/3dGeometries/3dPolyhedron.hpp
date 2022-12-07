@@ -1,8 +1,8 @@
 #pragma once
 
-#include "GeometryObject.hpp"
+#include "3dGeometryObject.hpp"
 
-class Polyhedron3d : public GeometryObject
+class Polyhedron3d : public GeometryObject3d
 {
 public:
 	Polyhedron3d(
@@ -27,7 +27,7 @@ public:
 		const float& length,
 		const float& height,
 		const Color color)
-		: GeometryObject(shader, camera)
+		: GeometryObject3d(shader, camera, color)
 	{
 		InitMesh(
 			v1 + glm::vec3{0, 0, length},

@@ -1,14 +1,8 @@
 #pragma once
 
-#include "components/simple_scene.h"
-#include "core/engine.h"
-#include "tema2/Utilities/Colors.hpp"
-#include "utils/glm_utils.h"
-#include "utils/math_utils.h"
+#include "2dGeometryObject.hpp"
 
-#include <numbers>
-
-class Circle2d
+class Circle2d : public GeometryObject2d
 {
 public:
 	Circle2d() = delete;
@@ -44,23 +38,4 @@ public:
 
 		m_mesh->InitFromData(vertices, indices);
 	}
-
-	void Render(const Shader* const shader, const glm::mat3& transformMatrix, const glm::mat3& modelMatrix)
-	{
-		if (!m_mesh || !shader || !shader->program)
-			return;
-
-		shader->Use();
-
-		int position = glGetUniformLocation(shader->program, "TransformMatrix");
-		glUniformMatrix3fv(position, 1, GL_FALSE, glm::value_ptr(transformMatrix));
-
-		position = glGetUniformLocation(shader->program, "Model");
-		glUniformMatrix3fv(position, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-
-		m_mesh->Render();
-	}
-
-private:
-	std::unique_ptr<Mesh> m_mesh;
 };

@@ -1,10 +1,9 @@
 #pragma once
 
-#include "Lighting/LightingComponent.hpp"
 #include "tema2/3dGeometries/3dPolygon.hpp"
 #include "tema2/3dGeometries/3dPolyhedron.hpp"
 #include "tema2/3dGeometries/3dTriangle.hpp"
-#include "tema2/3dGeometries/GeometryObject.hpp"
+#include "tema2/Lighting/LightSource.hpp"
 
 class GameComponent
 {
@@ -44,7 +43,7 @@ public:
 		const glm::vec3& carPosition,
 		const glm::vec3& eyePosition,
 		const float& coefficient,
-		const std::vector<const LightingComponent*>& lightingComponents) const
+		const std::vector<const LightSourceContainerAdapter*>& lightingComponents) const
 	{
 		std::for_each(
 			m_geometries.begin(),
@@ -103,7 +102,7 @@ protected:
 	const Shader* const m_shader;
 	CustomCamera* const m_camera;
 
-	std::vector<std::unique_ptr<GeometryObject>> m_geometries;
+	std::vector<std::unique_ptr<GeometryObject3d>> m_geometries;
 
 	glm::mat4 m_modelMatrix = glm::mat4(1);
 };

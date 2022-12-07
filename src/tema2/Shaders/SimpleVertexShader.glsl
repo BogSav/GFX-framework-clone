@@ -9,12 +9,9 @@ uniform mat4 View;
 uniform mat4 Projection;
 
 uniform vec3 UniformColor;
+
 uniform vec3 CarPosition;
-
 uniform float CurveCoefficient;
-
-uniform int nr;
-uniform vec3[7];
 
 out vec3 frag_color;
 

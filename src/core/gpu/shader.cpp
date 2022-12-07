@@ -102,6 +102,28 @@ void Shader::GetUniforms()
         loc_textures[i]     = GetUniformLocation(buffer);
     }
 
+    // Lighting
+	for (int i = 0; i < MAX_LIGHTING_SOURCES; i++)
+	{
+        sprintf(buffer, "LightSources[%d].position", i);
+        lposition[i] = GetUniformLocation(buffer);
+
+        sprintf(buffer, "LightSources[%d].type", i);
+        ltype[i] = GetUniformLocation(buffer);
+
+        sprintf(buffer, "LightSources[%d].color", i);
+        lcolor[i] = GetUniformLocation(buffer);
+		
+        sprintf(buffer, "LightSources[%d].direction", i);
+        ldirection[i] = GetUniformLocation(buffer);
+				
+        sprintf(buffer, "LightSources[%d].cutOff", i);
+        lcutoff[i] = GetUniformLocation(buffer);
+				
+        sprintf(buffer, "LightSources[%d].intensity", i);
+        lintensity[i] = GetUniformLocation(buffer);
+	}
+
     // Text
     text_color              = GetUniformLocation("text_color");
 

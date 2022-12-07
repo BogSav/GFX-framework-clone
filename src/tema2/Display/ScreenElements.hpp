@@ -1,9 +1,7 @@
 #pragma once
 
-#include "2dPolygon.hpp"
 #include "Minimap.hpp"
 #include "Speedometer.hpp"
-#include "tema2/Utilities/Utilities.hpp"
 
 class ScreenElements
 {
@@ -83,7 +81,7 @@ private:
 	std::shared_ptr<Speedometer> m_speedometer;
 	std::shared_ptr<MiniMap> m_miniMap;
 
-	std::unique_ptr<Polygon2d> m_minimapFrame;
+	std::unique_ptr<GeometryObject2d> m_minimapFrame;
 	Color m_minmapFrameColor;
 	float m_minimapFrameOutlineSize;
 };

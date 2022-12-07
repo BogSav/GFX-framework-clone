@@ -1,7 +1,6 @@
 #pragma once
 
 #include "GameComponent.hpp"
-#include "tema2/Utilities/Utilities.hpp"
 
 class Field : public GameComponent
 {

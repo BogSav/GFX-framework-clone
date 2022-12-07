@@ -1,9 +1,8 @@
 #pragma once
 
-#include "2dCircle.hpp"
-#include "2dPolygon.hpp"
+#include "tema2/2dGeometries/2dPolygon.hpp"
+#include "tema2/2dGeometries/2dCircle.hpp"
 #include "tema2/TextComponents/TextEngine.hpp"
-#include "tema2/Utilities/Utilities.hpp"
 
 #include <string>
 
@@ -69,10 +68,10 @@ private:
 	}
 
 private:
-	std::unique_ptr<Polygon2d> m_indicator;
+	std::unique_ptr<GeometryObject2d> m_indicator;
 	const Color m_indicatorColor;
 
-	std::unique_ptr<Circle2d> m_speedometerBackground;
+	std::unique_ptr<GeometryObject2d> m_speedometerBackground;
 	const Color m_speedometerBackgroundColor;
 
 	std::unique_ptr<TextEngine> m_textEngine;

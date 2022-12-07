@@ -1,12 +1,11 @@
 #pragma once
 
-#include "2dCircle.hpp"
-#include "2dPolygon.hpp"
-#include "components/simple_scene.h"
-#include "core/engine.h"
+#include "tema2/2dGeometries/2dCircle.hpp"
+#include "tema2/2dGeometries/2dPolygon.hpp"
+
 #include "tema2/Utilities/Camera.hpp"
-#include "utils/glm_utils.h"
-#include "utils/math_utils.h"
+#include "tema2/Utilities/Utilities.hpp"
+
 
 class MiniMap
 {
@@ -69,7 +68,7 @@ private:
 
 private:
 	std::unique_ptr<CustomCamera> m_ortoCamera;
-	std::unique_ptr<Polygon2d> m_carRepresentation;
+	std::unique_ptr<GeometryObject2d> m_carRepresentation;
 
 	glm::vec2 m_screenPosition;
 	float m_width;

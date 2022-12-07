@@ -15,6 +15,8 @@
 
 #include "tema2/Display/Minimap.hpp"
 
+#include "Lighting/StreetLight.hpp"
+
 class Game : public gfxc::SimpleScene
 {
 public:
@@ -48,7 +50,7 @@ private:
 
 private:
 	std::vector<std::unique_ptr<GameComponent>> m_components;
-	std::vector<const LightingComponent*> m_lightingComponents;
+	std::vector<const LightSourceContainerAdapter*> m_lightingComponents;
 
 	std::shared_ptr<CustomCamera> m_camera;
 	std::unique_ptr<Car> m_car;

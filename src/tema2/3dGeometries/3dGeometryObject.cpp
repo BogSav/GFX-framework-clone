@@ -1,21 +1,23 @@
-#include "GeometryObject.hpp"
+#include "3dGeometryObject.hpp"
 
-#include "tema2/GameComponents/Lighting/LightingComponent.hpp"
-#include "tema2/GameComponents/Lighting/StreetLight.hpp"
+#include "tema2/Lighting/LightSource.hpp"
+#include <string>
+#include <iostream>
 
-GeometryObject::GeometryObject(const Shader* const shader, CustomCamera* const camera)
-	: m_shader(shader), m_camera(camera)
+GeometryObject3d::GeometryObject3d(
+	const Shader* const shader, CustomCamera* const camera, Color color)
+	: m_shader(shader), m_camera(camera), m_color(color)
 {
 }
 
-void GeometryObject::Render(const glm::mat4& modelMatrix) const
+void GeometryObject3d::Render(const glm::mat4& modelMatrix) const
 {
 	this->SendDataToShader(modelMatrix);
 
 	m_mesh->Render();
 }
 
-void GeometryObject::Render(
+void GeometryObject3d::Render(
 	const glm::mat4& modelMatrix, const glm::vec3& carPosition, const float& coefficient) const
 {
 	this->SendDataToShader(modelMatrix);
@@ -29,20 +31,20 @@ void GeometryObject::Render(
 	m_mesh->Render();
 }
 
-void GeometryObject::Render(
+void GeometryObject3d::Render(
 	const glm::mat4& modelMatrix,
 	const glm::vec3& carPosition,
 	const glm::vec3& eyePosition,
 	const float& coefficient,
-	const std::vector<const LightingComponent*>& lightingComponents) const
+	const std::vector<const LightSourceContainerAdapter*>& lightingComponents) const
 {
 	this->SendDataToShader(modelMatrix);
 
 	// Send data for curve calculation
 	int location = glGetUniformLocation(m_shader->program, "CarPosition");
-	glUniform3fv(location, 1, glm::value_ptr(carPosition));
-	location = glGetUniformLocation(m_shader->program, "CurveCoefficient");
-	glUniform1f(location, coefficient);
+	//glUniform3fv(location, 1, glm::value_ptr(carPosition));
+	//location = glGetUniformLocation(m_shader->program, "CurveCoefficient");
+	//glUniform1f(location, coefficient);
 
 	// Send the position of the camera
 	location = glGetUniformLocation(m_shader->program, "eye_position");
@@ -50,36 +52,47 @@ void GeometryObject::Render(
 
 	// Send material properties
 	location = glGetUniformLocation(m_shader->program, "material_kd");
-	glUniform1f(location, LightingComponent::materialKd);
+	glUniform1f(location, LightSourceContainerAdapter::materialKd);
 	location = glGetUniformLocation(m_shader->program, "material_ks");
-	glUniform1f(location, LightingComponent::materialKs);
+	glUniform1f(location, LightSourceContainerAdapter::materialKs);
 	location = glGetUniformLocation(m_shader->program, "material_shininess");
-	glUniform1i(location, LightingComponent::materialShiness);
+	glUniform1i(location, LightSourceContainerAdapter::materialShiness);
 
-	// Send position of the sources
+	// Send the color of the object
+	location = glGetUniformLocation(m_shader->program, "object_color");
+	glUniform3fv(location, 1, glm::value_ptr(m_color()));
+
+	// Send the nr of light sources
 	location = glGetUniformLocation(m_shader->program, "nrOfLightSources");
 	glUniform1i(location, static_cast<int>(lightingComponents.size()));
 
-	// Compute the positions
-	std::vector<glm::vec3> lightingPositions;
-	lightingPositions.reserve(lightingComponents.size());
-	for (const LightingComponent* current : lightingComponents)
-	{
-		glm::vec3 arr = (*current)();
-		lightingPositions.push_back(arr);
-	}
+	// Send the light sources data
+	int i = 0;
+	std::for_each(
+		lightingComponents.begin(),
+		lightingComponents.end(),
+		[this, &i, &location](const LightSourceContainerAdapter* source)
+		{
+			glUniform1i(m_shader->ltype[i], source->GetLightType());
+			glUniform3fv(m_shader->lposition[i], 1, glm::value_ptr(source->GetPosition()));
+			glUniform3fv(m_shader->lcolor[i], 1, glm::value_ptr(source->GetLightColor()()));
+			glUniform1f(m_shader->lintensity[i], source->GetLightIntensity());
 
-	// Send the positions
-	location = glGetUniformLocation(m_shader->program, "light_positions");
-	glUniform3fv(
-		location,
-		static_cast<GLint>(lightingPositions.size()),
-		reinterpret_cast<GLfloat*>(lightingPositions.data()));
+			if (source->GetLightType() == 2)
+			{
+				const Spot& spotSource = dynamic_cast<const Spot&>(*source);
+
+				glUniform3fv(m_shader->ldirection[i], 1, glm::value_ptr(spotSource.GetDirection()));
+				glUniform1f(m_shader->lcutoff[i], spotSource.GetCutOffAngle());
+			}
+
+			i++;
+		});
 
 	m_mesh->Render();
 }
 
-void GeometryObject::Render(const glm::mat4& modelMatrix, const Color& color) const
+void GeometryObject3d::Render(const glm::mat4& modelMatrix, const Color& color) const
 {
 	this->SendDataToShader(modelMatrix);
 
@@ -89,7 +102,7 @@ void GeometryObject::Render(const glm::mat4& modelMatrix, const Color& color) co
 	m_mesh->Render();
 }
 
-void GeometryObject::Render(
+void GeometryObject3d::Render(
 	const Shader* const shader,
 	const CustomCamera* const camera,
 	const glm::mat4& modelMatrix) const
@@ -110,7 +123,7 @@ void GeometryObject::Render(
 	m_mesh->Render();
 }
 
-void GeometryObject::Render(
+void GeometryObject3d::Render(
 	const Shader* const shader,
 	const CustomCamera* const camera,
 	const glm::mat4& modelMatrix,
@@ -135,7 +148,7 @@ void GeometryObject::Render(
 	m_mesh->Render();
 }
 
-void GeometryObject::SendDataToShader(const glm::mat4& modelMatrix) const
+void GeometryObject3d::SendDataToShader(const glm::mat4& modelMatrix) const
 {
 	assert(m_shader != nullptr);
 	assert(m_camera != nullptr);
@@ -157,7 +170,7 @@ void GeometryObject::SendDataToShader(const glm::mat4& modelMatrix) const
 	glUniformMatrix4fv(m_shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 }
 
-void GeometryObject::CalculateVerticesNormals(
+void GeometryObject3d::CalculateVerticesNormals(
 	std::vector<VertexFormat>& vertices, const std::vector<unsigned int>& indices)
 {
 	for (size_t i = 0; i < indices.size() - 2; i += 3)

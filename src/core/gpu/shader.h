@@ -10,6 +10,7 @@
 
 #define MAX_2D_TEXTURES        (16)
 #define INVALID_LOC            (-1)
+#define MAX_LIGHTING_SOURCES   (20)
 
 
 class Shader
@@ -42,6 +43,14 @@ class Shader
 
  public:
     GLuint program;
+
+    // Lighting
+	GLint ltype[MAX_LIGHTING_SOURCES];
+	GLint lposition[MAX_LIGHTING_SOURCES];
+	GLint lcolor[MAX_LIGHTING_SOURCES];
+	GLint lintensity[MAX_LIGHTING_SOURCES];
+	GLint ldirection[MAX_LIGHTING_SOURCES];
+	GLint lcutoff[MAX_LIGHTING_SOURCES];
 
     // Textures
     GLint loc_textures[MAX_2D_TEXTURES];

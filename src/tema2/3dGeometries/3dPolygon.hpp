@@ -1,8 +1,8 @@
 #pragma once
 
-#include "GeometryObject.hpp"
+#include "3dGeometryObject.hpp"
 
-class Polygon3d : public GeometryObject
+class Polygon3d : public GeometryObject3d
 {
 public:
 	Polygon3d(
@@ -25,7 +25,7 @@ public:
 		const glm::vec3 v4,
 		const Color color,
 		const bool wireframe = false)
-		: GeometryObject(shader, camera)
+		: GeometryObject3d(shader, camera, color)
 	{
 		InitMesh(v1, v2, v3, v4, color, wireframe);
 	}

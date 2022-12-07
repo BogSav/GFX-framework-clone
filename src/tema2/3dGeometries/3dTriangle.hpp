@@ -1,8 +1,8 @@
 #pragma once
 
-#include "GeometryObject.hpp"
+#include "3dGeometryObject.hpp"
 
-class Triangle3d : public GeometryObject
+class Triangle3d : public GeometryObject3d
 {
 public:
 	Triangle3d(
@@ -23,7 +23,7 @@ public:
 		const glm::vec3& v3,
 		const Color color,
 		const bool wireframe = false)
-		: GeometryObject(shader, camera)
+		: GeometryObject3d(shader, camera, color)
 	{
 		InitMesh(v1, v2, v3, color, wireframe);
 	}
