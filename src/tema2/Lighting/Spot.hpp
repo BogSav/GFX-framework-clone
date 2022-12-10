@@ -1,10 +1,10 @@
 #pragma once
 
+#ifdef LIGHT
+
 #include "core/engine.h"
 #include "utils/glm_utils.h"
 #include "utils/math_utils.h"
-
-#define LIGHT
 
 class Spot LIGHT
 {
@@ -31,9 +31,13 @@ public:
 
 	const float& GetCutOffAngle() const { return m_cutOffAngle; }
 	const glm::vec3& GetDirection() const { return m_direction; }
+	const glm::vec3& GetRight() const { return m_right; }
+
+	void SetDirection(const glm::vec3& dir) { m_direction = dir; }
 
 private:
 	float m_cutOffAngle = 0.f;
 	glm::vec3 m_direction = glm::vec3(0);
 	glm::vec3 m_right = glm::vec3(0);
 };
+#endif

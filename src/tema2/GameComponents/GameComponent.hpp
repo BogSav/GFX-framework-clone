@@ -14,6 +14,7 @@ public:
 	{
 	}
 
+	// Update function for each individual component
 	virtual void Update(float) { return; }
 
 	// Render with default color, shader and camera
@@ -43,7 +44,7 @@ public:
 		const glm::vec3& carPosition,
 		const glm::vec3& eyePosition,
 		const float& coefficient,
-		const std::vector<const LightSourceContainerAdapter*>& lightingComponents) const
+		const std::vector<const LightSourceAdapter*>& lightingComponents) const
 	{
 		std::for_each(
 			m_geometries.begin(),

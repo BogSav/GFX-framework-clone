@@ -30,6 +30,6 @@ public:
 			text, posX, /*m_window->GetResolution().y -*/ posY, scale, color());
 	}
 
-protected:
+private:
 	gfxc::TextRenderer* const m_textRenderer;
 };

@@ -113,7 +113,7 @@ private:
 			Colors::White));
 	}
 
-	const glm::vec3& GetBasePosition() const
+	glm::vec3 GetBasePosition() const
 	{
 		return m_basePosition + glm::vec3{m_baseWidth / 2.f, 0, 0}
 		+ glm::vec3{0, 0, m_baseWidth / 2.f};

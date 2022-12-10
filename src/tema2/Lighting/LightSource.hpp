@@ -1,33 +1,38 @@
 #pragma once
 
+#define LIGHT
 #include "Directional.hpp"
 #include "Spot.hpp"
+#undef LIGHT
+
 #include "tema2/Utilities/Colors.hpp"
 
-class LightSourceContainerAdapter
+class LightSourceAdapter
 {
+public:
+	enum LightType
+	{
+		NONE = 0,
+		DIRECTIONAL = 1,
+		SPOT = 2
+	};
+
 public:
 	virtual const Color& GetLightColor() const = 0;
 	virtual const float& GetLightIntensity() const = 0;
 	virtual const glm::vec3& GetPosition() const = 0;
-	virtual int GetLightType() const = 0;
+	virtual int GetLightTypeInt() const = 0;
+	virtual LightSourceAdapter::LightType GetLightType() const = 0;
 
 public:
-	static constexpr unsigned int materialShiness = 30;
+	static constexpr unsigned int materialShiness = 20;
 
-	static constexpr float materialKd = 0.5;
-	static constexpr float materialKs = 0.5;
-};
-
-enum LightType
-{
-	NONE = 0,
-	DIRECTIONAL = 1,
-	SPOT = 2
+	static constexpr float materialKd = 0.5f;
+	static constexpr float materialKs = 0.2f;
 };
 
 template <class T>
-class LightSource : public T, public LightSourceContainerAdapter
+class LightSource : public T, public LightSourceAdapter
 {
 public:
 	LightSource() = delete;
@@ -58,9 +63,13 @@ public:
 	const Color& GetLightColor() const override { return m_lightColor; }
 	const float& GetLightIntensity() const override { return m_lightIntensity; }
 	const glm::vec3& GetPosition() const override { return m_position; }
-	int GetLightType() const override { return static_cast<int>(m_lightType); }
+	int GetLightTypeInt() const override { return static_cast<int>(m_lightType); }
+	LightSourceAdapter::LightType GetLightType() const override { return m_lightType; }
+
+	void SetPosition(const glm::vec3& pos) { m_position = pos; }
 
 private:
+	// Verifier for the type of light
 	void SetType(LightType expectedType)
 	{
 		if (std::is_same<T, Directional>::value == true)

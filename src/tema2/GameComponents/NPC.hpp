@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GameComponent.hpp"
+#include <numbers>
 
 class NPC : public GameComponent
 {
@@ -12,6 +13,8 @@ public:
 
 public:
 	void Update(float deltaTime) override;
+
+	int& GetTotalNrOfQuads();
 
 private:
 	NPC() = delete;
@@ -42,10 +45,13 @@ private:
 
 	float m_speed;
 	int m_currentQuad;
+	int m_totalNrOfQuads;
 
 	float m_width;
 	float m_length;
 	float m_height;
 
 	float m_distanceFromInteriorPoint;
+
+	const float piOver2 = std::numbers::pi_v<float> / 2.0f;
 };

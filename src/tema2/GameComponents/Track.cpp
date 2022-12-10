@@ -170,11 +170,11 @@ void Track::GenerateLines()
 			m_camera,
 			utils::GetInterpolatedPoint(m_trackPoints[i], m_exteriorPoints[i], 0.48f)
 				+ glm::vec3{0, 0.001, 0},
-			utils::GetInterpolatedPoint(m_trackPoints[i + 1], m_exteriorPoints[i + 1], 0.48f)
+			utils::GetInterpolatedPoint(m_trackPoints[i], m_exteriorPoints[i], 0.52f)
 				+ glm::vec3{0, 0.001, 0},
 			utils::GetInterpolatedPoint(m_trackPoints[i + 1], m_exteriorPoints[i + 1], 0.52f)
 				+ glm::vec3{0, 0.001, 0},
-			utils::GetInterpolatedPoint(m_trackPoints[i], m_exteriorPoints[i], 0.52f)
+			utils::GetInterpolatedPoint(m_trackPoints[i + 1], m_exteriorPoints[i + 1], 0.48f)
 				+ glm::vec3{0, 0.001, 0},
 			m_linesColor));
 	}

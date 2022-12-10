@@ -38,7 +38,7 @@ public:
 	void SetG(unsigned char g) { dword = (dword & 0xFFFF00FFu) | (g << 8u); }
 	void SetB(unsigned char b) { dword = (dword & 0xFFFFFF00u) | b; }
 
-	const glm::vec3 operator()() const
+	glm::vec3 operator()() const
 	{
 		return glm::vec3{
 				   static_cast<float>(GetR()),
@@ -64,6 +64,8 @@ inline static Color MakeRandomRGB()
 		static_cast<unsigned char>(uDistrib(randEngine)),
 		static_cast<unsigned char>(uDistrib(randEngine)));
 }
+
+// Cateva culori default
 static constexpr Color White = MakeRGB(255u, 255u, 255u);
 static constexpr Color Black = MakeRGB(0u, 0u, 0u);
 static constexpr Color Gray = MakeRGB(0x80u, 0x80u, 0x80u);
@@ -79,4 +81,4 @@ static constexpr Color DarkGreen = MakeRGB(0x20u, 0x59u, 0x21u);
 static constexpr Color Brown = MakeRGB(0x55u, 0x34u, 0x2bu);
 static constexpr Color TreeGreen = MakeRGB(0x6au, 0x6cu, 0x00u);
 static constexpr Color DarkGray = MakeRGB(0x3au, 0x3bu, 0x3cu);
-}  // namespace Colors
+}

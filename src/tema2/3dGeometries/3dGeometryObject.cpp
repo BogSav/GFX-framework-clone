@@ -36,15 +36,15 @@ void GeometryObject3d::Render(
 	const glm::vec3& carPosition,
 	const glm::vec3& eyePosition,
 	const float& coefficient,
-	const std::vector<const LightSourceContainerAdapter*>& lightingComponents) const
+	const std::vector<const LightSourceAdapter*>& lightingComponents) const
 {
 	this->SendDataToShader(modelMatrix);
 
 	// Send data for curve calculation
 	int location = glGetUniformLocation(m_shader->program, "CarPosition");
-	//glUniform3fv(location, 1, glm::value_ptr(carPosition));
-	//location = glGetUniformLocation(m_shader->program, "CurveCoefficient");
-	//glUniform1f(location, coefficient);
+	glUniform3fv(location, 1, glm::value_ptr(carPosition));
+	location = glGetUniformLocation(m_shader->program, "CurveCoefficient");
+	glUniform1f(location, coefficient);
 
 	// Send the position of the camera
 	location = glGetUniformLocation(m_shader->program, "eye_position");
@@ -52,11 +52,11 @@ void GeometryObject3d::Render(
 
 	// Send material properties
 	location = glGetUniformLocation(m_shader->program, "material_kd");
-	glUniform1f(location, LightSourceContainerAdapter::materialKd);
+	glUniform1f(location, LightSourceAdapter::materialKd);
 	location = glGetUniformLocation(m_shader->program, "material_ks");
-	glUniform1f(location, LightSourceContainerAdapter::materialKs);
+	glUniform1f(location, LightSourceAdapter::materialKs);
 	location = glGetUniformLocation(m_shader->program, "material_shininess");
-	glUniform1i(location, LightSourceContainerAdapter::materialShiness);
+	glUniform1i(location, LightSourceAdapter::materialShiness);
 
 	// Send the color of the object
 	location = glGetUniformLocation(m_shader->program, "object_color");
@@ -71,14 +71,14 @@ void GeometryObject3d::Render(
 	std::for_each(
 		lightingComponents.begin(),
 		lightingComponents.end(),
-		[this, &i, &location](const LightSourceContainerAdapter* source)
+		[this, &i, &location](const LightSourceAdapter* source)
 		{
 			glUniform1i(m_shader->ltype[i], source->GetLightType());
 			glUniform3fv(m_shader->lposition[i], 1, glm::value_ptr(source->GetPosition()));
 			glUniform3fv(m_shader->lcolor[i], 1, glm::value_ptr(source->GetLightColor()()));
 			glUniform1f(m_shader->lintensity[i], source->GetLightIntensity());
 
-			if (source->GetLightType() == 2)
+			if (source->GetLightType() == LightSourceAdapter::SPOT)
 			{
 				const Spot& spotSource = dynamic_cast<const Spot&>(*source);
 
@@ -175,17 +175,18 @@ void GeometryObject3d::CalculateVerticesNormals(
 {
 	for (size_t i = 0; i < indices.size() - 2; i += 3)
 	{
-		vertices[indices[i]].normal += glm::cross(
-			vertices[indices[i + 2]].position - vertices[indices[i]].position,
-			vertices[indices[i + 1]].position - vertices[indices[i]].position);
+		int vertexA = indices[i];
+		int vertexB = indices[i + 1];
+		int vertexC = indices[i + 2];
 
-		vertices[indices[i + 1]].normal += glm::cross(
-			vertices[indices[i]].position - vertices[indices[i + 1]].position,
-			vertices[indices[i + 2]].position - vertices[indices[i + 1]].position);
+		glm::vec3 edgeAB = vertices[vertexB].position - vertices[vertexA].position;
+		glm::vec3 edgeAC = vertices[vertexC].position - vertices[vertexA].position;
 
-		vertices[indices[i + 2]].normal += glm::cross(
-			vertices[indices[i + 1]].position - vertices[indices[i + 2]].position,
-			vertices[indices[i]].position - vertices[indices[i + 2]].position);
+		glm::vec3 areaWeightedNormal = glm::cross(edgeAB, edgeAC);
+
+		vertices[vertexA].normal += areaWeightedNormal;
+		vertices[vertexB].normal += areaWeightedNormal;
+		vertices[vertexC].normal += areaWeightedNormal;
 	}
 
 	std::for_each(

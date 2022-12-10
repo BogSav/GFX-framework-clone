@@ -25,7 +25,7 @@ public:
 		const glm::vec3& carPosition,
 		const glm::vec3& eyePosition,
 		const float& coefficient,
-		const std::vector<const class LightSourceContainerAdapter*>&
+		const std::vector<const class LightSourceAdapter*>&
 			lightingComponents) const;
 
 	void Render(const glm::mat4& modelMatrix, const Color& color) const;

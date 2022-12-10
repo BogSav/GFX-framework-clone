@@ -38,16 +38,16 @@ private:
 		const float zstep = m_length / static_cast<const float>(m_OZTrianglesDensity);
 		const float xstep = m_width / static_cast<const float>(m_OXTrianglesDensity);
 
-		for (float currentZstep = zstep; currentZstep < m_length; currentZstep += zstep)
+		for (float currentZstep = 0; currentZstep < m_length; currentZstep += zstep)
 		{
-			for (float currentXstep = xstep; currentXstep < m_width; currentXstep += xstep)
+			for (float currentXstep = 0; currentXstep < m_width; currentXstep += xstep)
 			{
 				m_geometries.emplace_back(new Polygon3d(
 					m_shader,
 					m_camera,
-					m_startPosition + glm::vec3{currentXstep, -0.1, currentZstep + zstep},
-					m_startPosition + glm::vec3{currentXstep, -0.1, currentZstep},
 					m_startPosition + glm::vec3{currentXstep + xstep, -0.1, currentZstep},
+					m_startPosition + glm::vec3{currentXstep, -0.1, currentZstep},
+					m_startPosition + glm::vec3{currentXstep, -0.1, currentZstep + zstep},
 					m_startPosition + glm::vec3{currentXstep + xstep, -0.1, currentZstep + zstep},
 					Colors::DarkGreen));
 			}

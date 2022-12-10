@@ -32,6 +32,28 @@ bool CollisionEngine::IsCollidingWithNPC(const Car* masina, const NPC* npc)
 		masina->m_position);
 }
 
+int CollisionEngine::GetCurrentPlaceOnTrackForCar(const Track* track, const Car* car)
+{
+	size_t it;
+	for (it = 0; it < track->m_trackPoints.size() - 1; it++)
+	{
+		if (CollisionEngine::IsInside(
+				track->m_exteriorPoints[it],
+				track->m_trackPoints[it],
+				track->m_trackPoints[it + 1],
+				car->GetPosition())
+			|| CollisionEngine::IsInside(
+				track->m_exteriorPoints[it],
+				track->m_trackPoints[it + 1],
+				track->m_exteriorPoints[it + 1],
+				car->GetPosition()))
+		{
+			break;
+		}
+	}
+	return static_cast<int>(it);
+}
+
 inline bool CollisionEngine::IsOnTrack(const Track* track, const glm::vec3& pos)
 {
 	size_t it;

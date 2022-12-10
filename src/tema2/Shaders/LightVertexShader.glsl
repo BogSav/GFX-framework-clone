@@ -17,12 +17,12 @@ out vec3 world_normal;
 void main()
 {
     // Lighting calculations
-    world_position = (Model * vec4(v_position.xyz, 1)).xyz;
+    world_position = (Model * vec4(v_position, 1)).xyz;
     world_normal = normalize( mat3(Model) * vertex_normal );
 
     // Apply the curve
-    vec3 newPosition = v_position;
-    newPosition.y = v_position.y - pow(length(CarPosition - v_position), 2) * CurveCoefficient;
+    vec3 newPosition = (Model * vec4(v_position, 1.0)).xyz;
+    newPosition.y = newPosition.y - pow(length(CarPosition - newPosition), 2) * CurveCoefficient;
 
-    gl_Position = Projection * View * Model * vec4(v_position, 1.0);
+    gl_Position = Projection * View * vec4(newPosition, 1.0);
 }

@@ -44,9 +44,9 @@ private:
 
 		std::vector<unsigned int> indices;
 		indices.reserve(3);
-		indices.push_back(0);
-		indices.push_back(1);
 		indices.push_back(2);
+		indices.push_back(1);
+		indices.push_back(0);
 
 		m_mesh = std::make_unique<Mesh>();
 

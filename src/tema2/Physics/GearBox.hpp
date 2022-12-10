@@ -5,6 +5,8 @@
 #include <assert.h>
 #include <vector>
 
+namespace physics
+{
 struct GearBox
 {
 	void Reset()
@@ -50,3 +52,4 @@ private:
 	DTimer m_timer;
 	bool isInShift = false;
 };
+}  // namespace physics

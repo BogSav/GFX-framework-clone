@@ -1,21 +1,21 @@
 #pragma once
 
+#include "Utilities/Camera.hpp"
 #include "components/simple_scene.h"
 
-#include "tema2/GameComponents/Track.hpp"
-
-#include "Utilities/Camera.hpp"
-
-#include "Physics/Engine.hpp"
-
-#include "tema2/GameComponents/Car.hpp"
-
-#include "tema2/GameComponents/Field.hpp"
-#include "tema2/Display/ScreenElements.hpp"
-
-#include "tema2/Display/Minimap.hpp"
-
 #include "Lighting/StreetLight.hpp"
+
+#include "tema2/GameComponents/NPC.hpp"
+#include "tema2/GameComponents/Tree.hpp"
+#include "tema2/GameComponents/Track.hpp"
+#include "tema2/GameComponents/Car.hpp"
+#include "tema2/GameComponents/Field.hpp"
+
+#include "tema2/Physics/Collision/CollisionEngine.hpp"
+#include "tema2/Utilities/Utilities.hpp"
+
+#include "tema2/Display/ScreenElements.hpp"
+#include "tema2/Display/Minimap.hpp"
 
 class Game : public gfxc::SimpleScene
 {
@@ -50,7 +50,7 @@ private:
 
 private:
 	std::vector<std::unique_ptr<GameComponent>> m_components;
-	std::vector<const LightSourceContainerAdapter*> m_lightingComponents;
+	std::vector<const LightSourceAdapter*> m_lightingComponents;
 
 	std::shared_ptr<CustomCamera> m_camera;
 	std::unique_ptr<Car> m_car;
@@ -62,10 +62,13 @@ private:
 	size_t m_nrOfNPCs;
 	size_t m_nrOfTrees;
 
+	float m_curveCoefficent;
+
 	glm::ivec2 m_resolution;
 
 	std::unique_ptr<ScreenElements> m_screen;
 	std::shared_ptr<MiniMap> m_minimap;
 
 	bool m_carReset;
+	bool m_frameTimer;
 };

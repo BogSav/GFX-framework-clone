@@ -4,13 +4,15 @@
 #include <numbers>
 #include <random>
 
+#define NPC_FORCED_ORIENTATION
+
 NPC* NPC::CreateNewNPCRandomized(
 	const std::vector<glm::vec3>& intPts, const Shader* const shader, CustomCamera* const camera)
 {
 	NPC* tmp = new NPC(intPts, shader, camera);
 
 	std::mt19937 randEngine(std::random_device{}());
-	std::uniform_int_distribution<int> quadGenerator(0, static_cast<int>(intPts.size()) - 1);
+	std::uniform_int_distribution<int> quadGenerator(0, static_cast<int>(intPts.size()) - 50);
 	std::uniform_real_distribution<float> widthGenerator(2.5f, 5.f);
 	std::uniform_real_distribution<float> distanceGenerator(7.f, 16.f);
 	std::uniform_real_distribution<float> speedGenerator(15.f, 15.f);
@@ -23,8 +25,8 @@ NPC* NPC::CreateNewNPCRandomized(
 	tmp->m_distanceFromInteriorPoint = distanceGenerator(randEngine);
 
 	tmp->m_currentQuad = quadGenerator(randEngine);
-
-	tmp->m_color = Colors::Cyan;
+	tmp->m_totalNrOfQuads = tmp->m_currentQuad;
+	tmp->m_color = Colors::MakeRandomRGB();
 
 	tmp->Init();
 
@@ -45,6 +47,7 @@ void NPC::Update(float deltaTime)
 		< 0)
 	{
 		m_currentQuad++;
+		m_totalNrOfQuads++;
 
 		if (m_currentQuad == m_interiorPoints.size() - 1)
 			m_currentQuad = 0;
@@ -73,6 +76,7 @@ void NPC::UpdateDirection()
 
 void NPC::UpdateOrientation()
 {
+#ifdef NPC_FORCED_ORIENTATION
 	float dotPr = glm::dot(m_direction, glm::vec3{1, 0, 0});
 	float crossPr = glm::cross(m_direction, glm::vec3{-1, 0, 0}).y;
 
@@ -80,7 +84,7 @@ void NPC::UpdateOrientation()
 
 	if (crossPr < 0 && dotPr > 0)
 	{
-		currentAngle += 3.f * std::numbers::pi_v<float> / 2.f;
+		currentAngle += 3.f * piOver2;
 	}
 	else if (crossPr < 0 && dotPr < 0)
 	{
@@ -88,10 +92,11 @@ void NPC::UpdateOrientation()
 	}
 	else if (crossPr > 0 && dotPr < 0)
 	{
-		currentAngle += std::numbers::pi_v<float> / 2.f;
+		currentAngle += piOver2;
 	}
 
-	m_orientationAngle = currentAngle - 3.14 / 2;
+	m_orientationAngle = currentAngle - piOver2;
+#endif
 }
 
 void NPC::UpdateModelMatrix()
@@ -141,12 +146,17 @@ float NPC::GetDistanceToCurrentFragment() const
 				   m_interiorPoints[m_currentQuad + 1].z - m_interiorPoints[m_currentQuad].z, 2.f));
 }
 
+int& NPC::GetTotalNrOfQuads()
+{
+	return m_totalNrOfQuads;
+}
+
 void NPC::Init()
 {
 	UpdateDirection();
 	ComputeInitialPosition();
 	UpdateOrientation();
 
-	m_geometries.emplace_back(
-		new Polyhedron3d(m_shader, m_camera, glm::vec3{0, 0, 0}, m_width, m_length, m_height, m_color));
+	m_geometries.emplace_back(new Polyhedron3d(
+		m_shader, m_camera, glm::vec3{0, 0, 0}, m_width, m_length, m_height, m_color));
 }

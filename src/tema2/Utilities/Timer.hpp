@@ -2,7 +2,11 @@
 
 #include <chrono>
 
-template<class T>
+using namespace std::chrono;
+
+#define USE_DEPRECATED
+
+template <class T>
 class Timer
 {
 public:
@@ -17,7 +21,7 @@ public:
 			return false;
 		}
 
-		if(TimePassedValue(duration))
+		if (TimePassedValue(duration))
 		{
 			m_isActive = false;
 			return true;
@@ -26,17 +30,14 @@ public:
 		return false;
 	}
 
+#ifdef USE_DEPRECATED
 	bool TimePassedValue(T duration) { return this->GetTimeElaspsed() > duration; }
+#endif
 
 	T GetTimeElaspsed()
 	{
-		return std::chrono::duration_cast<std::chrono::milliseconds>(
-				   std::chrono::steady_clock::now() - m_startPoint)
-				   .count()
-			/ (T)1000;
+		return (T)duration_cast<milliseconds>(steady_clock::now() - m_startPoint).count() / (T)1000;
 	}
-
-	void ResetTime() { m_startPoint = std::chrono::steady_clock::now(); }
 	void ResetTimer()
 	{
 		m_isActive = false;
@@ -44,9 +45,14 @@ public:
 	}
 
 private:
-	std::chrono::steady_clock::time_point m_startPoint = std::chrono::steady_clock::now();
+	void ResetTime() { m_startPoint = steady_clock::now(); }
+
+private:
+	steady_clock::time_point m_startPoint = steady_clock::now();
 	bool m_isActive = false;
 };
 
 typedef Timer<float> FTimer;
 typedef Timer<double> DTimer;
+
+#undef USE_DEPRECATED

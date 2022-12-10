@@ -14,6 +14,8 @@ public:
 
 	static bool IsCollidingWithNPC(const class Car* masina, const class NPC* npc);
 
+	static int GetCurrentPlaceOnTrackForCar(const class Track* track, const class Car* car);
+
 private:
 	// Check verification for convex polygons - used for car and NPCs
 	static inline constexpr bool IsInside(
@@ -28,5 +30,6 @@ private:
 	static inline bool IsInside(
 		const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3, const glm::vec3& point);
 
+	// Check if a point belongs to the track
 	static inline bool IsOnTrack(const class Track* track, const glm::vec3& pos);
 };
