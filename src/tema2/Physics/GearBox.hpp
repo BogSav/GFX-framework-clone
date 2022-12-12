@@ -21,7 +21,7 @@ struct GearBox
 	{
 		if (isInShift)
 		{
-			if (m_timer.PassedTime(0.4))
+			if (m_shiftingTimer.PassedTime(m_shiftingTime))
 			{
 				isInShift = false;
 			}
@@ -49,7 +49,8 @@ private:
 	int currentGear = 1;
 	double brakeFroce = 30000;
 
-	DTimer m_timer;
+	double m_shiftingTime = 0.4;
+	DTimer m_shiftingTimer;
 	bool isInShift = false;
 };
 }  // namespace physics

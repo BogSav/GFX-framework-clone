@@ -7,13 +7,14 @@
 
 class GameComponent
 {
-public:
+protected:
 	GameComponent() = delete;
 	GameComponent(const Shader* const shader, CustomCamera* const camera)
 		: m_shader(shader), m_camera(camera)
 	{
 	}
 
+public:
 	// Update function for each individual component
 	virtual void Update(float) { return; }
 
@@ -38,7 +39,7 @@ public:
 			 &coefficient = std::as_const(coefficient)](const auto& current)
 			{ current->Render(m_modelMatrix, carPosition, coefficient); });
 	}
-	
+
 	// The final boss of rendering, light, curve...everything
 	void Render(
 		const glm::vec3& carPosition,

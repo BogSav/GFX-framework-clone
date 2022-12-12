@@ -7,11 +7,6 @@
 
 namespace utils
 {
-inline glm::vec3 GetInterpolatedPoint(
-	const glm::vec3& v1, const glm::vec3& v2, const float interpolationPoint)
-{
-	return v1 + (v2 - v1) * interpolationPoint;
-}
 
 template <typename T>
 struct VLSpace
@@ -67,6 +62,12 @@ private:
 };
 typedef VLSpace<float> LogicSpace;
 typedef VLSpace<int> ViewportSpace;
+
+inline glm::vec3 GetInterpolatedPoint(
+	const glm::vec3& v1, const glm::vec3& v2, const float interpolationPoint)
+{
+	return v1 + (v2 - v1) * interpolationPoint;
+}
 
 // Transformare din sptiu din rhs in spatiul din lhs
 inline glm::mat3 VisualizationTransf2d(const utils::LogicSpace& rhs, const utils::LogicSpace& lhs)

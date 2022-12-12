@@ -4,7 +4,7 @@
 
 using namespace std::chrono;
 
-#define USE_DEPRECATED
+#define FORCED_USE_OF_DEPRECATED
 
 template <class T>
 class Timer
@@ -30,7 +30,7 @@ public:
 		return false;
 	}
 
-#ifdef USE_DEPRECATED
+#if defined(USE_DEPRECATED) || defined(FORCED_USE_OF_DEPRECATED)
 	bool TimePassedValue(T duration) { return this->GetTimeElaspsed() > duration; }
 #endif
 
@@ -55,4 +55,4 @@ private:
 typedef Timer<float> FTimer;
 typedef Timer<double> DTimer;
 
-#undef USE_DEPRECATED
+#undef FORCED_USE_OF_DEPRECATED
