@@ -104,9 +104,7 @@ void Lab9::Init()
 			glm::vec2(0.0f, 0.0f),
 			glm::vec2(0.0f, 1.0f),
 			glm::vec2(1.0f, 1.0f),
-			glm::vec2(1.0f, 0.0f)
-
-		};
+			glm::vec2(1.0f, 0.0f)};
 
 		vector<unsigned int> indices = {0, 1, 3, 1, 2, 3};
 
@@ -159,7 +157,7 @@ void Lab9::Update(float deltaTimeSeconds)
 		glm::mat4 modelMatrix = glm::mat4(1);
 		modelMatrix = glm::translate(modelMatrix, glm::vec3(1, 1, -3));
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(2));
-		RenderSimpleMesh(meshes["sphere"], shaders["LabShader"], modelMatrix, mapTextures["earth"]);
+		RenderSimpleMesh(meshes["sphere"], shaders["LabShader"], modelMatrix, mapTextures["earth"], true);
 	}
 
 	{
@@ -181,16 +179,23 @@ void Lab9::Update(float deltaTimeSeconds)
 	{
 		glm::mat4 modelMatrix = glm::mat4(1);
 		glm::vec3 position = glm::vec3(0.0f, 0.5f, 0.0f);
+		glm::vec3 cameraToObjectVec = position - GetSceneCamera()->m_transform->GetWorldPosition();
+		glm::vec3 projection =
+			glm::cross({0, 1, 0}, glm::cross(glm::normalize(cameraToObjectVec), {0, 1, 0}));
+		float dot = glm::dot(projection, glm::vec3(0, 0, 1));
+
 		modelMatrix = glm::translate(modelMatrix, position);
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5f));
 		modelMatrix = glm::rotate(
-			modelMatrix, glm::acos(glm::dot(position - GetSceneCamera()->m_transform->GetWorldPosition(), glm::vec3(0,0,1))),
+			modelMatrix,
+			(glm::cross(projection, {0, 0, 1}).y < 0 ? 1 : -1) * glm::acos(dot),
 			glm::vec3(0, 1, 0));
 		RenderSimpleMesh(
 			meshes["square"],
 			shaders["LabShader"],
 			modelMatrix,
 			mapTextures["grass"],
+			false,
 			mapTextures["bamboo"]);
 	}
 
@@ -215,6 +220,7 @@ void Lab9::RenderSimpleMesh(
 	Shader* shader,
 	const glm::mat4& modelMatrix,
 	Texture2D* texture1,
+	bool glob,
 	Texture2D* texture2)
 {
 	if (!mesh || !shader || !shader->GetProgramID())
@@ -238,13 +244,12 @@ void Lab9::RenderSimpleMesh(
 	glUniformMatrix4fv(loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 
 	// TODO(student): Set any other shader uniforms that you need
-	if (texture1 && texture2)
+	glUniform1i(glGetUniformLocation(shader->program, "useMix"), texture1 && texture2 ? 1 : 0);
+
+	glUniform1i(glGetUniformLocation(shader->program, "glob"), glob ? 1 : 0);
+	if (glob)
 	{
-		glUniform1i(glGetUniformLocation(shader->program, "useMix"), 1);
-	}
-	else
-	{
-		glUniform1i(glGetUniformLocation(shader->program, "useMix"), 0);
+		glUniform1f(glGetUniformLocation(shader->program, "tm"), Engine::GetElapsedTime());
 	}
 
 	if (texture1)
