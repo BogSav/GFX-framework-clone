@@ -50,7 +50,7 @@ class Mesh
     typedef unsigned int GLenum;
 
  public:
-    explicit Mesh(std::string meshID);
+	explicit Mesh(std::string meshID = "");
     virtual ~Mesh();
 
     void ClearData();

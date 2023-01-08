@@ -16,7 +16,7 @@ project(${target_name} C CXX)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
@@ -42,6 +42,7 @@ endif()
 
 
 # Set options
+option(WITH_TEMA_3 "With tema 3" ON)
 option(WITH_LAB_M1 "With module 1 labs" ON)
 option(WITH_LAB_M2 "With module 2 labs" OFF)
 option(WITH_LAB_EXTRA "With extra labs" OFF)
@@ -70,6 +71,9 @@ endif()
 if (WITH_LAB_EXTRA)
     set(SUFFIX_LAB_EXTRA "extra")
 endif()
+if (WITH_TEMA_3)
+    set(SUFFIX_TEMA_3 "tema3")
+endif()
 
 
 # Gather the source files
@@ -83,6 +87,7 @@ file(GLOB_RECURSE GFXF_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M1}/*.c*
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M2}/*.c*
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_EXTRA}/*.c*
+    ${CMAKE_CURRENT_LIST_DIR}/src/${SUFFIX_TEMA_3}/*.c*
 )
 
 
@@ -97,10 +102,12 @@ file(GLOB_RECURSE GFXF_HEADERS_PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M1}/*.h*
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M2}/*.h*
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_EXTRA}/*.h*
+    ${CMAKE_CURRENT_LIST_DIR}/src/${SUFFIX_TEMA_3}/*.h*
     #
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M1}/*.glsl
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M2}/*.glsl
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_EXTRA}/*.glsl
+    ${CMAKE_CURRENT_LIST_DIR}/src/${SUFFIX_TEMA_3}/*.glsl*
 )
 
 
