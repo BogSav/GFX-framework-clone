@@ -2,6 +2,7 @@
 
 #define LIGHT
 #include "Directional.hpp"
+#include "Point.hpp"
 #include "Spot.hpp"
 #undef LIGHT
 
@@ -14,7 +15,8 @@ public:
 	{
 		NONE = 0,
 		DIRECTIONAL = 1,
-		SPOT = 2
+		SPOT = 2,
+		POINT = 3
 	};
 
 public:
@@ -23,6 +25,8 @@ public:
 	virtual const glm::vec3& GetPosition() const = 0;
 	virtual int GetLightTypeInt() const = 0;
 	virtual LightSourceAdapter::LightType GetLightType() const = 0;
+
+	virtual void SetPosition(const glm::vec3&) = 0; 
 
 public:
 	static constexpr unsigned int materialShiness = 20;
@@ -38,10 +42,20 @@ public:
 	LightSource() = delete;
 
 	// Directional light constructor
+	LightSource(
+		const Color& color,
+		const glm::vec3& direction,
+		const float& intensity)
+		: m_lightColor(color), m_lightIntensity(intensity), T(direction)
+	{
+		this->SetType(LightType::DIRECTIONAL);
+	}
+
+	// Point light constructor
 	LightSource(const glm::vec3& position, const Color& color, const float& intensity)
 		: m_position(position), m_lightColor(color), m_lightIntensity(intensity), T()
 	{
-		this->SetType(LightType::DIRECTIONAL);
+		this->SetType(LightType::POINT);
 	}
 
 	// Spot light constructor
@@ -66,7 +80,7 @@ public:
 	int GetLightTypeInt() const override { return static_cast<int>(m_lightType); }
 	LightSourceAdapter::LightType GetLightType() const override { return m_lightType; }
 
-	void SetPosition(const glm::vec3& pos) { m_position = pos; }
+	void SetPosition(const glm::vec3& pos) override { m_position = pos; }
 
 private:
 	// Verifier for the type of light
@@ -92,6 +106,16 @@ private:
 			return;
 		}
 
+		if (std::is_same<T, Point>::value == true)
+		{
+			m_lightType = LightType::POINT;
+			if (m_lightType != expectedType)
+			{
+				throw std::exception("Expected another type of light");
+			}
+			return;
+		}
+
 		throw std::exception("Dfk????");
 	}
 
@@ -106,3 +130,4 @@ private:
 
 typedef LightSource<Directional> DirectionalLight;
 typedef LightSource<Spot> SpotLight;
+typedef LightSource<Point> PointLight;

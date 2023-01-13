@@ -7,7 +7,10 @@ class Field : public GameComponent
 {
 public:
 	Field() = delete;
-	Field(const Shader* const shader, CustomCamera* const camera, std::string texturePath);
+	Field(
+		const Shader* const shader,
+		std::shared_ptr<CustomCamera>& camera,
+		std::shared_ptr<Texture2D>& texture);
 
 	void Render() override;
 	//void Render(const Shader* shader, CustomCamera* camera);
@@ -19,20 +22,17 @@ public:
 
 private:
 	std::unique_ptr<GeometryObject3d> m_plane;
-	std::unique_ptr<Texture2D> m_texture;
+	std::shared_ptr<Texture2D> m_texture;
+	std::shared_ptr<CustomCamera>  m_camera;
 
-	std::unique_ptr<Mesh> testMesh;
-
-	float m_scale;
 	float m_movingSpeed;
 
 	glm::vec3 m_movingDirection;
-	glm::vec3 m_currentPosition;
 
 	glm::vec2 m_textureDirection;
 	glm::vec2 m_texturePosition;
 	float m_textureSpeed;
 
 	float m_directionAngleWithOX = 0.f;
-	float m_inclinationAngle;
+	const float m_inclinationAngle;
 };

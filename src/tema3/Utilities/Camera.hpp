@@ -84,6 +84,10 @@ public:
 		glm::vec3 dir = glm::normalize(glm::vec3(forward.x, 0, forward.z));
 		position += dir * distance;
 	}
+	void MoveInTheSpecifiedDirection(glm::vec3 direction, float distance)
+	{
+		position += direction * distance;
+	}
 
 	// Translate functions
 	void TranslateForward(float distance)

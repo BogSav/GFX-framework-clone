@@ -40,7 +40,7 @@ void main()
         vec3 diffuse_light = vec3(0);
         vec3 specular_light = vec3(0);
 
-        vec3 N = normalize(world_normal);
+        vec3 N = normalize( world_normal );
         vec3 L = normalize( LightSources[i].position - world_position );
         vec3 V = normalize( eye_position - world_position );
         vec3 H = normalize( L + V );

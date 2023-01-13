@@ -54,7 +54,7 @@ static constexpr Color MakeRGB(unsigned char r, unsigned char g, unsigned char b
 {
 	return (r << 16) | (g << 8) | b;
 }
-inline static Color MakeRandomRGB()
+static Color MakeRandomRGB()
 {
 	std::mt19937 randEngine(std::random_device{}());
 	std::uniform_int_distribution<int> uDistrib(0, 255);
