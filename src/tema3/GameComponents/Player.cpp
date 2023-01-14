@@ -23,11 +23,14 @@ Player::Player(const Shader* const shader, CustomCamera* const camera, const Fie
 
 void Player::Render()
 {
+	float interpolatedOrientationAngle = utils::GetInterpolated(
+		RADIANS(195), RADIANS(345), RADIANS(220), RADIANS(320), m_field->m_directionAngleWithOX);
+
 	m_modelMatrix = glm::mat4(1);
 	m_modelMatrix = glm::translate(m_modelMatrix, m_field->m_position + glm::vec3{0, 0.5, 0.5});
 	m_modelMatrix = glm::scale(m_modelMatrix, glm::vec3{m_scale, m_scale, m_scale});
 	m_modelMatrix = glm::rotate(m_modelMatrix, m_field->m_inclinationAngle, glm::vec3{1, 0, 0});
-	m_modelMatrix = glm::rotate(m_modelMatrix, m_field->m_directionAngleWithOX, glm::vec3{0, 1, 0});
+	m_modelMatrix = glm::rotate(m_modelMatrix, interpolatedOrientationAngle, glm::vec3{0, 1, 0});
 
 	m_cube->Render(m_modelMatrix);
 	m_bbox = m_cube->GetTranformedBBox(m_modelMatrix);
@@ -41,4 +44,9 @@ void Player::Render()
 	glm::mat4 leftSkiModelMatrix = glm::translate(m_modelMatrix, glm::vec3{0, -0.5, -0.5});
 	m_leftSki->Render(leftSkiModelMatrix);
 	m_bbox += m_leftSki->GetTranformedBBox(leftSkiModelMatrix);
+}
+
+void Player::Reset()
+{
+	m_collectedGifts = 0;
 }

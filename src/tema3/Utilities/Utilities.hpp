@@ -69,6 +69,12 @@ inline glm::vec3 GetInterpolatedPoint(
 	return v1 + (v2 - v1) * interpolationPoint;
 }
 
+template<typename T>
+inline T GetInterpolated(T x0, T x1, T y0, T y1, T pointToInterpolate)
+{
+	return T(y0 + (pointToInterpolate - x0) * (y1 - y0) / (x1 - x0));
+}
+
 // Transformare din sptiu din rhs in spatiul din lhs
 inline glm::mat3 VisualizationTransf2d(const utils::LogicSpace& rhs, const utils::LogicSpace& lhs)
 {

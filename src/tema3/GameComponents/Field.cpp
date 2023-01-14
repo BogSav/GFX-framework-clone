@@ -56,7 +56,7 @@ void Field::Update(float deltaTime)
 	m_texturePosition += m_textureDirection * deltaTime * m_textureSpeed;
 	if (m_texturePosition.x >= 1 || m_texturePosition.x <= -1)
 		m_texturePosition.x = 0;
-	if (m_texturePosition.y >= 1)
+	if (m_texturePosition.y >= 1 || m_texturePosition.y <= -1)
 		m_texturePosition.y = 0;
 }
 
@@ -71,13 +71,22 @@ void Field::UpdateTextureDirection(int mouseX, int mouseY, glm::ivec2 resolution
 
 	if (RADIANS(195) < angle && angle < RADIANS(345))
 	{
+		m_idle = false;
 		m_directionAngleWithOX = angle;
 
-		m_movingDirection.x = (2.f * mouseX / resolution.x - 1.f) * 3.f;
+		m_movingDirection.x =
+			utils::GetInterpolated(
+				0.f, static_cast<float>(resolution.x), -1.f, 1.f, static_cast<float>(mouseX))
+			* 2.f;
 
-		//mousePosition.y *= -1.f;
-		//m_textureDirection.x = 1;
 		m_textureDirection.y = 1.f;
 		m_textureDirection.x = m_movingDirection.x;
 	}
+}
+
+void Field::Reset()
+{
+	m_position = glm::vec3{0, 0, 0};
+	m_texturePosition = glm::vec3{0, 0, 0};
+	m_idle = true;
 }

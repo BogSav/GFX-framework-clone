@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-Game::Game() : m_treeNumber(6), m_presentsNumber(6), m_rocksNumber(6)
+Game::Game() : m_treeNumber(6), m_presentsNumber(6), m_rocksNumber(6), m_pillarsNumber(6)
 {
 }
 
@@ -61,6 +61,19 @@ void Game::Init()
 		m_rocks[i]->Activate(m_field.get());
 		m_gameComponents.push_back(m_rocks[i].get());
 	}
+
+	for (size_t i = 0; i < m_pillarsNumber; i++)
+	{
+		m_streetLights.emplace_back(new StreetLight(
+			shaders["Simple"], m_camera.get(), window, m_textures["Pillar"]));
+		m_streetLights[i]->InstantiateLightSources();
+		m_streetLights[i]->Activate(m_field.get());
+		m_lightSources.push_back(m_streetLights[i]->GetLightSources().first);
+		m_lightSources.push_back(m_streetLights[i]->GetLightSources().second);
+		m_gameComponents.push_back(m_streetLights[i].get());
+	}
+
+	m_textEngine = std::make_unique<TextEngine>(window);
 }
 
 
@@ -72,23 +85,36 @@ void Game::FrameStart()
 
 void Game::Update(float deltaTimeSeconds)
 {
-	m_field->Update(deltaTimeSeconds);
-	m_player->Update(deltaTimeSeconds);
+	if (!gameOver)
+	{
+		if (m_field->GetIdleState() == false)
+		{
+			m_field->Update(deltaTimeSeconds);
+		}
+	}
+	else
+	{
+		std::cout << m_player->GetGiftsNr() << std::endl;
+		gameOver = false;
+		m_field->Reset();
+		m_player->Reset();
+		m_camera->SetPosition(glm::vec3{0, 10.15f, 14.15f}, glm::vec3{0, -5.f, -1.f});
+	}
 
+	UpdateGameComponents(deltaTimeSeconds);
 	Render();
 	CollectGifts();
 	CheckCollisions();
 
-	if (gameOver)
-	{
-		std::cout << m_player->GetGiftsNr() << std::endl;
-		this->Exit();
-	}
+	m_textEngine->Render("Cadouri colectat: " + std::to_string(m_player->GetGiftsNr()), 20, 20);
+
+	if (frameTimer.PassedTime(1))
+		std::cout << 1 / deltaTimeSeconds << "\n";
 }
 
 void Game::FrameEnd()
 {
-	// DrawCoordinateSystem(m_camera->GetViewMatrix(), m_camera->GetProjectionMatrix());
+	//DrawCoordinateSystem(m_camera->GetViewMatrix(), m_camera->GetProjectionMatrix());
 	DeactivateUselessComponents();
 	ActivateUselessComponents();
 }
@@ -130,6 +156,12 @@ void Game::OnInputUpdate(float deltaTime, int mods)
 
 void Game::OnKeyPress(int key, int mods)
 {
+	if (key == GLFW_KEY_R)
+	{
+		m_field->Reset();
+		m_player->Reset();
+		m_camera->SetPosition(glm::vec3{0, 10.15f, 14.15f}, glm::vec3{0, -5.f, -1.f});
+	}
 }
 
 void Game::OnKeyRelease(int key, int mods)
@@ -213,6 +245,13 @@ void Game::CreateTextures()
 			PATH_JOIN(window->props.selfDir, "assets", "textures", "treeTrunk.jpg").c_str());
 		m_textures["Trunk"] = trunkTexture;
 	}
+
+	{
+		std::shared_ptr<Texture2D> trunkTexture = std::make_shared<Texture2D>();
+		trunkTexture->Load2D(
+			PATH_JOIN(window->props.selfDir, "assets", "textures", "pillar.jpg").c_str());
+		m_textures["Pillar"] = trunkTexture;
+	}
 }
 
 void Game::Render()
@@ -242,6 +281,26 @@ void Game::Render()
 		{
 			if (curr->GetActiveState())
 				curr->Render();
+		});
+	std::for_each(
+		m_streetLights.begin(),
+		m_streetLights.end(),
+		[this](const auto& curr)
+		{
+			if (curr->GetActiveState())
+				curr->Render();
+		});
+}
+
+void Game::UpdateGameComponents(float deltaTime)
+{
+	std::for_each(
+		m_gameComponents.begin(),
+		m_gameComponents.end(),
+		[&deltaTime](const auto curr)
+		{
+			if (!curr->GetActiveState())
+				curr->Update(deltaTime);
 		});
 }
 
@@ -293,6 +352,9 @@ void Game::CollectGifts()
 
 void Game::CheckCollisions()
 {
+	if (!collisionActive)
+		return;
+
 	std::for_each(
 		m_rocks.begin(),
 		m_rocks.end(),

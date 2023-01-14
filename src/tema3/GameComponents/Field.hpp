@@ -18,6 +18,9 @@ public:
 	void Update(float) override;
 	void UpdateTextureDirection(int mouseX, int mouseY, glm::ivec2);
 
+	void Reset();
+	bool GetIdleState() { return m_idle; }
+
 	friend Player;
 
 private:
@@ -35,4 +38,6 @@ private:
 
 	float m_directionAngleWithOX = 0.f;
 	const float m_inclinationAngle;
+
+	bool m_idle = true;
 };

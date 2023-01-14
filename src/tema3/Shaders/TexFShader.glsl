@@ -1,6 +1,6 @@
 #version 330
 
-#define MAX_LIGHTS 20
+#define MAX_LIGHTS 30
 
 // Input
 in vec2 texcoord;

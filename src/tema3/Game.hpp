@@ -7,6 +7,10 @@
 #include "tema3/GameComponents/Present.hpp"
 #include "tema3/GameComponents/Rock.hpp"
 #include "tema3/GameComponents/Tree.hpp"
+#include "tema3/GameComponents/StreetLight.hpp"
+
+#include "tema3/Utilities/Timer.hpp"
+#include "tema3/Text/TextEngine.hpp"
 
 class Game : public gfxc::SimpleScene
 {
@@ -33,6 +37,7 @@ private:
 	void CreateTextures();
 
 	void Render();
+	void UpdateGameComponents(float);
 
 	void DeactivateUselessComponents();
 	void ActivateUselessComponents(); 
@@ -49,17 +54,23 @@ private:
 	std::vector<std::unique_ptr<Tree>> m_trees;
 	std::vector<std::unique_ptr<Present>> m_presents;
 	std::vector<std::unique_ptr<Rock>> m_rocks;
+	std::vector<std::unique_ptr<StreetLight>> m_streetLights;
 
 	std::vector<GameComponent*> m_gameComponents;
 	std::vector<const LightSourceAdapter*> m_lightSources;
-
 	std::unordered_map<std::string, std::shared_ptr<Texture2D>> m_textures;
 
 	std::unique_ptr<LightSourceAdapter> m_directionalLight;
 
-	const float m_treeNumber;
-	const float m_presentsNumber;
-	const float m_rocksNumber;
+	std::unique_ptr<TextEngine> m_textEngine;
+
+	const size_t m_treeNumber;
+	const size_t m_presentsNumber;
+	const size_t m_rocksNumber;
+	const size_t m_pillarsNumber;
 
 	bool gameOver = false;
+	bool collisionActive = false;
+
+	DTimer frameTimer;
 };

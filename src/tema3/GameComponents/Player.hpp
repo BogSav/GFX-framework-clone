@@ -15,6 +15,8 @@ public:
 	void IncreaseCollectedGifts() { m_collectedGifts++; };
 	int GetGiftsNr() { return m_collectedGifts; }
 
+	void Reset();
+
 private:
 	std::unique_ptr<GeometryObject3d> m_cube;
 	std::unique_ptr<GeometryObject3d> m_rightSki;
