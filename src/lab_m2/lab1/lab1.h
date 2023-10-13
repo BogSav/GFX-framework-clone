@@ -7,13 +7,13 @@ namespace m2
 {
     class Lab1 : public gfxc::SimpleScene
     {
-     public:
+    public:
         Lab1();
         ~Lab1();
 
         void Init() override;
 
-     private:
+    private:
         void FrameStart() override;
         void Update(float deltaTimeSeconds) override;
         void FrameEnd() override;
@@ -27,7 +27,7 @@ namespace m2
         void OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY) override;
         void OnWindowResize(int width, int height) override;
 
-     private:
+    private:
         unsigned int nrInstances;
         unsigned int maxInstances;
         float shrink;

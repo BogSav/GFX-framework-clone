@@ -25,9 +25,9 @@ Lab1::~Lab1()
 
 void Lab1::Init()
 {
-    nrInstances = 0;
+    nrInstances = 6;
     maxInstances = 50;
-    shrink = 0;
+    shrink = 1;
 
     auto camera = GetSceneCamera();
     camera->SetPositionAndRotation(glm::vec3(0, 5, 4), glm::quat(glm::vec3(-30 * TO_RADIANS, 0, 0)));
@@ -42,7 +42,7 @@ void Lab1::Init()
 
     // Create a shader program for rendering to texture
     {
-        Shader *shader = new Shader("Instances");
+        Shader* shader = new Shader("Instances");
         shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M2, "lab1", "shaders", "VertexShader.glsl"), GL_VERTEX_SHADER);
         shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M2, "lab1", "shaders", "GeometryShader.glsl"), GL_GEOMETRY_SHADER);
         shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M2, "lab1", "shaders", "FragmentShader.glsl"), GL_FRAGMENT_SHADER);
@@ -68,6 +68,9 @@ void Lab1::Update(float deltaTimeSeconds)
 
         int loc_instances = shader->GetUniformLocation("instances");
         glUniform1i(loc_instances, nrInstances);
+
+        loc_instances = shader->GetUniformLocation("shrink");
+        glUniform1f(loc_instances, shrink);
 
         // TODO(student): Add a shrinking parameter for scaling each
         // triangle in the geometry shader
@@ -95,7 +98,17 @@ void Lab1::OnInputUpdate(float deltaTime, int mods)
     // Treat continuous update based on input with window->KeyHold()
 
     // TODO(student): Add events for modifying the shrinking parameter
-
+    float oldshrink = shrink;
+    if (window->KeyHold(GLFW_KEY_R))
+    {
+        shrink += deltaTime * 0.5;
+    }
+    if (window->KeyHold(GLFW_KEY_T))
+    {
+        shrink -= deltaTime * 0.5;
+    }
+    if (shrink < 0.75 || shrink > 2)
+        shrink = oldshrink;
 }
 
 

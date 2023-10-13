@@ -12,6 +12,7 @@ uniform mat4 View;
 uniform mat4 Projection;
 uniform int instances;
 // TODO(student): Declare other uniforms here
+uniform float shrink;
 
 // Output
 layout(location = 0) out vec2 texture_coord;
@@ -31,17 +32,22 @@ void main()
     vec3 p3 = gl_in[2].gl_Position.xyz;
 
     const vec3 INSTANCE_OFFSET = vec3(1.25, 0, 1.25);
-    const int NR_COLS = 6;
+    const int NR_COLS = 4;
 
     // TODO(student): Second, modify the points so that the
     // triangle shrinks relative to its center
+    vec3 center = (p1 + p2 + p3) / 3;
+
+    p1 = (p1 - center) * shrink + center;
+    p2 = (p2 - center) * shrink + center;
+    p3 = (p3 - center) * shrink + center;
 
     for (int i = 0; i <= instances; i++)
     {
         // TODO(student): First, modify the offset so that instances
         // are displayed on `NR_COLS` columns. Test your code by
         // changing the value of `NR_COLS`. No need to recompile.
-        vec3 offset = vec3(0, 0, 0);
+        vec3 offset = vec3((i % NR_COLS) * 2, 0, (i / NR_COLS) * 2);
 
         texture_coord = v_texture_coord[0];
         EmitPoint(p1, offset);
