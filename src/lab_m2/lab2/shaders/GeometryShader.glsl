@@ -4,7 +4,7 @@
 // TODO(student): First, generate a curve (via line strip),
 // then a rotation/translation surface (via triangle strip)
 layout(lines) in;
-layout(line_strip, max_vertices = 256) out;
+layout(triangle_strip, max_vertices = 256) out;
 
 // Uniform properties
 uniform mat4 View;
@@ -12,6 +12,9 @@ uniform mat4 Projection;
 uniform vec3 control_p0, control_p1, control_p2, control_p3;
 uniform int no_of_instances;
 // TODO(student): Declare any other uniforms here
+uniform int no_of_generated_points;
+uniform float max_translate;
+uniform float max_rotate;
 
 // Input
 in int instance[2];
@@ -45,6 +48,12 @@ vec3 bezier(float t)
             control_p3 * pow(t, 3);
 }
 
+void EmitPoint(vec3 pos)
+{
+	gl_Position = Projection * View * vec4(pos, 1);
+	EmitVertex();
+}
+
 
 // TODO(student): If you want to take things a step further, try drawing a
 // Hermite spline. Hint: you can repurpose two of the control points. For a
@@ -67,15 +76,60 @@ void main()
     // with different transformation types.
     const int SURFACE_TYPE = SURFACE_TYPE_ROTATION;
 
-    if (instance[0] < no_of_instances)
-    {
-        // TODO(student): Rather than emitting vertices for the control
-        // points, you must emit vertices that approximate the curve itself.
-        gl_Position = Projection * View * vec4(control_p0, 1);   EmitVertex();
-        gl_Position = Projection * View * vec4(control_p1, 1);   EmitVertex();
-        gl_Position = Projection * View * vec4(control_p2, 1);   EmitVertex();
-        gl_Position = Projection * View * vec4(control_p3, 1);   EmitVertex();
-        EndPrimitive();
+	if (instance[0] < no_of_instances && instance[0] > 0)
+	{
+		// TODO(student): Rather than emitting vertices for the control
+		// points, you must emit vertices that approximate the curve itself.
+	
+		vec3 upperPts[2];
+		vec3 firstPt = bezier(1.f * 0.f / (no_of_generated_points - 1));
 
-    }
+		if (SURFACE_TYPE == SURFACE_TYPE_ROTATION)
+		{
+			upperPts[0] =
+				rotateY(firstPt, 1.f * (instance[0] - 1) / (no_of_instances - 1.f) * max_rotate),
+			upperPts[1] =
+				rotateY(firstPt, 1.f * instance[0] / (no_of_instances - 1.f) * max_rotate);
+		}
+		else
+		{
+			upperPts[0] = translateX(
+				firstPt, 1.f * (instance[0] - 1) / (no_of_instances - 1.f) * max_translate),
+			upperPts[1] =
+				translateX(firstPt, 1.f * instance[0] / (no_of_instances - 1.f) * max_translate);
+		}
+
+		for (int j = 1; j < no_of_generated_points; j++)
+		{
+			vec3 newPt = bezier(1.f * j / (no_of_generated_points - 1));
+			vec3 ParPt;
+
+			if (SURFACE_TYPE == SURFACE_TYPE_ROTATION)
+			{
+				ParPt = rotateY(newPt, 1.f * instance[0] / (no_of_instances - 1.f) * max_rotate);
+				newPt =
+					rotateY(newPt, 1.f * (instance[0] - 1) / (no_of_instances - 1.f) * max_rotate);
+			}
+			else
+			{
+				ParPt =
+					translateX(newPt, 1.f * instance[0] / (no_of_instances - 1.f) * max_translate);
+				newPt = translateX(
+					newPt, 1.f * (instance[0] - 1) / (no_of_instances - 1.f) * max_translate);
+			}
+
+			EmitPoint(upperPts[0]);
+			EmitPoint(upperPts[1]);
+			EmitPoint(newPt);
+
+//			EmitPoint(newPt);
+//			EmitPoint(upperPts[1]);
+			EmitPoint(ParPt);
+
+			upperPts[0] = newPt;
+			upperPts[1] = ParPt;
+		}
+
+		EndPrimitive();
+	}
 }
