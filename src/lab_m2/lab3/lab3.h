@@ -9,13 +9,13 @@ namespace m2
 {
     class Lab3 : public gfxc::SimpleScene
     {
-     public:
+    public:
         Lab3();
         ~Lab3();
 
         void Init() override;
 
-     private:
+    private:
         void FrameStart() override;
         void Update(float deltaTimeSeconds) override;
         void FrameEnd() override;
@@ -32,5 +32,8 @@ namespace m2
         void OnWindowResize(int width, int height) override;
 
         // TODO(student): Declare the frame buffer, and any other class members here.
+        unsigned int framebuffer_object;
+        unsigned int color_texture;
+        unsigned int punctAtasare = 0;
     };
 }   // namespace m2

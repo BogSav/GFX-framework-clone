@@ -1,4 +1,4 @@
-#include "lab_m2/lab3/lab3.h"
+﻿#include "lab_m2/lab3/lab3.h"
 
 #include <vector>
 #include <iostream>
@@ -48,7 +48,7 @@ void Lab3::Init()
 
     // Create a shader program for rendering to texture
     {
-        Shader *shader = new Shader("ShaderLab3");
+        Shader* shader = new Shader("ShaderLab3");
         shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M2, "lab3", "shaders", "VertexShader.glsl"), GL_VERTEX_SHADER);
         shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M2, "lab3", "shaders", "FragmentShader.glsl"), GL_FRAGMENT_SHADER);
         shader->CreateAndLink();
@@ -58,7 +58,39 @@ void Lab3::Init()
     auto resolution = window->GetResolution();
 
     // TODO(student): Create a new framebuffer and generate attached textures
+    {
+        glGenFramebuffers(1, &framebuffer_object);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object);
 
+        glGenTextures(1, &color_texture);
+        glBindTexture(GL_TEXTURE_2D, color_texture);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RGBA,
+            Engine::GetWindow()->GetResolution().x,
+            Engine::GetWindow()->GetResolution().y,
+            0,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE,
+            NULL);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        glFramebufferTexture2D(
+            GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_texture, 0);
+
+        GLenum framebufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE)
+        {
+            std::cerr << "Error: Framebuffer is not complete!" << std::endl;
+        }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
 }
 
 
@@ -85,7 +117,18 @@ void Lab3::Update(float deltaTimeSeconds)
     // TODO(student): Render scene view from a mirrorred point of view. Use
     // `camera->SetPosition()` and `camera->SetRotation(glm::quat(euler_angles))`
     {
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object);
+        GLenum atasare = GL_COLOR_ATTACHMENT0 + punctAtasare;
+        glDrawBuffers(1, &atasare);
 
+        ClearScreen();
+
+        camera->SetPosition(mirrorPos);
+        camera->SetRotation(glm::quat(mirrorRotation));
+
+        DrawScene();
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     // Render the scene normally
@@ -101,6 +144,10 @@ void Lab3::Update(float deltaTimeSeconds)
         auto shader = shaders["ShaderLab3"];
         
         // TODO(student): Use the mirror texture
+        shader->Use();
+        glUniform1i(shader->GetUniformLocation("texture_1"), 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, color_texture);
 
         glm::mat4 modelMatrix(1);
         modelMatrix = glm::translate(modelMatrix, mirrorPos);

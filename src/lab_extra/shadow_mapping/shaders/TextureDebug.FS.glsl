@@ -12,6 +12,6 @@ layout(location = 0) out vec4 color;
 
 void main()
 {
-    float depth = pow(texture(texture_1, texture_coord).r, 64);
+    float depth = texture(texture_1, texture_coord).r;
     color = vec4(depth);
 }

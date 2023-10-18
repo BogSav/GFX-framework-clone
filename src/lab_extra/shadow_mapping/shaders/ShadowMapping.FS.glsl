@@ -23,6 +23,20 @@ uniform vec3 object_color;
 // Output
 layout(location = 0) out vec4 out_color;
 
+float ShadowCalculation(vec4 fragPosLightSpace)
+{
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+    
+    float closestDepth = texture(texture_depth, projCoords.xy).r;
+    float currentDepth = projCoords.z;
+
+    float bias = 0.00005;
+
+    float shadow = currentDepth - bias > closestDepth ? 0.35 : 1.0;
+
+    return shadow;
+}
 
 void main()
 {
@@ -35,30 +49,37 @@ void main()
 
     // NDC to Screen coordinates
     // TODO(student): Check if pixel is in shadow
-    float visibility = 1.0;
-
+    float visibility = ShadowCalculation(shadow_pos);
+ 
     // ------------------------------------------------------------------------
     // Phong lighting
-
     vec3 L = normalize(light_position - P);
     vec3 V = normalize(eye_position - P);
+    vec3 H = normalize(L + V);
 
-    float ambient_light = 0.25;
-    float diffuse_light = 0;
-    float specular_light = 0;
-    float spot_light_factor = 1;
+    vec3 ambient_light = vec3(0.15);
+    vec3 diffuse_light = vec3(0);
+    vec3 specular_light = vec3(0);
 
-    float light = ambient_light;
-
-    diffuse_light = max(dot(L, N), 0);
-    if (diffuse_light > 0)
+    float spot_light = dot(-L, light_direction);
+    float spot_light_limit = cos(1.5708);
+    float factorAtenuare = 1.0;
+    
+    if (spot_light > cos(1.5708))
     {
-        // specular_light = pow(max(dot(V, reflect(-L, N)), 0), material_shininess);    // Phong
-        specular_light = pow(max(dot(N, normalize(L + V)), 0), material_shininess);     // Blinn-Phong
+        float linear_att = (spot_light - spot_light_limit) / (1.0f - spot_light_limit);
+        factorAtenuare = pow(linear_att, 2);
+        factorAtenuare *= 1.0 / (0.01 * pow(distance(world_position, light_position), 2) + 1);
+
+        diffuse_light = material_kd * vec3(1,0,0) * max(dot(N, L), 0);
+        if (dot(N, L) > 0)
+        {
+            specular_light = material_ks * vec3(1, 0, 0) * pow(max(dot(N, H), 0), material_shininess);
+        }
     }
 
-    light = ambient_light + material_kd * diffuse_light + material_ks * specular_light;
+    vec3 light = factorAtenuare * (diffuse_light + specular_light) + ambient_light;
 
-    vec3 color = object_color * vec3(light);
+    vec3 color = object_color * light;
     out_color = visibility * vec4(color, 1);
 }
