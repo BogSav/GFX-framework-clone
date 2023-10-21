@@ -49,6 +49,6 @@ namespace m2
         int outputType;
 
         // TODO(student): Declare any class members you might need.
-
+        int faceCullingType;
     };
 }   // namespace m2

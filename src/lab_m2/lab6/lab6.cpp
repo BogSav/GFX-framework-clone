@@ -29,6 +29,7 @@ Lab6::~Lab6()
 void Lab6::Init()
 {
     outputType = 0;
+    faceCullingType = 0;
 
     auto camera = GetSceneCamera();
     camera->SetPositionAndRotation(glm::vec3(0, 2, 3.5), glm::quat(glm::vec3(-20 * TO_RADIANS, 0, 0)));
@@ -178,8 +179,29 @@ void Lab6::Update(float deltaTimeSeconds)
         // If no culling is active (meaning that both GL_FRONT and GL_BACK
         // faces are rendered), then the light area will double the intensity
         // for each pixel.
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_FRONT);
+
+        // Z: off, X: front, C: back, V: both
+        switch (faceCullingType)
+        {
+        case 0:
+            glDisable(GL_CULL_FACE);
+            break;
+        case 1: 
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_FRONT);
+            break;
+        case 2:
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
+            break;
+        case 3:
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_FRONT_AND_BACK);
+            break;
+        default:
+            std::cerr << "Mortii matii" << std::endl;
+            break;
+        }
 
         for (auto &l : lights)
         {
@@ -292,7 +314,22 @@ void Lab6::OnKeyPress(int key, int mods)
 
     // TODO(student): Add key mappings for face culling. For example:
     // Z: off, X: front, C: back, V: both
-
+    if (key == GLFW_KEY_Z)
+    {
+        faceCullingType = 0;
+    }
+    if (key == GLFW_KEY_X)
+    {
+        faceCullingType = 1;
+    }
+    if (key == GLFW_KEY_C)
+    {
+        faceCullingType = 2;
+    }
+    if (key == GLFW_KEY_V)
+    {
+        faceCullingType = 3;
+    }
 }
 
 
