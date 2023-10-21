@@ -66,12 +66,13 @@ void Lab5::Init()
     // Load textures
     {
         TextureManager::LoadTexture(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::TEXTURES), "particle2.png");
+        TextureManager::LoadTexture(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::TEXTURES), "particle.png");
     }
 
     LoadShader("Simple", false);
     LoadShader("Particle");
 
-    unsigned int nrParticles = 50000;
+    unsigned int nrParticles = 5000;
 
     particleEffect = new ParticleEffect<Particle>();
     particleEffect->Generate(nrParticles, true);

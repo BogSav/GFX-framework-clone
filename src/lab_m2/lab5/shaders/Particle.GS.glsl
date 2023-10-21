@@ -40,5 +40,17 @@ void main()
     //  0---------1
     //
     // Triangles: (0, 1, 3), (1, 2, 3)
+    texture_coord = vec2(0, 1);
+    EmitPoint(vec2(-ds, -ds)); // Vertex 0
 
+    texture_coord = vec2(1, 1);
+    EmitPoint(vec2( ds, -ds)); // Vertex 1
+    
+    texture_coord = vec2(0, 0);
+    EmitPoint(vec2(-ds,  ds)); // Vertex 3
+    
+    texture_coord = vec2(1, 0);
+    EmitPoint(vec2( ds,  ds)); // Vertex 2
+
+    EndPrimitive();
 }
