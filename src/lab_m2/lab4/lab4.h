@@ -33,6 +33,6 @@ namespace m2
         void OnWindowResize(int width, int height) override;
 
      private:
-        int cubeMapTextureID;
+        unsigned int cubeMapTextureID;
     };
 }   // namespace m2
