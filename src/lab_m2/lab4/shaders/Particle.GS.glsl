@@ -9,6 +9,7 @@ uniform mat4 View;
 uniform mat4 Projection;
 uniform vec3 eye_position;
 uniform float offset;
+uniform int fire;
 
 in float vert_lifetime[1];
 in float vert_iLifetime[1];
@@ -53,4 +54,30 @@ void main()
     // Hint: if a point has the coordinates (0,0), then the quad will have the following coords:
     // (-ds,-ds), (ds,-ds), (ds,ds)....
 
+
+    texture_coord = vec2(0, 0);
+    geom_iLifetime = vert_iLifetime[0];
+    geom_lifetime = vert_lifetime[0];
+
+    EmitPoint(vec2(-ds, -ds)); // Vertex 0
+
+    texture_coord = vec2(1, 0);
+    geom_iLifetime = vert_iLifetime[0];
+    geom_lifetime = vert_lifetime[0];
+    
+    EmitPoint(vec2( ds, -ds)); // Vertex 1
+    
+    texture_coord = vec2(0, 1);
+    geom_iLifetime = vert_iLifetime[0];
+    geom_lifetime = vert_lifetime[0];
+    
+    EmitPoint(vec2(-ds,  ds)); // Vertex 3
+    
+    texture_coord = vec2(1, 1);
+    geom_iLifetime = vert_iLifetime[0];
+    geom_lifetime = vert_lifetime[0];
+    
+    EmitPoint(vec2( ds,  ds)); // Vertex 2
+
+    EndPrimitive();
 }

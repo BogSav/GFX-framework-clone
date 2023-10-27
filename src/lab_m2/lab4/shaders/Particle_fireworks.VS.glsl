@@ -9,7 +9,8 @@ layout(location = 2) in vec2 v_texture_coord;
 uniform mat4 Model;
 uniform vec3 generator_position;
 uniform float deltaTime;
-
+out float vert_lifetime;
+out float vert_iLifetime;
 
 struct Particle
 {

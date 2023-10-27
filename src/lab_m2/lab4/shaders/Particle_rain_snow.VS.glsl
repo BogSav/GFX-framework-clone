@@ -9,7 +9,8 @@ layout(location = 2) in vec2 v_texture_coord;
 uniform mat4 Model;
 uniform vec3 generator_position;
 uniform float deltaTime;
-
+out float vert_lifetime;
+out float vert_iLifetime;
 
 struct Particle
 {
@@ -58,6 +59,7 @@ void main()
     //
     // For animations that are independent of the platform,
     // the speed must be multiplied with deltaTime.
+    pos = pos + spd * deltaTime + vec3(0, -0.9, 0) * deltaTime;
 
     spd = spd - vec3(0, 0.9, 0) * deltaTime;
 

@@ -22,7 +22,8 @@ void main()
     // image of a fire particle is shown.
     // Hint: each stage corresponds to a quarter of the image
 
-    vec2 tex_coord = vec2(0, 0);
+    float x_coord = texture_coord.x / 4.0 + 1.0 / 4.0 * fire_stage;
+    vec2 tex_coord = vec2(x_coord, texture_coord.y);
     
     vec3 color = texture(texture_1, tex_coord).xyz;
     out_color = vec4(color, 1);

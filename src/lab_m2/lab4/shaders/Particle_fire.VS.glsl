@@ -55,6 +55,9 @@ void main()
     //
     // For animations that are independent of the platform,
     // the speed must be multiplied with deltaTime.
+    pos = pos + spd * deltaTime;
+
+    lifetime = lifetime - 1. * deltaTime;
 
     if (lifetime < 0)
     {
