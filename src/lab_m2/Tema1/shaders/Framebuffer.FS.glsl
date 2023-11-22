@@ -21,5 +21,5 @@ void main()
         color = texture(texture_cubemap, normalize(frag_position)).xyz;
     }
 
-    out_color = vec4(color,1);
+    out_color = vec4(color, 1);
 }

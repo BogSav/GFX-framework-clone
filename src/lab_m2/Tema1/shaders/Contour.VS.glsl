@@ -10,11 +10,11 @@ uniform mat4 Model;
 uniform mat4 View;
 uniform mat4 Projection;
 
-// Output
-layout(location = 0) out vec3 text_coord;
+out vec3 world_normal;
 
 void main()
 {
-    text_coord = normalize(v_position);
-    gl_Position = Projection * View * Model * vec4(v_position, 1); 
+    world_normal = normalize(mat3(Model) * v_normal);
+
+    gl_Position = Model * vec4(v_position, 1); 
 }

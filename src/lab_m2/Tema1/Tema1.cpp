@@ -5,21 +5,57 @@
 
 #include "stb/stb_image.h"
 
-#include "core/gpu/frame_buffer.h"
-
 using namespace std;
 using namespace m2;
 
 
+/*
+ *  To find out more about `FrameStart`, `Update`, `FrameEnd`
+ *  and the order in which they are called, see `world.cpp`.
+ */
+
 Tema1::Tema1()
 {
-    framebuffer_object = 0;
-    color_texture = 0;
-    depth_texture = 0;
+	framebuffer_object = 0;
+	color_texture = 0;
+	depth_texture = 0;
 
-    angle = 0;
+	angle = 0;
 
-    type = 0;
+	type = 0;
+
+	mirrorRotation = glm::quat();
+	mirrroRotationSpeed = glm::radians(60.0f);
+	mirrorPosition = glm::vec3(0.f, 0, -2.f);
+	mirroSpeed = glm::vec3(5.f, 5, 5);
+
+	controlPoints[0] = glm::vec3(0, 0, 0);
+	controlPoints[1] = glm::vec3(1, 6, 2);
+	controlPoints[2] = glm::vec3(4, -2, 2);
+	controlPoints[3] = glm::vec3(7, 8, 0);
+
+	controlPoints[4] = glm::vec3(0, 0, 0);
+	controlPoints[5] = glm::vec3(-1, 6, 0);
+	controlPoints[6] = glm::vec3(-4, -2, 0);
+	controlPoints[7] = glm::vec3(-7, 8, 0);
+
+	controlPoints[8] = glm::vec3(0, 0, 0);
+	controlPoints[9] = glm::vec3(1, 6, 0);
+	controlPoints[10] = glm::vec3(5, 8, 0);
+	controlPoints[11] = glm::vec3(7, -9, 0);
+
+	controlPoints[12] = glm::vec3(0, 0, 0);
+	controlPoints[13] = glm::vec3(-1, 2, 5);
+	controlPoints[14] = glm::vec3(4, 5, -2);
+	controlPoints[15] = glm::vec3(-7, 2, 7);
+
+	controlPoints[16] = glm::vec3(0, 0, 0);
+	controlPoints[17] = glm::vec3(4, 10, -10);
+	controlPoints[18] = glm::vec3(2, 3, 3);
+	controlPoints[19] = glm::vec3(-7, 8, 0);
+
+
+	generator_position = glm::vec3(0);
 }
 
 
@@ -30,73 +66,99 @@ Tema1::~Tema1()
 
 void Tema1::Init()
 {
-    auto camera = GetSceneCamera();
-    camera->SetPositionAndRotation(glm::vec3(0, -1, 4), glm::quat(glm::vec3(RADIANS(10), 0, 0)));
-    camera->Update();
+	auto camera = GetSceneCamera();
+	camera->SetPositionAndRotation(glm::vec3(0, 2, 6), glm::angleAxis(glm::radians(-10.0f), glm::vec3(1.0f, 0, 0)));
+	camera->Update();
 
-    std::string texturePath = PATH_JOIN(window->props.selfDir, RESOURCE_PATH::TEXTURES, "cube");
-    std::string shaderPath = PATH_JOIN(window->props.selfDir, SOURCE_PATH::M2, "Tema1", "shaders");
+	std::string texturePath = PATH_JOIN(window->props.selfDir, RESOURCE_PATH::TEXTURES, "cube");
+	std::string shaderPath = PATH_JOIN(window->props.selfDir, SOURCE_PATH::M2, "Tema1", "shaders");
 
-    {
-        Mesh* mesh = new Mesh("bunny");
-        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "animals"), "bunny.obj");
-        mesh->UseMaterials(false);
-        meshes[mesh->GetMeshID()] = mesh;
-    }
+	{
+		Mesh* mesh = new Mesh("quad");
+		mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "quad.obj");
+		mesh->UseMaterials(false);
+		meshes[mesh->GetMeshID()] = mesh;
+	}
 
-    {
-        Mesh* mesh = new Mesh("cube");
-        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "box.obj");
-        mesh->UseMaterials(false);
-        meshes[mesh->GetMeshID()] = mesh;
-    }
+	{
+		Mesh* mesh = new Mesh("cube");
+		mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "box.obj");
+		mesh->UseMaterials(false);
+		meshes[mesh->GetMeshID()] = mesh;
+	}
 
-    {
-        Mesh* mesh = new Mesh("archer");
-        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "characters", "archer"), "Archer.fbx");
-        mesh->UseMaterials(false);
-        meshes[mesh->GetMeshID()] = mesh;
-    }
+	{
+		Mesh* mesh = new Mesh("archer");
+		mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "characters", "archer"), "Archer.fbx");
+		mesh->UseMaterials(false);
+		meshes[mesh->GetMeshID()] = mesh;
+	}
 
-    // Create a shader program for rendering cubemap texture
-    {
-        Shader *shader = new Shader("CubeMap");
-        shader->AddShader(PATH_JOIN(shaderPath, "CubeMap.VS.glsl"), GL_VERTEX_SHADER);
-        shader->AddShader(PATH_JOIN(shaderPath, "CubeMap.FS.glsl"), GL_FRAGMENT_SHADER);
-        shader->CreateAndLink();
-        shaders[shader->GetName()] = shader;
-    }
+	{
+		Mesh* mesh = new Mesh("teapot");
+		mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "teapot.obj");
+		mesh->UseMaterials(false);
+		meshes[mesh->GetMeshID()] = mesh;
+	}
 
-    // Create a shader program for standard rendering
-    {
-        Shader *shader = new Shader("ShaderNormal");
-        shader->AddShader(PATH_JOIN(shaderPath, "Normal.VS.glsl"), GL_VERTEX_SHADER);
-        shader->AddShader(PATH_JOIN(shaderPath, "Normal.FS.glsl"), GL_FRAGMENT_SHADER);
-        shader->CreateAndLink();
-        shaders[shader->GetName()] = shader;
-    }
+	// Create a shader program for rendering cubemap texture
+	{
+		Shader* shader = new Shader("CubeMap");
+		shader->AddShader(PATH_JOIN(shaderPath, "CubeMap.VS.glsl"), GL_VERTEX_SHADER);
+		shader->AddShader(PATH_JOIN(shaderPath, "CubeMap.FS.glsl"), GL_FRAGMENT_SHADER);
+		shader->CreateAndLink();
+		shaders[shader->GetName()] = shader;
+	}
 
-    // Create a shader program for creating a CUBEMAP
-    {
-        Shader *shader = new Shader("Framebuffer");
-        shader->AddShader(PATH_JOIN(shaderPath, "Framebuffer.VS.glsl"), GL_VERTEX_SHADER);
-        shader->AddShader(PATH_JOIN(shaderPath, "Framebuffer.FS.glsl"), GL_FRAGMENT_SHADER);
-        shader->AddShader(PATH_JOIN(shaderPath, "Framebuffer.GS.glsl"), GL_GEOMETRY_SHADER);
-        shader->CreateAndLink();
-        shaders[shader->GetName()] = shader;
-    }
+	// Create a shader program for standard rendering
+	{
+		Shader* shader = new Shader("ShaderNormal");
+		shader->AddShader(PATH_JOIN(shaderPath, "Normal.VS.glsl"), GL_VERTEX_SHADER);
+		shader->AddShader(PATH_JOIN(shaderPath, "Normal.FS.glsl"), GL_FRAGMENT_SHADER);
+		shader->CreateAndLink();
+		shaders[shader->GetName()] = shader;
+	}
 
-    cubeMapTextureID = UploadCubeMapTexture(
-        PATH_JOIN(texturePath, "pos_x.png"),
-        PATH_JOIN(texturePath, "pos_y.png"),
-        PATH_JOIN(texturePath, "pos_z.png"),
-        PATH_JOIN(texturePath, "neg_x.png"),
-        PATH_JOIN(texturePath, "neg_y.png"),
-        PATH_JOIN(texturePath, "neg_z.png"));
+	// Create a shader program for creating a CUBEMAP
+	{
+		Shader* shader = new Shader("Framebuffer");
+		shader->AddShader(PATH_JOIN(shaderPath, "Framebuffer.VS.glsl"), GL_VERTEX_SHADER);
+		shader->AddShader(PATH_JOIN(shaderPath, "Framebuffer.FS.glsl"), GL_FRAGMENT_SHADER);
+		shader->AddShader(PATH_JOIN(shaderPath, "Framebuffer.GS.glsl"), GL_GEOMETRY_SHADER);
+		shader->CreateAndLink();
+		shaders[shader->GetName()] = shader;
+	}
 
-    TextureManager::LoadTexture(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS), "characters", "archer", "Akai_E_Espiritu.fbm", "akai_diffuse.png");
+	{
+		Shader* shader = new Shader("Contour");
+		shader->AddShader(PATH_JOIN(shaderPath, "Contour.VS.glsl"), GL_VERTEX_SHADER);
+		shader->AddShader(PATH_JOIN(shaderPath, "Contour.FS.glsl"), GL_FRAGMENT_SHADER);
+		shader->AddShader(PATH_JOIN(shaderPath, "Contour.GS.glsl"), GL_GEOMETRY_SHADER);
+		shader->CreateAndLink();
+		shaders[shader->GetName()] = shader;
+	}
 
-    CreateFramebuffer(1024, 1024);
+	{
+		Shader* shader = new Shader("Particle");
+		shader->AddShader(PATH_JOIN(shaderPath, "Particle.VS.glsl"), GL_VERTEX_SHADER);
+		shader->AddShader(PATH_JOIN(shaderPath, "Particle.FS.glsl"), GL_FRAGMENT_SHADER);
+		shader->AddShader(PATH_JOIN(shaderPath, "Particle.GS.glsl"), GL_GEOMETRY_SHADER);
+		shader->CreateAndLink();
+		shaders[shader->GetName()] = shader;
+	}
+
+	cubeMapTextureID = UploadCubeMapTexture(
+		PATH_JOIN(texturePath, "pos_x.png"),
+		PATH_JOIN(texturePath, "pos_y.png"),
+		PATH_JOIN(texturePath, "pos_z.png"),
+		PATH_JOIN(texturePath, "neg_x.png"),
+		PATH_JOIN(texturePath, "neg_y.png"),
+		PATH_JOIN(texturePath, "neg_z.png"));
+
+	TextureManager::LoadTexture(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS), "characters", "archer", "Akai_E_Espiritu.fbm", "akai_diffuse.png");
+	TextureManager::LoadTexture(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::TEXTURES), "particle2.png");
+
+	CreateFramebuffer(2048, 2048);
 }
 
 
@@ -107,283 +169,249 @@ void Tema1::FrameStart()
 
 void Tema1::Update(float deltaTimeSeconds)
 {
-    angle += 0.5f * deltaTimeSeconds;
+	angle += 0.5f * deltaTimeSeconds;
 
-    auto camera = GetSceneCamera();
+	// Draw the scene in Framebuffer
+	DrawOntoDynamicCubeMap(deltaTimeSeconds, angle);
 
-    // Draw the scene in Framebuffer
-    if (framebuffer_object)
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object);
-        // Set the clear color for the color buffer
-        glClearColor(0,0,0, 1);
-        // Clears the color buffer (using the previously set color) and depth buffer
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, window->GetResolution().x, window->GetResolution().y);
 
-        glViewport(0, 0, 1024, 1024);
+	auto camera = GetSceneCamera();
 
-        Shader *shader = shaders["Framebuffer"];
-        shader->Use();
+	// Draw environment
+	{
+		Shader* shader = shaders["ShaderNormal"];
+		shader->Use();
 
-        glm::mat4 projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
+		glm::mat4 modelMatrix = glm::scale(glm::mat4(1), glm::vec3(30));
 
-        {
-            glm::mat4 modelMatrix = glm::scale(glm::mat4(1), glm::vec3(30));
+		glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+		glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
+		glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetProjectionMatrix()));
 
-            glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-            glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
-            glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMapTextureID);
+		int loc_texture = shader->GetUniformLocation("texture_cubemap");
+		glUniform1i(loc_texture, 0);
 
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMapTextureID);
-            glUniform1i(glGetUniformLocation(shader->program, "texture_cubemap"), 1);
+		meshes["cube"]->Render();
+	}
 
-            glUniform1i(glGetUniformLocation(shader->program, "cube_draw"), 1);
+	// Draw archers
+	for (int i = 0; i < 5; i++)
+	{
+		Shader* shader = shaders["Simple"];
+		shader->Use();
 
-            meshes["cube"]->Render();
-        }
+		glm::mat4 modelMatrix = glm::mat4(1);
+		modelMatrix *= glm::rotate(glm::mat4(1), angle + i * glm::radians(360.0f) / 5, glm::vec3(0, 1, 0));
+		modelMatrix *= glm::translate(glm::mat4(1), glm::vec3(3, -1, 0));
+		modelMatrix *= glm::rotate(glm::mat4(1), glm::radians(-90.0f), glm::vec3(0, 1, 0));
+		modelMatrix *= glm::scale(glm::mat4(1), glm::vec3(0.01f));
 
-        for (int i = 0; i < 5; i++)
-        {
-            glm::mat4 modelMatrix = glm::mat4(1);
-            modelMatrix *= glm::rotate(glm::mat4(1), angle + i * glm::radians(360.0f) / 5, glm::vec3(0, 1, 0));
-            modelMatrix *= glm::translate(glm::mat4(1), glm::vec3(3, -1, 0));
-            modelMatrix *= glm::rotate(glm::mat4(1), glm::radians(-90.0f), glm::vec3(0, 1, 0));
-            modelMatrix *= glm::scale(glm::mat4(1), glm::vec3(0.01f));
+		glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+		glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
+		glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetProjectionMatrix()));
 
-            glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-            glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, TextureManager::GetTexture("Akai_E_Espiritu.fbm\\akai_diffuse.png")->GetTextureID());
+		glUniform1i(glGetUniformLocation(shader->program, "texture_1"), 0);
 
-            glm::mat4 cubeView[6] =
-            {
-                glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f,-1.0f, 0.0f)), // +X
-                glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f,-1.0f, 0.0f)), // -X
-                glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)), // +Y
-                glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,-1.0f, 0.0f), glm::vec3(0.0f, 0.0f,-1.0f)), // -Y
-                glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f,-1.0f, 0.0f)), // +Z
-                glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f,-1.0f), glm::vec3(0.0f,-1.0f, 0.0f)), // -Z
-            };
+		meshes["archer"]->Render();
+	}
 
-            glUniformMatrix4fv(glGetUniformLocation(shader->GetProgramID(), "viewMatrices"), 6, GL_FALSE, glm::value_ptr(cubeView[0]));
-            glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
+	// Draw teapot
+	{
+		Shader* shader = shaders["Simple"];
+		shader->Use();
+		glm::mat4 modelMatrix = glm::mat4(1);
+		modelMatrix *= glm::translate(glm::mat4(1), glm::vec3(0, 2, 0));
+		glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+		meshes["teapot"]->Render();
+	}
 
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, TextureManager::GetTexture("Akai_E_Espiritu.fbm\\akai_diffuse.png")->GetTextureID());
-            glUniform1i(glGetUniformLocation(shader->program, "texture_1"), 0);
+	// Draw the reflection on the mesh
+	{
+		Shader* shader = shaders["CubeMap"];
+		shader->Use();
 
-            glUniform1i(glGetUniformLocation(shader->program, "cube_draw"), 0);
+		glm::mat4 modelMatrix = glm::mat4(1);
+		modelMatrix *= glm::translate(glm::mat4(1.0f), mirrorPosition);
+		modelMatrix *= glm::scale(glm::mat4(1.0f), glm::vec3(6.f));
+		modelMatrix *= glm::toMat4(mirrorRotation);
 
-            meshes["archer"]->Render();
-        }
+		glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+		glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
+		glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetProjectionMatrix()));
 
-        glBindTexture(GL_TEXTURE_CUBE_MAP, color_texture);
-        glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+		auto cameraPosition = camera->m_transform->GetWorldPosition();
 
-        //reset drawing to screen
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, color_texture);
+		int loc_texture2 = shader->GetUniformLocation("texture_cubemap");
+		glUniform1i(loc_texture2, 1);
 
-    // Clear the screen
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		int loc_camera = shader->GetUniformLocation("camera_position");
+		glUniform3f(loc_camera, cameraPosition.x, cameraPosition.y, cameraPosition.z);
 
-    glViewport(0, 0, window->GetResolution().x, window->GetResolution().y);
+		meshes["quad"]->Render();
+	}
 
-    // Draw the cubemap
-    {
-        Shader* shader = shaders["ShaderNormal"];
-        shader->Use();
+	//if (type == 2)
+	//{
+	//	glLineWidth(3);
+	//	glEnable(GL_BLEND);
+	//	glDisable(GL_DEPTH_TEST);
+	//	glBlendFunc(GL_ONE, GL_ONE);
+	//	glBlendEquation(GL_FUNC_ADD);
 
-        glm::mat4 modelMatrix = glm::scale(glm::mat4(1), glm::vec3(30));
+	//	auto shader = shaders["Particle"];
+	//	if (shader->GetProgramID())
+	//	{
+	//		shader->Use();
 
-        glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-        glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
-        glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetProjectionMatrix()));
+	//		TextureManager::GetTexture("particle2.png")->BindToTextureUnit(GL_TEXTURE0);
+	//		particleEffect->Render(GetSceneCamera(), shader);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMapTextureID);
-        int loc_texture = shader->GetUniformLocation("texture_cubemap");
-        glUniform1i(loc_texture, 0);
+	//		glUniform3f(shader->GetUniformLocation("generator_position"), generator_position.x, generator_position.y, generator_position.z);
+	//		glUniform1f(shader->GetUniformLocation("deltaTime"), deltaTimeSeconds);
+	//		glUniform1f(shader->GetUniformLocation("offset"), 0.1);
 
-        meshes["cube"]->Render();
-    }
+	//		glUniform3fv(shader->GetUniformLocation("control_points"), 20, glm::value_ptr(controlPoints[0]));
+	//	}
 
-    // Draw five archers around the mesh
-    for (int i = 0; i < 5; i++)
-    {
-        Shader* shader = shaders["Simple"];
-        shader->Use();
-
-        glm::mat4 modelMatrix = glm::mat4(1);
-        modelMatrix *= glm::rotate(glm::mat4(1), angle + i * glm::radians(360.0f) / 5, glm::vec3(0, 1, 0));
-        modelMatrix *= glm::translate(glm::mat4(1), glm::vec3(3, -1, 0));
-        modelMatrix *= glm::rotate(glm::mat4(1), glm::radians(-90.0f), glm::vec3(0, 1, 0));
-        modelMatrix *= glm::scale(glm::mat4(1), glm::vec3(0.01f));
-
-        glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-        glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
-        glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetProjectionMatrix()));
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, TextureManager::GetTexture("Akai_E_Espiritu.fbm\\akai_diffuse.png")->GetTextureID());
-        glUniform1i(glGetUniformLocation(shader->program, "texture_1"), 0);
-
-        meshes["archer"]->Render();
-    }
-
-    // Draw the reflection on the mesh
-    {
-        Shader *shader = shaders["CubeMap"];
-        shader->Use();
-
-        glm::mat4 modelMatrix = glm::scale(glm::mat4(1), glm::vec3(0.1f));
-
-        glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-        glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
-        glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetProjectionMatrix()));
-
-        auto cameraPosition = camera->m_transform->GetWorldPosition();
-
-        if (!color_texture) {
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMapTextureID);
-            int loc_texture = shader->GetUniformLocation("texture_cubemap");
-            glUniform1i(loc_texture, 0);
-        }
-
-        if (color_texture) {
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_CUBE_MAP, color_texture);
-            int loc_texture2 = shader->GetUniformLocation("texture_cubemap");
-            glUniform1i(loc_texture2, 1);
-        }
-        
-
-        int loc_camera = shader->GetUniformLocation("camera_position");
-        glUniform3f(loc_camera, cameraPosition.x, cameraPosition.y, cameraPosition.z);
-        
-        glUniform1i(shader->GetUniformLocation("type"), type);
-
-        meshes["bunny"]->Render();
-    }
+	//	glEnable(GL_DEPTH_TEST);
+	//	glDisable(GL_BLEND);
+	//}
 }
 
 
 void Tema1::FrameEnd()
 {
-    // DrawCoordinateSystem();
+	// DrawCoordinateSystem();
 }
 
 
-unsigned int Tema1::UploadCubeMapTexture(const std::string &pos_x, const std::string &pos_y, const std::string &pos_z, const std::string& neg_x, const std::string& neg_y, const std::string& neg_z)
+unsigned int Tema1::UploadCubeMapTexture(const std::string& pos_x, const std::string& pos_y, const std::string& pos_z, const std::string& neg_x, const std::string& neg_y, const std::string& neg_z)
 {
-    int width, height, chn;
+	int width, height, chn;
 
-    unsigned char* data_pos_x = stbi_load(pos_x.c_str(), &width, &height, &chn, 0);
-    unsigned char* data_pos_y = stbi_load(pos_y.c_str(), &width, &height, &chn, 0);
-    unsigned char* data_pos_z = stbi_load(pos_z.c_str(), &width, &height, &chn, 0);
-    unsigned char* data_neg_x = stbi_load(neg_x.c_str(), &width, &height, &chn, 0);
-    unsigned char* data_neg_y = stbi_load(neg_y.c_str(), &width, &height, &chn, 0);
-    unsigned char* data_neg_z = stbi_load(neg_z.c_str(), &width, &height, &chn, 0);
+	unsigned char* data_pos_x = stbi_load(pos_x.c_str(), &width, &height, &chn, 0);
+	unsigned char* data_pos_y = stbi_load(pos_y.c_str(), &width, &height, &chn, 0);
+	unsigned char* data_pos_z = stbi_load(pos_z.c_str(), &width, &height, &chn, 0);
+	unsigned char* data_neg_x = stbi_load(neg_x.c_str(), &width, &height, &chn, 0);
+	unsigned char* data_neg_y = stbi_load(neg_y.c_str(), &width, &height, &chn, 0);
+	unsigned char* data_neg_z = stbi_load(neg_z.c_str(), &width, &height, &chn, 0);
 
-    unsigned int textureID = 0;
-    // TODO(student): Create the texture
+	unsigned int textureID = 0;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
-    // TODO(student): Bind the texture
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
-    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	if (GLEW_EXT_texture_filter_anisotropic) {
+		float maxAnisotropy;
 
-    if (GLEW_EXT_texture_filter_anisotropic) {
-        float maxAnisotropy;
+		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAnisotropy);
+	}
 
-        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAnisotropy);
-    }
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data_pos_x);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data_neg_x);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data_pos_y);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data_neg_y);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data_pos_z);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data_neg_z);
 
-    // TODO(student): Load texture information for each face
+	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+	if (GetOpenGLError() == GL_INVALID_OPERATION)
+	{
+		cout << "\t[NOTE] : For students : DON'T PANIC! This error should go away when completing the tasks." << std::endl;
+	}
 
-    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-    if (GetOpenGLError() == GL_INVALID_OPERATION)
-    {
-        cout << "\t[NOTE] : For students : DON'T PANIC! This error should go away when completing the tasks." << std::endl;
-    }
+	// Free memory
+	SAFE_FREE(data_pos_x);
+	SAFE_FREE(data_pos_y);
+	SAFE_FREE(data_pos_z);
+	SAFE_FREE(data_neg_x);
+	SAFE_FREE(data_neg_y);
+	SAFE_FREE(data_neg_z);
 
-    // Free memory
-    SAFE_FREE(data_pos_x);
-    SAFE_FREE(data_pos_y);
-    SAFE_FREE(data_pos_z);
-    SAFE_FREE(data_neg_x);
-    SAFE_FREE(data_neg_y);
-    SAFE_FREE(data_neg_z);
-
-    return textureID;
+	return textureID;
 }
 
 void Tema1::CreateFramebuffer(int width, int height)
 {
-    // TODO(student): In this method, use the attributes
-    // 'framebuffer_object', 'color_texture'
-    // declared in Tema1.h
+	glGenFramebuffers(1, &framebuffer_object);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object);
 
-    // TODO(student): Generate and bind the framebuffer
+	glGenTextures(1, &color_texture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, color_texture);
 
-
-    // TODO(student): Generate and bind the color texture
-
-
-    // TODO(student): Initialize the color textures
-
-
-
-    if (color_texture) {
-        //cubemap params
-        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-        if (GLEW_EXT_texture_filter_anisotropic) {
-            float maxAnisotropy;
-
-            glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAnisotropy);
-        }
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-        // Bind the color textures to the framebuffer as a color attachments
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color_texture, 0);
-
-        glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-
-        std::vector<GLenum> draw_textures;
-        draw_textures.push_back(GL_COLOR_ATTACHMENT0);
-        glDrawBuffers(draw_textures.size(), &draw_textures[0]);
-
-    }
-
-    // TODO(student): Generate and bind the depth texture
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
 
-    // TODO(student): Initialize the depth textures
+	if (color_texture) {
+		//cubemap params
+		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		if (GLEW_EXT_texture_filter_anisotropic) {
+			float maxAnisotropy;
+
+			glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropy);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAnisotropy);
+		}
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+		// Bind the color textures to the framebuffer as a color attachments
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color_texture, 0);
+
+		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+		std::vector<GLenum> draw_textures;
+		draw_textures.push_back(GL_COLOR_ATTACHMENT0);
+		glDrawBuffers(draw_textures.size(), &draw_textures[0]);
+
+	}
+
+	glGenTextures(1, &depth_texture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, depth_texture);
+
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 
 
-    if (depth_texture) {
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_texture, 0);
-    }
+	if (depth_texture) {
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_texture, 0);
+	}
 
-    glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 
@@ -395,56 +423,270 @@ void Tema1::CreateFramebuffer(int width, int height)
 
 void Tema1::OnInputUpdate(float deltaTime, int mods)
 {
-    // Treat continuous update based on input
+	// Treat continuous update based on input
+	if (!window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT))
+	{
+		// Rotirea oglinzii
+		if (window->KeyHold(GLFW_KEY_W))
+			mirrorRotation *= glm::angleAxis(mirrroRotationSpeed * deltaTime, glm::vec3(1.0, 0.0, 0.0f));
+		if (window->KeyHold(GLFW_KEY_S))
+			mirrorRotation *= glm::angleAxis(-mirrroRotationSpeed * deltaTime, glm::vec3(1.0, 0.0, 0.0f));
+		if (window->KeyHold(GLFW_KEY_A))
+			mirrorRotation *= glm::angleAxis(mirrroRotationSpeed * deltaTime, glm::vec3(0.0, 1.0, 0.0f));
+		if (window->KeyHold(GLFW_KEY_D))
+			mirrorRotation *= glm::angleAxis(-mirrroRotationSpeed * deltaTime, glm::vec3(0.0, 1.0, 0.0f));
+		if (window->KeyHold(GLFW_KEY_Q))
+			mirrorRotation *= glm::angleAxis(mirrroRotationSpeed * deltaTime, glm::vec3(0.0, 0.0, 1.0f));
+		if (window->KeyHold(GLFW_KEY_E))
+			mirrorRotation *= glm::angleAxis(-mirrroRotationSpeed * deltaTime, glm::vec3(0.0, 0.0, 1.0f));
+
+		// Normalizare quaternion de rotatie
+		mirrorRotation = glm::normalize(mirrorRotation);
+
+		// Deplasarea oglinzii
+		if (window->KeyHold(GLFW_KEY_I))
+			mirrorPosition += mirroSpeed * glm::vec3(0, 0, 1) * deltaTime;
+		if (window->KeyHold(GLFW_KEY_K))
+			mirrorPosition += mirroSpeed * glm::vec3(0, 0, -1) * deltaTime;
+		if (window->KeyHold(GLFW_KEY_J))
+			mirrorPosition += mirroSpeed * glm::vec3(1, 0, 0) * deltaTime;
+		if (window->KeyHold(GLFW_KEY_L))
+			mirrorPosition += mirroSpeed * glm::vec3(-1, 0, 0) * deltaTime;
+		if (window->KeyHold(GLFW_KEY_U))
+			mirrorPosition += mirroSpeed * glm::vec3(0, 1, 0) * deltaTime;
+		if (window->KeyHold(GLFW_KEY_O))
+			mirrorPosition += mirroSpeed * glm::vec3(0, -1, 0) * deltaTime;
+	}
 }
 
 
 void Tema1::OnKeyPress(int key, int mods)
 {
-    // Add key press event
-    if (key == GLFW_KEY_1)
-    {
-        type=1;
-    }
+	// Add key press event
+	if (key == GLFW_KEY_1)
+	{
+		type = 0;
+	}
 
-    if (key == GLFW_KEY_2)
-    {
-        type=0;
-    }
+	if (key == GLFW_KEY_2)
+	{
+		type = 1;
+	}
+
+	if (key == GLFW_KEY_3)
+	{
+		type = 2;
+		ResetParticle();
+	}
 }
 
 
 void Tema1::OnKeyRelease(int key, int mods)
 {
-    // Add key release event
+	// Add key release event
 }
 
 
 void Tema1::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 {
-    // Add mouse move event
+	// Add mouse move event
 }
 
 
 void Tema1::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 {
-    // Add mouse button press event
+	// Add mouse button press event
 }
 
 
 void Tema1::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 {
-    // Add mouse button release event
+	// Add mouse button release event
 }
 
 
 void Tema1::OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY)
 {
-    // Treat mouse scroll event
+	// Treat mouse scroll event
 }
 
 
 void Tema1::OnWindowResize(int width, int height)
 {
-    // Treat window resize event
+	// Treat window resize event
+}
+
+void m2::Tema1::DrawOntoDynamicCubeMap(float deltaTime, float angle)
+{
+	auto camera = GetSceneCamera();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object);
+
+	glClearColor(0, 0, 0, 1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, 2048, 2048);
+
+	glm::mat4 projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
+	glm::mat4 cubeView[6] =
+	{
+		glm::lookAt(mirrorPosition, mirrorPosition + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f,-1.0f, 0.0f)), // +X
+		glm::lookAt(mirrorPosition, mirrorPosition + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f,-1.0f, 0.0f)), // -X
+		glm::lookAt(mirrorPosition, mirrorPosition + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)), // +Y
+		glm::lookAt(mirrorPosition, mirrorPosition + glm::vec3(0.0f,-1.0f, 0.0f), glm::vec3(0.0f, 0.0f,-1.0f)), // -Y
+		glm::lookAt(mirrorPosition, mirrorPosition + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f,-1.0f, 0.0f)), // +Z
+		glm::lookAt(mirrorPosition, mirrorPosition + glm::vec3(0.0f, 0.0f,-1.0f), glm::vec3(0.0f,-1.0f, 0.0f)), // -Z
+	};
+	glm::vec3 upVectors[6] = {
+		glm::vec3(0.0f,-1.0f, 0.0f),
+		glm::vec3(0.0f,-1.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 1.0f),
+		glm::vec3(0.0f, 0.0f, -1.0f),
+		glm::vec3(0.0f,-1.0f, 0.0f),
+		glm::vec3(0.0f,-1.0f, 0.0f) };
+
+	Shader* shader;
+	switch (type)
+	{
+	case 0:
+	case 2:
+		shader = shaders["Framebuffer"];
+		break;
+	case 1:
+		shader = shaders["Contour"];
+		break;
+	default:
+		throw std::exception("Nu exista asa ceva");
+	}
+	shader->Use();
+
+	// Draw envirnoment
+	if (type != 1)
+	{
+		glm::mat4 modelMatrix = glm::scale(glm::mat4(1), glm::vec3(30));
+
+		glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+		glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
+		glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
+
+		glUniformMatrix4fv(glGetUniformLocation(shader->GetProgramID(), "viewMatrices"), 6, GL_FALSE, glm::value_ptr(cubeView[0]));
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMapTextureID);
+		glUniform1i(glGetUniformLocation(shader->program, "texture_cubemap"), 1);
+
+		glUniform1i(glGetUniformLocation(shader->program, "cube_draw"), 1);
+
+		meshes["cube"]->Render();
+	}
+
+	// Draw archers
+	for (int i = 0; i < 5; i++)
+	{
+		glm::mat4 modelMatrix = glm::mat4(1);
+		modelMatrix *= glm::rotate(glm::mat4(1), angle + i * glm::radians(360.0f) / 5, glm::vec3(0, 1, 0));
+		modelMatrix *= glm::translate(glm::mat4(1), glm::vec3(3, -1, 0));
+		modelMatrix *= glm::rotate(glm::mat4(1), glm::radians(-90.0f), glm::vec3(0, 1, 0));
+		modelMatrix *= glm::scale(glm::mat4(1), glm::vec3(0.01f));
+
+		glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+		glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetViewMatrix()));
+		glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
+
+		glUniformMatrix4fv(glGetUniformLocation(shader->GetProgramID(), "viewMatrices"), 6, GL_FALSE, glm::value_ptr(cubeView[0]));
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, TextureManager::GetTexture("Akai_E_Espiritu.fbm\\akai_diffuse.png")->GetTextureID());
+		glUniform1i(glGetUniformLocation(shader->program, "texture_1"), 0);
+
+		glUniform1i(glGetUniformLocation(shader->program, "cube_draw"), 0);
+
+		glUniform1i(glGetUniformLocation(shader->program, "type"), type);
+
+		meshes["archer"]->Render();
+	}
+
+	// Draw teapot
+	{
+		glm::mat4 modelMatrix = glm::mat4(1);
+		modelMatrix *= glm::translate(glm::mat4(1), glm::vec3(0, 2, 0));
+
+		glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+		meshes["teapot"]->Render();
+	}
+
+	if (type == 2)
+	{
+		glLineWidth(3);
+		glEnable(GL_BLEND);
+		glDisable(GL_DEPTH_TEST);
+		glBlendFunc(GL_ONE, GL_ONE);
+		glBlendEquation(GL_FUNC_ADD);
+
+		auto shader = shaders["Particle"];
+		if (shader->GetProgramID())
+		{
+			shader->Use();
+
+			TextureManager::GetTexture("particle2.png")->BindToTextureUnit(GL_TEXTURE0);
+			particleEffect->Render(GetSceneCamera(), shader);
+
+			glUniform3f(shader->GetUniformLocation("generator_position"), generator_position.x, generator_position.y, generator_position.z);
+			glUniform1f(shader->GetUniformLocation("deltaTime"), deltaTime);
+			glUniform1f(shader->GetUniformLocation("offset"), 0.1);
+
+			glUniformMatrix4fv(glGetUniformLocation(shader->GetProgramID(), "view_matrices"), 6, GL_FALSE, glm::value_ptr(cubeView[0]));
+			glUniform3fv(glGetUniformLocation(shader->GetProgramID(), "up_vectors"), 6, glm::value_ptr(upVectors[0]));
+			glUniform3f(shader->GetUniformLocation("cube_positon"), mirrorPosition.x, mirrorPosition.y, mirrorPosition.z);
+			glUniformMatrix4fv(shader->GetUniformLocation("cube_proj"), 1, GL_FALSE, glm::value_ptr(projection));
+
+			glUniform3fv(shader->GetUniformLocation("control_points"), 20, glm::value_ptr(controlPoints[0]));
+		}
+
+		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_BLEND);
+	}
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, color_texture);
+	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void m2::Tema1::ResetParticle()
+{
+	unsigned int nrParticles = 400;
+
+	particleEffect = new ParticleEffect<Particle>();
+	particleEffect->Generate(nrParticles, true);
+
+	auto particleSSBO = particleEffect->GetParticleBuffer();
+	Particle* data = const_cast<Particle*>(particleSSBO->GetBuffer());
+
+	int xhSize = 20 / 2;
+	int yhSize = 20 / 2;
+	int zhSize = 20 / 2;
+
+	for (unsigned int i = 0; i < nrParticles; i++)
+	{
+		glm::vec4 pos(1);
+		pos.x = (rand() % 20 - xhSize) / 10.0f;
+		pos.y = (rand() % 20 - yhSize) / 10.0f;
+		pos.z = (rand() % 20 - zhSize) / 10.0f;
+
+		glm::vec4 speed(0);
+		speed.x = (rand() % 20 - 10) / 10.0f;
+		speed.z = (rand() % 20 - 10) / 10.0f;
+		speed.y = rand() % 2 + 2.0f;
+
+		data[i].SetInitial(pos, speed);
+
+		data[i].lifetime = 4 + (rand() % 100 / 10.0f);
+		data[i].initialLifetime = data[i].lifetime;
+
+		data[i].delay = (rand() % 100 / 100.0f) * 3.0f;
+		data[i].initialDelay = data[i].delay;
+	}
+
+	particleSSBO->SetBufferData(data);
 }

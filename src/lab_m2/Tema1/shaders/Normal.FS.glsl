@@ -9,7 +9,6 @@ uniform samplerCube texture_cubemap;
 // Output
 layout(location = 0) out vec4 out_color;
 
-
 void main()
 {
     vec3 color = texture(texture_cubemap, text_coord).xyz;
