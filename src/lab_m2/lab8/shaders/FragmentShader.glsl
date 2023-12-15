@@ -16,13 +16,16 @@ layout(location = 0) out vec4 out_color;
 vec2 textureCoord = vec2(texture_coord.x, (flipVertical != 0) ? 1 - texture_coord.y : texture_coord.y); // Flip texture
 
 
-vec4 grayscale()
+float getGrayValue(vec4 color)
 {
-    vec4 color = texture(textureImage, textureCoord);
-    float gray = 0.21 * color.r + 0.71 * color.g + 0.07 * color.b; 
-    return vec4(gray, gray, gray,  0);
+    return 0.21 * color.r + 0.71 * color.g + 0.07 * color.b; 
 }
 
+vec4 grayscale()
+{
+    float gray = getGrayValue(texture(textureImage, textureCoord));
+    return vec4(gray, gray, gray,  0);
+}
 
 vec4 blur(int blurRadius)
 {
@@ -38,11 +41,6 @@ vec4 blur(int blurRadius)
         
     float samples = pow((2 * blurRadius + 1), 2);
     return sum / samples;
-}
-
-float getGrayValue(vec4 color)
-{
-    return 0.21 * color.r + 0.71 * color.g + 0.07 * color.b; 
 }
 
 void bubbleSort(inout vec4 arr[9], int n)
@@ -84,6 +82,45 @@ vec4 median()
     return a[4];
 }
 
+float sobel()
+{
+    vec2 texelSize = 1.0f / screenSize;
+    vec3 Gx[3];
+    Gx[0] = vec3(-1, 0, 1);
+    Gx[1] = vec3(-2, 0, 2);
+    Gx[2] = vec3(-1, 0, 1);
+
+    vec3 Gy[3];
+    Gy[0] = vec3(1, 2, 1);
+    Gy[1] = vec3(0, 0, 0);
+    Gy[2] = vec3(-1, -2, -1);
+
+    float sumX = 0.0;
+    float sumY = 0.0;
+
+    for(int i = -1; i <= 1; i++)
+    {
+        for(int j = -1; j <= 1; j++)
+        {
+            float gray = getGrayValue(texture(textureImage, textureCoord + vec2(i, j) * texelSize));
+            sumX += gray * Gx[i + 1][j + 1];
+            sumY += gray * Gy[i + 1][j + 1];
+        }
+    }
+
+    return sqrt(sumX * sumX + sumY * sumY);
+}
+
+vec4 threshold(float thresholdValue)
+{
+    float mag = sobel();
+
+    if(mag > thresholdValue)
+        return vec4(1.0, 1.0, 1.0, 1.0);
+    else
+        return vec4(0.0, 0.0, 0.0, 1.0);
+}
+
 
 void main()
 {
@@ -104,6 +141,12 @@ void main()
         case 3:
         {
             out_color = median();
+            break;
+        }
+
+        case 4:
+        {
+            out_color = threshold(0.1);
             break;
         }
 
