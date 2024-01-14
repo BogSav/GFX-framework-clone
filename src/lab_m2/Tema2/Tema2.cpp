@@ -1,4 +1,4 @@
-#include "lab_m2/Tema2/Tema2.h"
+﻿#include "lab_m2/Tema2/Tema2.h"
 
 #include <vector>
 #include <iostream>
@@ -9,20 +9,15 @@
 using namespace std;
 using namespace m2;
 
+const std::string GREEN = "\033[32m";
+const std::string YELLOW = "\033[33m";
+const std::string RESET = "\033[0m";
+const std::string RED = "\033[31m";
+
 #include <chrono>
-
-
-/*
- *  To find out more about `FrameStart`, `Update`, `FrameEnd`
- *  and the order in which they are called, see `world.cpp`.
- */
-
 
 Tema2::Tema2()
 {
-	outputMode = 0;
-	gpuProcessing = false;
-	saveScreenToImage = false;
 	//window->SetSize(600, 600);
 }
 
@@ -74,21 +69,6 @@ void Tema2::Update(float deltaTimeSeconds)
 	auto shader = shaders["ImageProcessing"];
 	shader->Use();
 
-	if (saveScreenToImage)
-	{
-		window->SetSize(originalImage->GetWidth(), originalImage->GetHeight());
-	}
-
-	int flip_loc = shader->GetUniformLocation("flipVertical");
-	glUniform1i(flip_loc, saveScreenToImage ? 0 : 1);
-
-	int screenSize_loc = shader->GetUniformLocation("screenSize");
-	glm::ivec2 resolution = window->GetResolution();
-	glUniform2i(screenSize_loc, resolution.x, resolution.y);
-
-	int outputMode_loc = shader->GetUniformLocation("outputMode");
-	glUniform1i(outputMode_loc, outputMode);
-
 	int locTexture = shader->GetUniformLocation("textureImage");
 	glUniform1i(locTexture, 0);
 
@@ -96,24 +76,6 @@ void Tema2::Update(float deltaTimeSeconds)
 	textureImage->BindToTextureUnit(GL_TEXTURE0);
 
 	RenderMesh(meshes["quad"], shader, glm::mat4(1));
-
-	if (saveScreenToImage)
-	{
-		saveScreenToImage = false;
-
-		GLenum format = GL_RGB;
-		if (originalImage->GetNrChannels() == 4)
-		{
-			format = GL_RGBA;
-		}
-
-		glReadPixels(0, 0, originalImage->GetWidth(), originalImage->GetHeight(), format, GL_UNSIGNED_BYTE, processedImage->GetImageData());
-		processedImage->UploadNewData(processedImage->GetImageData());
-		SaveImage("shader_processing_" + std::to_string(outputMode));
-
-		float aspectRatio = static_cast<float>(originalImage->GetWidth()) / originalImage->GetHeight();
-		window->SetSize(static_cast<int>(600 * aspectRatio), 600);
-	}
 }
 
 
@@ -163,12 +125,12 @@ void Tema2::GrayScale()
 	processedImage->UploadNewData(newData);
 }
 
-char m2::Tema2::GetGrayValue(glm::vec3 color)
+char m2::Tema2::GetGrayValue(const glm::vec3& color) const noexcept
 {
 	return  static_cast<char>(color.x * 0.2f + color.y * 0.71f + color.z * 0.07);
 }
 
-void m2::Tema2::Sobel(Texture2D* sourceTexture, Texture2D* destinationTexture, float threshold) const
+void m2::Tema2::Sobel0(Texture2D* sourceTexture, Texture2D* destinationTexture, float threshold) const
 {
 	const unsigned int channels = sourceTexture->GetNrChannels();
 	const unsigned char* data = sourceTexture->GetImageData();
@@ -229,7 +191,7 @@ void m2::Tema2::Sobel(Texture2D* sourceTexture, Texture2D* destinationTexture, f
 	destinationTexture->UploadNewData(newData);
 }
 
-std::vector<uint8_t> m2::Tema2::Sobel(Texture2D* sourceTexture, float threshold) const
+std::vector<uint8_t> m2::Tema2::Sobel(Texture2D* sourceTexture, float threshold)
 {
 	std::vector<uint8_t> sobelVector(sourceTexture->GetWidth() * sourceTexture->GetHeight(), 0);
 
@@ -282,77 +244,198 @@ std::vector<uint8_t> m2::Tema2::Sobel(Texture2D* sourceTexture, float threshold)
 	return sobelVector;
 }
 
+void printProgressBar(int percent)
+{
+	const int barWidth = 50;
+
+	std::cout << "	[";
+	std::cout << GREEN;
+
+	int pos = barWidth * percent / 100;
+
+	for (int i = 0; i < barWidth; ++i)
+	{
+		std::cout << ((i < pos) ? "=" : " ");
+	}
+
+	std::cout << RESET << "]";
+	std::cout << YELLOW << " " << percent << "%" << RESET << "\r";
+	std::flush(std::cout);
+}
+
 void m2::Tema2::Removel()
 {
-	std::vector<uint8_t> sobelWater = Sobel(watermarkImage, 0.9);
-	std::vector<uint8_t> sobelOriginal = Sobel(originalImage, 0.9);
+	unsigned int numThreads = std::thread::hardware_concurrency();
+	std::cout << RED << "Info " << RESET
+		<< "Sunt disponibile "
+		<< YELLOW
+		<< numThreads
+		<< RESET
+		<< " thread-uri pentru procesare\n";
 
-	size_t whiteCount = std::count(sobelWater.begin(), sobelWater.end(), 1);
+	// Creare thread pool cu nr de thread-uri disponibile
+	tk::ThreadPool pool{ numThreads };
+
+	// Pasul 1: Aplicarea filtrului Sobel pe watermark si pe imaginea originala
+	std::cout << RED << "Pas 1 " << RESET << "Aplicarea filtrului Sobel pe imagini\n";
+
+	auto f1 = pool.Run(Sobel, originalImage, 0.9);
+	auto f2 = pool.Run(Sobel, watermarkImage, 0.9);
+	pool.WaitForAllDone();
+
+	printProgressBar(0);
+	std::vector<uint8_t> sobelWater = f2.get();
+	printProgressBar(50);
+	std::vector<uint8_t> sobelOriginal = f1.get();
+	printProgressBar(100);
+
+	std::cout << "\n	Status: " << GREEN << "succes" << RESET << "\n";
+
+	// Preluam datele importante ce vor fi folosit in continuare
+	int whiteCount = static_cast<int>(std::count(sobelWater.begin(), sobelWater.end(), 1));
 
 	unsigned char* newData = processedImage->GetImageData();
+	unsigned char* originalData = originalImage->GetImageData();
 	unsigned char* watermarkData = watermarkImage->GetImageData();
 
-	const unsigned int imageHeight = originalImage->GetHeight();
-	const unsigned int imageWidth = originalImage->GetWidth();
-	const unsigned int watermarkWidth = watermarkImage->GetWidth();
-	const unsigned int watermarkHeight = watermarkImage->GetHeight();
+	const int imageHeight = (int)originalImage->GetHeight();
+	const int imageWidth = (int)originalImage->GetWidth();
+	const int watermarkWidth = (int)watermarkImage->GetWidth();
+	const int watermarkHeight = (int)watermarkImage->GetHeight();
 
-	const unsigned int waterPixelCount = watermarkHeight * watermarkWidth;
+	const int totalIterations = (imageWidth - watermarkWidth) * (imageHeight - watermarkHeight);
+	int lastPercDisplayed = -1;
 
-	std::vector<glm::ivec2> startPosition;
+	std::vector<std::future<std::optional<glm::ivec2>>> futures;
 
-	// Detectam watermark-urile
-	for (size_t i = 0; i < imageWidth - watermarkWidth; i++)
+	// Pasul 2: Identificarea pozitiilor la care se afla watermark-ul
+	// Aici doar atribuim task-uri thread-urilor, nu facem mare lucru
+	std::cout << RED << "Pas 2 " << RESET << "Identificarea pozitiilor watermark-urilor\n";
+	for (int i = 0; i < imageWidth - watermarkWidth; i++)
 	{
-		for (size_t j = 0; j < imageHeight - watermarkHeight; j++)
+		for (int j = 0; j < imageHeight - watermarkHeight; j++)
 		{
-			int nrOfCorrespondingPixels = 0;
-
-			for (size_t k = 0; k < watermarkWidth; k++)
+			// Afisam niste procente
+			int currentIteration = i * (imageHeight - watermarkHeight) + j;
+			int perc = static_cast<int>(100.0 * currentIteration / totalIterations);
+			if (perc % 5 == 0 && perc > lastPercDisplayed)
 			{
-				for (size_t l = 0; l < watermarkHeight; l++)
-				{
-					int imageOffset = (j + l) * imageWidth + i + k;
-					int waterOffset = l * watermarkWidth + k;
+				printProgressBar(perc);
+				lastPercDisplayed = perc;
+			}
 
-					if (sobelWater[waterOffset] == 1 && sobelOriginal[imageOffset] == 1)
-						nrOfCorrespondingPixels++;
+			// Creem un nou future pentru pixelul de la (i, j) cu functia de identificare
+			futures.push_back(
+				pool.Run(
+					CheckForWatermark,
+					std::cref(sobelWater),
+					std::cref(sobelOriginal),
+					i,
+					j,
+					imageHeight,
+					imageWidth,
+					watermarkHeight,
+					watermarkWidth,
+					whiteCount));
+		}
+	}
+	printProgressBar(100);
+	std::cout << "\n	Status: " << GREEN << "succes" << RESET << "\n";
+
+	// Pasul 3: Eliminarea efectiva a watermark-urilor din imagine
+	// Aici vom prelua rezultatele worker-ilor, timp in care vom si elimina pe main-thread
+	// wateramrk-urile imediat ce sunt gasit, astfel oferim timp celorlalte thread-uri sa isi termine
+	// treaba
+	std::cout << RED << "Pas 3 " << RESET << "Eliminarea wateramrk-urilor din imagine\n";
+
+	std::vector<glm::ivec2> startPositions;
+	int index = 0;
+	lastPercDisplayed = -1;
+
+	for (auto& f : futures)
+	{
+		try
+		{
+			int perc = static_cast<int>(100.f * index++ / futures.size());
+			if (perc % 5 == 0 && perc > lastPercDisplayed)
+			{
+				printProgressBar(perc);
+				lastPercDisplayed = perc;
+			}
+
+			auto res = f.get();
+			if (res.has_value())
+			{
+				glm::ivec2 corner = res.value();
+
+				// Watermark remove din imagine
+				for (size_t i = 0; i < watermarkWidth; i++)
+				{
+					for (size_t j = 0; j < watermarkHeight; j++)
+					{
+						int waterOffset = watermarkImage->GetNrChannels() * (j * watermarkWidth + i);
+						int offset = processedImage->GetNrChannels() * ((corner.y + j) * imageWidth + corner.x + i);
+
+						newData[offset] = originalData[offset] - watermarkData[waterOffset];
+						newData[offset + 1] = originalData[offset + 1] - watermarkData[waterOffset + 1];
+						newData[offset + 2] = originalData[offset + 2] - watermarkData[waterOffset + 2];
+					}
 				}
 			}
-
-			if ((float)nrOfCorrespondingPixels / (float)whiteCount > 0.9f)
-			{
-				std::cout << "Gasit" << std::endl;
-				startPosition.push_back(glm::ivec2(i, j));
-			}
 		}
-	}
-
-	for (glm::ivec2& corner : startPosition)
-	{
-		for (size_t i = 0; i < watermarkWidth; i++)
+		catch (...)
 		{
-			for (size_t j = 0; j < watermarkHeight; j++)
-			{
-				int waterOffset = watermarkImage->GetNrChannels() * (j * watermarkWidth + i);
-				int offset = (corner.y + j) * imageWidth + corner.x + i;
-				offset *= processedImage->GetNrChannels();
-				newData[offset] -= watermarkData[waterOffset];
-				newData[offset + 1] -= watermarkData[waterOffset + 1];
-				newData[offset + 2] -= watermarkData[waterOffset + 2];
-			}
+			std::cout << "Eroare grava" << std::endl;
 		}
 	}
+
+	printProgressBar(100);
+	std::cout << "\n	Status: " << GREEN << "succes" << RESET << "\n";
+	std::cout << RED << "Info " << RESET << "Procesarea s-a incheiat - watermark-uri eliminate cu " << GREEN << "succes" << RESET << std::endl;
 
 	processedImage->UploadNewData(newData);
 }
 
-
-void Tema2::SaveImage(const std::string& fileName)
+std::optional<glm::ivec2> m2::Tema2::CheckForWatermark(
+	const std::vector<uint8_t>& sobelWater,
+	const std::vector<uint8_t>& sobelOriginal,
+	const int& i,
+	const int& j,
+	const int& imageHeight,
+	const int& imageWidth,
+	const int& watermarkHeight,
+	const int& watermarkWidth,
+	const int& whiteCount)
 {
-	cout << "Saving image! ";
-	processedImage->SaveToFile((fileName + ".png").c_str());
-	cout << "[Done]" << endl;
+	int nrOfCorrespondingPixels = 0;
+
+	for (int k = 0; k < watermarkWidth; k++)
+	{
+		for (int l = 0; l < watermarkHeight; l++)
+		{
+			int imageOffset = (j + l) * imageWidth + i + k;
+			int waterOffset = l * watermarkWidth + k;
+
+			if (sobelWater[waterOffset] == 1 && sobelOriginal[imageOffset] == 1)
+				nrOfCorrespondingPixels++;
+		}
+
+		// 3037 white dots => around 303.7 white dots per letter
+		// in first 130 pixel on width there are 3 letters => should be around 909 white pixels 
+		// deci statistic vorbind relatia de mai jos ar trebui sa dea un early reject
+
+		if (k > watermarkWidth / 2 && nrOfCorrespondingPixels < whiteCount / 3)
+			return {};
+	}
+
+	if ((float)nrOfCorrespondingPixels / (float)whiteCount > 0.85f)
+	{
+		return glm::ivec2(i, j);
+	}
+	else
+	{
+		return {};
+	}
 }
 
 
@@ -393,52 +476,27 @@ void Tema2::OnKeyPress(int key, int mods)
 		OpenDialog();
 	}
 
-	if (key == GLFW_KEY_E)
-	{
-		gpuProcessing = !gpuProcessing;
-		if (gpuProcessing == false)
-		{
-			outputMode = 0;
-		}
-		cout << "Processing on GPU: " << (gpuProcessing ? "true" : "false") << endl;
-	}
-
 	if (key - GLFW_KEY_0 >= 0 && key < GLFW_KEY_5)
 	{
-		outputMode = key - GLFW_KEY_0;
+		int outputMode = key - GLFW_KEY_0;
 
-		if (gpuProcessing == false)
+		auto start = std::chrono::high_resolution_clock::now();
+		if (outputMode == 1)
 		{
-			auto start = std::chrono::high_resolution_clock::now();
-
-			if (outputMode == 1)
-			{
-				GrayScale();
-			}
-			if (outputMode == 2)
-			{
-				Sobel(originalImage, processedImage, 0.9f);
-			}
-			if (outputMode == 3)
-			{
-				Removel();
-			}
-
-			auto end = std::chrono::high_resolution_clock::now();
-			std::chrono::duration<double> duration = end - start;
-			std::cout << "Durata: " << duration.count() << " secunde" << std::endl;
+			GrayScale();
 		}
-	}
-
-	if (key == GLFW_KEY_S && mods & GLFW_MOD_CONTROL)
-	{
-		if (!gpuProcessing)
+		if (outputMode == 2)
 		{
-			SaveImage("processCPU_" + std::to_string(outputMode));
+			Sobel0(originalImage, processedImage, 0.1f);
 		}
-		else {
-			saveScreenToImage = true;
+		if (outputMode == 3)
+		{
+			Removel();
 		}
+		auto end = std::chrono::high_resolution_clock::now();
+
+		std::chrono::duration<double> duration = end - start;
+		std::cout << "Durata totala: " << YELLOW << duration.count() << RESET << " secunde\n\n";
 	}
 }
 
